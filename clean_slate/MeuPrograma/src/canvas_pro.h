@@ -1,0 +1,38 @@
+/*
+    Não quer codar na Canvas?
+    Use a biblioteca CVPro e vire o PRO em CG
+
+    Texto rápido, cores inteiras, imagens .bmp nativas:
+    vire PRO agora!
+*/
+
+#ifndef CANVAS_PRO_H
+#define CANVAS_PRO_H
+
+#include "gl_canvas2d.h"
+#include <stdarg.h>
+
+typedef unsigned char subpixel;
+
+
+namespace CVpro {
+    void text(float x, float y, const char *text, ...);
+    void color(int r, int g, int b);
+    typedef unsigned char subpixel;
+    class image
+    {
+        private:
+            int width;
+            int height;
+            subpixel *matrix;
+            
+        public:
+            image(int width, int height, subpixel *matrix);
+            void display_bitmap(int x, int y, int scale);
+            void destroy_bitmap();
+    };
+
+    image *load_bitmap(const char *path);
+}
+
+#endif
