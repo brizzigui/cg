@@ -14,10 +14,12 @@
 
 typedef unsigned char subpixel;
 
-
 namespace CVpro {
     void text(float x, float y, const char *text, ...);
+    void text_align(float x, float y, char align, const char *text, ...);
+    void autotext(float x, float y, char align, float spacing, const char *text, ...);
     void color(int r, int g, int b);
+    void color(int r, int g, int b, int a);
     typedef unsigned char subpixel;
     class image
     {
@@ -28,7 +30,7 @@ namespace CVpro {
             
         public:
             image(int width, int height, subpixel *matrix);
-            void display_bitmap(int x, int y, int scale);
+            void display_bitmap(float x, float y, float scale);
             void destroy_bitmap();
     };
 
