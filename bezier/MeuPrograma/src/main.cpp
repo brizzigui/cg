@@ -38,9 +38,12 @@
 #define KEYBOARD_8 56
 #define KEYBOARD_9 57
 
+#define KEYBOARD_PLUS 43
+#define KEYBOARD_MINUS 45
+
 
 //largura e altura inicial da tela . Alteram com o redimensionamento de tela.
-int screenWidth = 500, screenHeight = 500;
+int screenWidth = 1000, screenHeight = 500;
 int mouseX, mouseY; //variaveis globais do mouse para poder exibir dentro da render().
 
 Bezier_Curve *curve = NULL;
@@ -55,7 +58,7 @@ void draw_points()
       auto v = points[i];
       if (i == selected-1)
       {
-         CV::color(0, 0, 1);
+         CV::color(0.65, 0.45, 1);
       }
       
       else
@@ -70,47 +73,21 @@ void draw_points()
 
 void apply_move(int key)
 {
-   switch (key)
+
+   int target_number = key - KEYBOARD_1 + 1;
+   if (target_number >= 1 && target_number <= 9)
    {
-      case KEYBOARD_1:
-         selected = 1;
-         break;
-
-      case KEYBOARD_2:
-         selected = 2;
-         break;
-
-      case KEYBOARD_3:
-         selected = 3;
-         break;
-
-      case KEYBOARD_4:
-         selected = 4;
-         break;
-
-      case KEYBOARD_5:
-         selected = 5;
-         break;
-
-      case KEYBOARD_6:
-         selected = 6;
-         break;
-
-      case KEYBOARD_7:
-         selected = 7;
-         break;
-
-      case KEYBOARD_8:
-         selected = 8;
-         break;
-
-      case KEYBOARD_9:
-         selected = 9;
-         break;
+      if (target_number == selected)
+      {
+         selected = 0;
+      }
       
-      default:
-         break;
+      else
+      {
+         selected = target_number;
+      }
    }
+   
 
    if(selected != 0)
    {
@@ -121,7 +98,7 @@ void apply_move(int key)
             break;
 
          case KEYBOARD_TOP:
-            points[selected-1].second += 5;
+            points[selected-1].second -= 5;
             break;
 
          case KEYBOARD_RIGHT:
@@ -129,13 +106,46 @@ void apply_move(int key)
             break;
 
          case KEYBOARD_DOWN:
-            points[selected-1].second -= 5;
+            points[selected-1].second += 5;
             break;
          
          default:
             break;
       }
    }
+}
+
+void check_amount_change(int key)
+{
+   switch (key)
+   {
+      case KEYBOARD_PLUS:
+
+         if (points.size() < 9)
+         {
+            points.push_back(std::make_pair(screenWidth/2.0, screenHeight/2.0));
+         }
+         
+         break;
+      
+      case KEYBOARD_MINUS:
+
+         if (points.size() < 9)
+         {
+            points.pop_back();
+         }
+         
+         break;
+   }
+}
+
+void draw_info()
+{
+   CV::color(1, 1, 1);
+   CV::text(10, 20, "Demo de Curva de Bezier");
+   CV::text(10, 50, "[1-9]    - Seleciona ponto");
+   CV::text(10, 70, "[setas]  - Move ponto");
+   CV::text(10, 90, "[+/-]    - Muda numero de pontos");
 }
 
 //funcao chamada continuamente. Deve-se controlar o que desenhar por meio de variaveis globais
@@ -146,6 +156,7 @@ void render()
    CV::clear(0.1, 0.1, 0.1);
    curve->draw();
    draw_points();
+   draw_info();
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -153,6 +164,7 @@ void keyboard(int key)
 {
    printf("\nTecla: %d" , key);
    apply_move(key);
+   check_amount_change(key);
 }
 
 //funcao chamada toda vez que uma tecla for liberada
@@ -172,7 +184,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 
 int main(void)
 {
-   points = {std::make_pair(50, 50), std::make_pair(30, 150), std::make_pair(300, 50), std::make_pair(200, 150)};
+   points = {std::make_pair(50, 250), std::make_pair(30, 350), std::make_pair(300, 250), std::make_pair(200, 350)};
    curve = new Bezier_Curve(&points);
 
    CV::init(&screenWidth, &screenHeight, "Curva de Bezier");

@@ -14,7 +14,7 @@
 #define PI_2 6.28318530717
 #define PI   3.14159265359
 
-#define Y_CANVAS_CRESCE_PARA_CIMA 1
+#define Y_CANVAS_CRESCE_PARA_CIMA 0
 
 class CV //classe Canvas2D
 {

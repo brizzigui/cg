@@ -29,7 +29,7 @@ class Bezier_Curve{
             {
                 for (int i = 0; i < last.size()-1; i++)
                 {
-                    cur.push_back(std::make_pair(last[i].first + fabs(last[i].first - last[i+1].first)*v, last[i].second + fabs(last[i].second - last[i+1].second)*v));
+                    cur.push_back(std::make_pair((1-v) * last[i].first + v * last[i+1].first, (1-v) * last[i].second + v * last[i+1].second));
                 }
                 
                 len = cur.size();
@@ -45,9 +45,18 @@ class Bezier_Curve{
             for (double v = 0; v < 1.0; v += 0.001)
             {
                 std::pair<double, double> current = simplify(v);
-                CV::color(1.0, 0.0, 0.0);
-                CV::circleFill(current.first, current.second, 2, 10);
+                CV::color(0.5215, 0.3333, 0.8509);
+                CV::circleFill(current.first, current.second, 1, 10);
             }
+
+            for (int i = 0; i < (*points).size(); i++)
+            {
+                CV::color(0.8, 0.8, 0.8);
+                char text[8];
+                sprintf(text, "P%d", i+1);
+                CV::text((*points)[i].first + 10, (*points)[i].second + 10, text);
+            }
+            
         }
         
 };
