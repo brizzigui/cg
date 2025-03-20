@@ -24,13 +24,14 @@ namespace CVpro {
     class image
     {
         private:
-            int width;
-            int height;
             subpixel *matrix;
             
         public:
+            int width;
+            int height;
             image(int width, int height, subpixel *matrix);
             void display_bitmap(float x, float y, float scale);
+            void display_bitmap_anchored(float x, float y, float scale, char anchorX, char anchorY);
             void destroy_bitmap();
     };
 

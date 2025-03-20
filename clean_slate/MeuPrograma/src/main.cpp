@@ -29,7 +29,8 @@ CVpro::image *img_ptr = NULL;
 void render()
 {
    CV::clear(0.1, 0.1, 0.1);
-   CVpro::autotext(screenWidth/2.0, 50, 'C', 20, "Say Hello to\n\nCanvas Pro!");
+   CVpro::autotext(screenWidth/2.0, 50, 'C', 20, "This is an image loaded using Canvas PRO");
+   img_ptr->display_bitmap_anchored(screenWidth/2.0, screenHeight/2.0, (screenWidth/2.0) / img_ptr->width, 'c', 'c');
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -55,7 +56,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 
 int main(void)
 {
-   img_ptr = CVpro::load_bitmap("./MeuPrograma/src/test.bmp");
+   img_ptr = CVpro::load_bitmap("./MeuPrograma/src/picture.bmp");
    CV::init(&screenWidth, &screenHeight, "Clean Slate");
    CV::run();
 }

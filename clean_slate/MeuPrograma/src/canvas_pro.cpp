@@ -31,6 +31,42 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
 }
 
 /*
+Mostra na tela um CVpro::image, a partir das coordenadas x, y.
+Para manter tamanho original, passe 'scale' como 1.
+Senão, passe um float com a escala desejada.
+
+Tipo de âncora:
+    - anchorX usa literais 'L', 'R' e 'C' para esquerda, direita e centro.
+    - anchorY usa literais 'T', 'B' e 'C' para cima, baixo e centro.
+
+Ancora posição conforme alinhamento em x e y.
+*/
+void CVpro::image::display_bitmap_anchored(float x, float y, float scale, char anchorX, char anchorY)
+{
+    if (anchorX == 'R' || anchorX == 'r')
+    {
+        x = x-width*scale;
+    }
+
+    else if (anchorX == 'C' || anchorX == 'c')
+    {
+        x = x-(width*scale)/2;
+    }
+
+    if (anchorY == 'B' || anchorY == 'b')
+    {
+        y = y-height*scale;
+    }
+
+    else if (anchorY == 'C' || anchorY == 'c')
+    {
+        y = y-(height*scale)/2;
+    }
+    
+    display_bitmap(x, y, scale);
+}
+
+/*
 Libera memória da imagem.
 Aviso: usar a imagem após liberação causará segmentation fault.
 */
