@@ -37,8 +37,8 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
     {
         for (int j = 0; j < (int)(width*scale); j++)
         {
-            int base_index = (int)(i/scale) * width * 3 + (int)(j/scale) * 3;
-            CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index]);
+            int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
+            CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
             CV::point(x+j, y-i+height*scale);
         }
     }
@@ -242,12 +242,18 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     int stride = get_stride(width);
     int padding = stride - width * bytes;
 
-    subpixel *matrix = (subpixel *)malloc(sizeof(subpixel) * width * height * bytes);
+    subpixel *matrix = (subpixel *)malloc(sizeof(subpixel) * width * height * (bytes+1));
     fseek(descriptor, 54, SEEK_SET); // pula o restante dos headers
 
     for (int line = 0; line < height; line++)
     {
-        fread(matrix + line * width * bytes, 1, width * bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+        for (int pixel = 0; pixel < width; pixel++)
+        {
+            subpixel *address = matrix + line * width * (bytes + 1) + pixel * (bytes + 1);
+            fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+            *(address + bytes) = (unsigned char)255;
+        }
+        
         fseek(descriptor, padding, SEEK_CUR);
     }
 
