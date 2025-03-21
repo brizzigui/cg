@@ -15,7 +15,7 @@ struct action
     // ponteiros para função do comportamento
     // de clique dos botões de ação
 
-    // inhate properties
+    // innate properties
     void (*left_click_behavior)(void);
     void (*right_click_behavior)(void);
     CVpro::image *icon;

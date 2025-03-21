@@ -17,13 +17,10 @@
 #include "side_menu.h"
 
 //largura e altura inicial da tela . Alteram com o redimensionamento de tela.
-int screenWidth = 1600, screenHeight = 900;
+int screenWidth = 1280, screenHeight = 720;
 int mouseX, mouseY; //variaveis globais do mouse para poder exibir dentro da render().
 
 Side_Menu *interface = NULL;
-CVpro::image *img40px = NULL;
-CVpro::image *img50px = NULL;
-
 
 //funcao chamada continuamente. Deve-se controlar o que desenhar por meio de variaveis globais
 //Todos os comandos para desenho na canvas devem ser chamados dentro da render().
@@ -34,6 +31,7 @@ void render()
 
    // start->display();
    interface->display();
+   // editor->display();
    // widget->display();
    // popups->display();
 
@@ -73,8 +71,15 @@ void create_actions()
 {
    CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
    interface->register_action("Pencil", pencil_icon, NULL, NULL);
-   interface->register_action("Pen", pencil_icon, NULL, NULL);
-   interface->register_action("Eraser", pencil_icon, NULL, NULL);
+
+   CVpro::image *brush_icon = CVpro::load_bitmap("./MeuPrograma/images/brush.bmp");
+   interface->register_action("Brush", brush_icon, NULL, NULL);
+
+   CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
+   interface->register_action("Marker", marker_icon, NULL, NULL);
+
+   CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
+   interface->register_action("Eraser", eraser_icon, NULL, NULL);
 }
 
 int main(void)
