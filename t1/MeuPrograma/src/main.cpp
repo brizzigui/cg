@@ -98,12 +98,16 @@ int main(void)
 {
    layer_manager = new Layer_Manager();
    layer_manager->add_blank_layer();
-
+   layer_manager->add_blank_layer();
+   layer_manager->add_blank_layer();
 
    interface = new Side_Menu(screenWidth, screenHeight);
    create_actions();
 
    editor = new Editor(layer_manager, interface);
+
+   // async for flatten() function (layer blending, check layer_manager.h for more info)
+   std::thread(&Layer_Manager::flatten_worker, layer_manager).detach();
 
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "BIMP - Brizzi Image Manipulation Program");

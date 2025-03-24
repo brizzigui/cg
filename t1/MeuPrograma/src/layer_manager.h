@@ -148,19 +148,22 @@ class Layer_Manager
             }
         }
 
+        void flatten_worker()
+        {
+            // async worker
+            // calls flatten() in separate thread
+
+            while(true)
+            {
+                flatten();
+            }
+        }
+
         void display_layers()
         {
-            flatten();
             // using own blend from flatten();
+            // is being called using async thread for increased performance
             result->display_bitmap(anchorX, anchorY, 1.0);
-            return;
-
-            // using natural GL blend
-            for (int l = 0; l < layers.size(); l++)
-            {
-                layers[l].image->display_bitmap(anchorX, anchorY, 1.0);
-            }
-            
             return;
         }
 

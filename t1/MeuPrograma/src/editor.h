@@ -68,7 +68,90 @@ class Editor
             if (held)
             {
                 Layer l = layer_manager->get_active_layer();
-                pencil_to_bmp(l, x, y);                
+
+                int diff_x = x - mouse_last_x;
+                int diff_y = y - mouse_last_y;
+
+                int samples = std::max(std::abs(diff_x), std::abs(diff_y)) + 1;
+
+                float step_x = (float)diff_x / samples;
+                float step_y = (float)diff_y / samples;
+
+                for (int subsample = 0; subsample < samples; subsample++)
+                {
+                    pencil_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                }           
+            }
+        }
+
+        void eraser_to_bmp(Layer l, int x, int y)
+        {
+            int radius = 10;
+            for (int offset_y = -radius; offset_y < radius; offset_y++)
+            {
+                for (int offset_x = -radius; offset_x < radius; offset_x++)
+                {
+                    if (offset_x * offset_x + offset_y * offset_y < radius * radius)
+                    {
+                        int actual_x = x + offset_x;
+                        int actual_y = y + offset_y;
+                        if (is_valid_pixel(l, actual_y, actual_x))
+                        {
+                            int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
+                            l.image->matrix[base_index + 2] = (unsigned char)0;
+                            l.image->matrix[base_index + 1] = (unsigned char)0;
+                            l.image->matrix[base_index] = (unsigned char)0;
+                            l.image->matrix[base_index + 3] = (unsigned char)0;
+                        }
+                    }
+                }
+            }
+        }
+
+        void eraser(int button, int x, int y, bool held)
+        {
+            if (held)
+            {
+                Layer l = layer_manager->get_active_layer();
+
+                int diff_x = x - mouse_last_x;
+                int diff_y = y - mouse_last_y;
+
+                int samples = std::max(std::abs(diff_x), std::abs(diff_y));
+
+                float step_x = (float)diff_x / samples;
+                float step_y = (float)diff_y / samples;
+
+                for (int subsample = 0; subsample < samples+1; subsample++)
+                {
+                    eraser_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                }           
+            }
+        }
+
+        void brush_to_bmp(Layer l, int x, int y)
+        {
+            // to do
+        }
+
+        void brush(int button, int x, int y, bool held)
+        {
+            if (held)
+            {
+                Layer l = layer_manager->get_active_layer();
+
+                int diff_x = x - mouse_last_x;
+                int diff_y = y - mouse_last_y;
+
+                int samples = std::max(std::abs(diff_x), std::abs(diff_y));
+
+                float step_x = (float)diff_x / samples;
+                float step_y = (float)diff_y / samples;
+
+                for (int subsample = 0; subsample < samples+1; subsample++)
+                {
+                    brush_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                }           
             }
         }
 
@@ -78,6 +161,17 @@ class Editor
             {
                 pencil(button, x, y, held);
             }
+
+            else if (strcmp(action, "Brush") == 0)
+            {
+                brush(button, x, y, held);
+            }
+
+            else if (strcmp(action, "Eraser") == 0)
+            {
+                eraser(button, x, y, held);
+            }
+            
         }
 
         bool is_inside_area(int x, int y)
@@ -102,10 +196,9 @@ class Editor
             if (action != NULL && is_inside_area(x, y))
             {
                 process_update(action, button, x-layer_manager->anchorX, y-layer_manager->anchorY, held);
+                mouse_last_x = x-layer_manager->anchorX;
+                mouse_last_y = y-layer_manager->anchorY;
             }
-
-            mouse_last_x = x;
-            mouse_last_y = y;
         }
 };
 
