@@ -39,7 +39,7 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
         {
             int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
             CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-            CV::point(x+j, y-i+height*scale);
+            CV::point(x+j, y+i);
         }
     }
 }
@@ -249,7 +249,7 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     {
         for (int pixel = 0; pixel < width; pixel++)
         {
-            subpixel *address = matrix + line * width * (bytes + 1) + pixel * (bytes + 1);
+            subpixel *address = matrix + (height - line - 1) * width * (bytes + 1) + pixel * (bytes + 1);
             fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
             *(address + bytes) = (unsigned char)255;
         }

@@ -10,32 +10,40 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <thread>
+
 #include "gl_canvas2d.h"
 
 #include "canvas_pro.h"
 #include "keyboard.h"
 #include "side_menu.h"
+#include "layer_manager.h"
+#include "editor.h"
 
 //largura e altura inicial da tela . Alteram com o redimensionamento de tela.
 int screenWidth = 1280, screenHeight = 720;
 int mouseX, mouseY; //variaveis globais do mouse para poder exibir dentro da render().
 
 Side_Menu *interface = NULL;
+Layer_Manager *layer_manager = NULL;
+Editor *editor = NULL;
+
+bool mouse_held = false;
 
 //funcao chamada continuamente. Deve-se controlar o que desenhar por meio de variaveis globais
 //Todos os comandos para desenho na canvas devem ser chamados dentro da render().
 //Deve-se manter essa fun��o com poucas linhas de codigo.
 void render()
 {
+   auto start = std::chrono::high_resolution_clock::now();
+
    CV::clear(0.1, 0.1, 0.1);
-
-   // start->display();
+   layer_manager->display();
    interface->display();
-   // editor->display();
-   // widget->display();
-   // popups->display();
 
-   Sleep(10);
+   auto stop = std::chrono::high_resolution_clock::now();
+   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+   //std::cout << 1000.0 / duration.count() << std::endl;
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -57,14 +65,18 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    mouseY = y;
 
    printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
+   editor->update_state(button, x, y, mouse_held);
 
    if (state == 0) // state == 0 é um clique qualquer em um dos botões
    {
       interface->update_state(button, x, y);
-
-      // + updates virao aqui
+      mouse_held = true;
    }
-   
+
+   else if (state == 1)
+   {
+      mouse_held = false;
+   }
 }
 
 void create_actions()
@@ -84,8 +96,15 @@ void create_actions()
 
 int main(void)
 {
+   layer_manager = new Layer_Manager();
+   layer_manager->add_bmp_layer("./MeuPrograma/images/dimension.bmp");
+   layer_manager->add_bmp_layer("./MeuPrograma/images/test.bmp");
+
+
    interface = new Side_Menu(screenWidth, screenHeight);
    create_actions();
+
+   editor = new Editor(layer_manager, interface);
 
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "BIMP - Brizzi Image Manipulation Program");

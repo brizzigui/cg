@@ -30,7 +30,6 @@ typedef struct action Action;
 class Side_Menu
 {
     private:
-        std::vector<Action> actions;
         int screenWidth, screenHeight;
 
         void display_background()
@@ -40,6 +39,8 @@ class Side_Menu
         }
 
     public:
+        std::vector<Action> actions;
+
         Side_Menu(int screenWidth, int screenHeight)
         {
             this->screenWidth = screenWidth;
