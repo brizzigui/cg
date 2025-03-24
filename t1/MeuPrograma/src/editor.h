@@ -33,7 +33,6 @@ class Editor
 
         bool is_valid_pixel(Layer l, int i, int j)
         {
-            std::cout << std::endl << j << ", " << i << std::endl;
             return (j >= l.anchorX) &&
                    (j < l.anchorX + l.image->width) &&
                    (i >= l.anchorY) &&
@@ -42,18 +41,30 @@ class Editor
 
         void pencil_to_bmp(Layer l, int x, int y)
         {
-            if (is_valid_pixel(l, y, x))
+            int radius = 5;
+            for (int offset_y = -radius; offset_y < radius; offset_y++)
             {
-                int base_index = (y-l.anchorY) * l.image->width * 4 + (x-l.anchorX) * 4;
-                l.image->matrix[base_index + 2] = (unsigned char)255;
-                l.image->matrix[base_index + 1] = (unsigned char)0;
-                l.image->matrix[base_index] = (unsigned char)0;
-                l.image->matrix[base_index + 3] = (unsigned char)255;
+                for (int offset_x = -radius; offset_x < radius; offset_x++)
+                {
+                    if (offset_x * offset_x + offset_y * offset_y < radius * radius)
+                    {
+                        int actual_x = x + offset_x;
+                        int actual_y = y + offset_y;
+                        if (is_valid_pixel(l, actual_y, actual_x))
+                        {
+                            int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
+                            l.image->matrix[base_index + 2] = (unsigned char)255;
+                            l.image->matrix[base_index + 1] = (unsigned char)0;
+                            l.image->matrix[base_index] = (unsigned char)0;
+                            l.image->matrix[base_index + 3] = (unsigned char)255;
+                        }
+                    }
+                }
             }
         }
 
         void pencil(int button, int x, int y, bool held)
-        {
+        {            
             if (held)
             {
                 Layer l = layer_manager->get_active_layer();
