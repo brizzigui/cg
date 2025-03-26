@@ -24,12 +24,17 @@ class Widget
         int button_x_offset = 100/3.0;
         int button_y_offset = 20;
 
+        int usable_anchorY = anchorY + button_height + button_y_offset;
+
         Layer_Manager *layer_manager;
         Interface *interface;
         Editor *editor;
 
         CVpro::image *color_picker_icon;
         CVpro::image *layer_selector_icon;
+        CVpro::image *up_arrow_icon;
+        CVpro::image *down_arrow_icon;
+        CVpro::image *new_layer_icon;
 
     public:
         Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
@@ -41,6 +46,9 @@ class Widget
 
             this->color_picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker_icon.bmp");
             this->layer_selector_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_selector.bmp");
+            this->up_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/up_arrow.bmp");
+            this->down_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/down_arrow.bmp");
+            this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
         }
 
         int check_frame_click(int button, int x, int y)
@@ -109,17 +117,28 @@ class Widget
         void display_widget_frame()
         {
             CVpro::color(63, 63, 63);
-            CV::rectFill(anchorX, anchorY + button_y_offset + button_height, anchorX + width, anchorY + height);
+            CV::rectFill(anchorX, usable_anchorY, anchorX + width, anchorY + height);
 
             layer_selector_icon->display_bitmap(anchorX + button_x_offset, anchorY, 1.0);
             color_picker_icon->display_bitmap(anchorX + button_x_offset*2 + button_width, anchorY, 1.0);
-
         }
 
         void display_layer_selector()
         {
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX+width/2.0, anchorY+height/2.0, 'c', 15, "I'm a layer selector.\nMaybe implement me later.");
+            up_arrow_icon->display_bitmap_anchored(anchorX+width/2.0, usable_anchorY+25, 1.0, 'c', 't');
+
+            CVpro::color(32, 32, 32);
+            for (int i = 0; i < 3; i++)
+            {
+                CV::rectFill(anchorX+10, usable_anchorY+60+85*i, anchorX+width-10, usable_anchorY+60+85*i+75);
+            }
+
+            down_arrow_icon->display_bitmap_anchored(anchorX+width/2.0, usable_anchorY+315, 1.0, 'c', 't');
+
+            CV::color(1, 1, 1);
+            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12, "Showing layers #[%d-%d]\nout of %d layers.", 1, 1, 1);
+            new_layer_icon->display_bitmap_anchored(anchorX + width/2.0, usable_anchorY+400, 1.0, 'c', 't');
         }
 
         void display_color_picker()
