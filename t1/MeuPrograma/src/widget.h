@@ -26,6 +26,8 @@ class Widget
 
         int usable_anchorY = anchorY + button_height + button_y_offset;
 
+        int first_shown = 0;
+
         Layer_Manager *layer_manager;
         Interface *interface;
         Editor *editor;
@@ -91,7 +93,7 @@ class Widget
 
         void update_layer_selector(int button, int x, int y)
         {
-
+          
         }
 
         void update_color_picker(int button, int x, int y)
@@ -123,22 +125,35 @@ class Widget
             color_picker_icon->display_bitmap(anchorX + button_x_offset*2 + button_width, anchorY, 1.0);
         }
 
-        void display_layer_selector()
+        void show_arrows()
         {
-            CV::color(1, 1, 1);
             up_arrow_icon->display_bitmap_anchored(anchorX+width/2.0, usable_anchorY+25, 1.0, 'c', 't');
+            down_arrow_icon->display_bitmap_anchored(anchorX+width/2.0, usable_anchorY+315, 1.0, 'c', 't');
+        }
 
+        void show_layer_dropdown()
+        {
             CVpro::color(32, 32, 32);
             for (int i = 0; i < 3; i++)
             {
                 CV::rectFill(anchorX+10, usable_anchorY+60+85*i, anchorX+width-10, usable_anchorY+60+85*i+75);
             }
-
-            down_arrow_icon->display_bitmap_anchored(anchorX+width/2.0, usable_anchorY+315, 1.0, 'c', 't');
-
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12, "Showing layers #[%d-%d]\nout of %d layers.", 1, 1, 1);
+
+            int total_layers = layer_manager->layers.size();
+            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12, "Showing layers #[%d-%d]\nout of %d layers.", 1, 1, total_layers);
+        }
+
+        void show_new_layer_icon()
+        {
             new_layer_icon->display_bitmap_anchored(anchorX + width/2.0, usable_anchorY+400, 1.0, 'c', 't');
+        }
+
+        void display_layer_selector()
+        {
+            show_arrows();
+            show_layer_dropdown();
+            show_new_layer_icon();
         }
 
         void display_color_picker()
