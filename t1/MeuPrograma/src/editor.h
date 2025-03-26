@@ -2,14 +2,14 @@
 #define EDITOR_H
 
 #include "layer_manager.h"
-#include "side_menu.h"
+#include "interface.h"
 
 class Editor
 {
     private:
         // to keep track of changes, the editor needs to know the other classes
         Layer_Manager *layer_manager;
-        Side_Menu *interface;
+        Interface *interface;
         int mouse_last_x = 0;
         int mouse_last_y = 0;
 
@@ -183,7 +183,7 @@ class Editor
         }
         
     public:
-        Editor(Layer_Manager *layer_manager, Side_Menu *interface)
+        Editor(Layer_Manager *layer_manager, Interface *interface)
         {
             this->layer_manager = layer_manager;
             this->interface = interface;

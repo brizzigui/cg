@@ -30,7 +30,7 @@ class Layer_Manager
         int board_width = 720;
         int board_height = 540;
 
-        int anchorX = 150, anchorY = 100;
+        int anchorX = 130, anchorY = 100;
 
         CVpro::image *generate_blank_bmp()
         {

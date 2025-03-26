@@ -27,7 +27,7 @@ struct action
 
 typedef struct action Action;
 
-class Side_Menu
+class Interface
 {
     private:
         int screenWidth, screenHeight;
@@ -41,7 +41,7 @@ class Side_Menu
     public:
         std::vector<Action> actions;
 
-        Side_Menu(int screenWidth, int screenHeight)
+        Interface(int screenWidth, int screenHeight)
         {
             this->screenWidth = screenWidth;
             this->screenHeight = screenHeight;
