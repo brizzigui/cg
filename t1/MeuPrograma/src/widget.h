@@ -37,6 +37,7 @@ class Widget
         CVpro::image *up_arrow_icon;
         CVpro::image *down_arrow_icon;
         CVpro::image *new_layer_icon;
+        CVpro::image *trash_icon;
 
     public:
         Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
@@ -51,6 +52,7 @@ class Widget
             this->up_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/up_arrow.bmp");
             this->down_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/down_arrow.bmp");
             this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
+            this->trash_icon = CVpro::load_bitmap("./MeuPrograma/images/trash.bmp");
         }
 
         int check_frame_click(int button, int x, int y)
@@ -133,15 +135,33 @@ class Widget
 
         void show_layer_dropdown()
         {
-            CVpro::color(32, 32, 32);
-            for (int i = 0; i < 3; i++)
-            {
-                CV::rectFill(anchorX+10, usable_anchorY+60+85*i, anchorX+width-10, usable_anchorY+60+85*i+75);
-            }
-            CV::color(1, 1, 1);
-
+            int actual_shown = 0;
             int total_layers = layer_manager->layers.size();
-            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12, "Showing layers #[%d-%d]\nout of %d layers.", 1, 1, total_layers);
+
+            int iterations = std::min(total_layers, 3);
+            for (int i = first_shown; i < iterations + first_shown; i++)
+            {
+                CVpro::color(32, 32, 32);
+                CV::rectFill(anchorX+10, usable_anchorY+60+85*(iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(iterations-i-1)+75);
+
+                CVpro::color(255, 255, 255);
+                CVpro::text(anchorX+20, usable_anchorY+60+85*(iterations-i-1)+20, "#%d: %s", i+1, layer_manager->layers[i].name);
+
+                if (layer_manager->active_index == i)
+                {
+                    CVpro::color(255, 255, 255);
+                    CV::rect(anchorX+10, usable_anchorY+60+85*(iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(iterations-i-1)+75);
+                }
+
+                trash_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+
+                actual_shown++;
+            }
+            
+            CV::color(1, 1, 1);
+            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12,
+                 "Showing layers #[%d-%d]\nout of %d layers.",
+                  first_shown+1, first_shown+actual_shown, total_layers);
         }
 
         void show_new_layer_icon()

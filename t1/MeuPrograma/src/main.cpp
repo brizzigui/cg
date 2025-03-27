@@ -46,7 +46,7 @@ void render()
 
    auto stop = std::chrono::high_resolution_clock::now();
    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-   //std::cout << 1000.0 / duration.count() << std::endl;
+   std::cout << 1000.0 / duration.count() << std::endl;
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -67,7 +67,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    mouseX = x; //guarda as coordenadas do mouse para exibir dentro da render()
    mouseY = y;
 
-   printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
+   // printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
    editor->update_state(button, x, y, mouse_held);
 
    if (state == 0) // state == 0 é um clique qualquer em um dos botões
@@ -104,6 +104,7 @@ int main(void)
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
+   
 
    interface = new Interface(screenWidth, screenHeight);
    create_actions();

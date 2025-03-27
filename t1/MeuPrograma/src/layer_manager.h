@@ -12,7 +12,7 @@ struct Layer
     CVpro::image *image;
     int anchorX;
     int anchorY;
-    int id;
+    const char *name;
 };
 
 class Layer_Manager
@@ -31,6 +31,8 @@ class Layer_Manager
         int board_height = 540;
 
         int anchorX = 130, anchorY = 100;
+
+        int active_index = 0;
 
         CVpro::image *generate_blank_bmp()
         {
@@ -51,12 +53,13 @@ class Layer_Manager
             Layer l;
 
             l.image = generate_blank_bmp();
-            l.id = counter;
+            l.name = "Blank Layer";
             counter++;
             l.anchorX = 0;
             l.anchorY = 0;
 
             layers.push_back(l);
+            active_index = layers.size()-1;
         }
 
         void add_bmp_layer(const char *path)
@@ -64,12 +67,13 @@ class Layer_Manager
             Layer l;
 
             l.image = CVpro::load_bitmap(path);
-            l.id = counter;
+            l.name = "Image Layer";
             counter++;
             l.anchorX = 0;
             l.anchorY = 0; 
 
             layers.push_back(l);
+            active_index = layers.size()-1;
         }
 
         void display_background()
@@ -176,9 +180,13 @@ class Layer_Manager
         Layer get_active_layer()
         {
             #warning "WARNING: POTENTIAL FATAL - unimplemented active layer getter in 'Layer get_active_layer()' may cause bugs. When implementation of selection catches up, code must be updated."      
-            return layers[layers.size()-1];
-
-            // might become a function of the widget for simplicity and faster lookup
+            if (active_index >= layers.size())
+            {
+                std::cout << "Index not found exception: could not resolve active_index layer at 'Layer get_active_layer()'. Continuing would result in segmentation fault. Aborting." << std::endl;
+                exit(-1);
+            }
+            
+            return layers[active_index];
         }
 };
 
