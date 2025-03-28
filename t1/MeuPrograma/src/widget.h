@@ -45,6 +45,9 @@ class Widget
         CVpro::image *trash_icon;
         CVpro::image *open_eye_icon;
         CVpro::image *closed_eye_icon;
+        CVpro::image *z_index_up_icon;
+        CVpro::image *z_index_down_icon;
+
 
     public:
         Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
@@ -62,6 +65,8 @@ class Widget
             this->trash_icon = CVpro::load_bitmap("./MeuPrograma/images/trash.bmp");
             this->open_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/open_eye.bmp");
             this->closed_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/closed_eye.bmp");
+            this->z_index_up_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_up.bmp");
+            this->z_index_down_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_down.bmp");
 
             first_shown = layer_manager->layers.size() - 3;
             first_shown = (first_shown >= 0) ? first_shown : 0;
@@ -106,7 +111,7 @@ class Widget
         {
             int total_layers = layer_manager->layers.size();
             int max_iterations = first_shown + std::min(total_layers, 3);
-            for (int i = first_shown; i < max_iterations + first_shown; i++)
+            for (int i = first_shown; i < max_iterations; i++)
             {
                 if(x > anchorX+10 &&
                     y > usable_anchorY+60+85*(max_iterations-i-1) &&
@@ -154,9 +159,9 @@ class Widget
             int total_layers = layer_manager->layers.size();
             int max_iterations = first_shown + std::min(total_layers, 3);
 
-            return x > anchorX + width-20 - trash_icon->width &&
+            return x > anchorX + width-50 - trash_icon->width &&
                     y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 - trash_icon->height/2.0 &&
-                    x < anchorX + width-20 &&
+                    x < anchorX + width-50 &&
                     y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 + trash_icon->height/2.0;
         }
 
@@ -165,10 +170,49 @@ class Widget
             int total_layers = layer_manager->layers.size();
             int max_iterations = first_shown + std::min(total_layers, 3);
 
-            return x > anchorX + width-50 - open_eye_icon->width &&
+            return x > anchorX + width-80 - open_eye_icon->width &&
                     y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 - trash_icon->height/2.0 &&
-                    x < anchorX + width-50 &&
+                    x < anchorX + width-80 &&
                     y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 + trash_icon->height/2.0;
+        }
+
+        bool click_z_index_up(int layer_id, int x, int y)
+        {
+            int total_layers = layer_manager->layers.size();
+            int max_iterations = first_shown + std::min(total_layers, 3);
+
+            return x > anchorX + width-20 - open_eye_icon->width &&
+                    y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 - trash_icon->height &&
+                    x < anchorX + width-20 &&
+                    y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0;
+        }
+
+        bool click_z_index_down(int layer_id, int x, int y)
+        {
+            int total_layers = layer_manager->layers.size();
+            int max_iterations = first_shown + std::min(total_layers, 3);
+
+            return x > anchorX + width-20 - open_eye_icon->width &&
+                    y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 &&
+                    x < anchorX + width-20 &&
+                    y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 + trash_icon->height;
+        }
+
+        int safe_first_shown_index_update()
+        {
+            if (first_shown + 3 > layer_manager->layers.size())
+            {
+                if (first_shown - 1 < 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return first_shown - 1;
+                }
+            }
+
+            return first_shown;
         }
 
         void update_layer_selector(int x, int y)
@@ -197,12 +241,23 @@ class Widget
             {
                 if (click_delete(layer_id, x, y))
                 {
-                    std::cout << "delete layer called for #" << layer_id << std::endl;
+                    layer_manager->safe_delete_layer(layer_id);
+                    first_shown = safe_first_shown_index_update();
                 }
 
                 else if (click_toggle_eye(layer_id, x, y))
                 {
-                    std::cout << "toggle eye called for #" << layer_id << std::endl;
+                    layer_manager->layers[layer_id].visible = !layer_manager->layers[layer_id].visible;
+                }
+
+                else if (click_z_index_up(layer_id, x, y))
+                {
+                    layer_manager->switch_order(layer_id, layer_id+1);
+                }
+
+                else if (click_z_index_down(layer_id, x, y))
+                {
+                    layer_manager->switch_order(layer_id, layer_id-1);
                 }
 
                 else
@@ -286,26 +341,40 @@ class Widget
                 }
 
                 // delete icon
-                trash_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                trash_icon->display_bitmap_anchored(anchorX + width-50, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
 
                 // visibility
                 if (layer_manager->layers[i].visible)
                 {
-                    open_eye_icon->display_bitmap_anchored(anchorX + width-50, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                    open_eye_icon->display_bitmap_anchored(anchorX + width-80, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
                 }
 
                 else
                 {
-                    closed_eye_icon->display_bitmap_anchored(anchorX + width-50, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                    closed_eye_icon->display_bitmap_anchored(anchorX + width-80, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
                 }
-                
+
+                // z-index
+                z_index_up_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'b');
+                z_index_down_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 't');
+
                 actual_shown++;
             }
             
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12,
-                 "Showing layers #[%d-%d]\nout of %d layers.",
-                  first_shown+1, first_shown+actual_shown, total_layers);
+            if (actual_shown > 0)
+            {
+                CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12,
+                    "Showing layers #[%d-%d]\nout of %d layers.",
+                     first_shown+1, first_shown+actual_shown, total_layers);
+            }
+            
+            else
+            {
+                CVpro::autotext(anchorX+width/2.0, usable_anchorY+360, 'c', 12,
+                    "There are no\nlayers to show.",
+                     first_shown+1, first_shown+actual_shown, total_layers);
+            }
         }
 
         void show_new_layer_icon()

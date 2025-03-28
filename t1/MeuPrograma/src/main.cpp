@@ -105,6 +105,7 @@ int main(void)
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
+
    
    interface = new Interface(screenWidth, screenHeight);
    create_actions();

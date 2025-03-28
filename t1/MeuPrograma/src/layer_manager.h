@@ -128,7 +128,7 @@ class Layer_Manager
 
                     for (int l = 0; l < layers.size(); l++)
                     {
-                        if (is_valid_pixel(layers[l], i, j))
+                        if (layers[l].visible && is_valid_pixel(layers[l], i, j))
                         {
                             float r, g, b, a;
                             int base_index = (i-layers[l].anchorY) * layers[l].image->width * 4 + (j-layers[l].anchorX) * 4;
@@ -181,13 +181,22 @@ class Layer_Manager
             display_layers();
         }
 
-        Layer get_active_layer()
+        bool is_valid()
         {
-            #warning "WARNING: POTENTIAL FATAL - unimplemented active layer getter in 'Layer get_active_layer()' may cause bugs. When implementation of selection catches up, code must be updated."      
             if (active_index >= layers.size())
             {
-                std::cout << "Index not found exception: could not resolve active_index layer at 'Layer get_active_layer()'. Continuing would result in segmentation fault. Aborting." << std::endl;
-                exit(-1);
+                return false;
+            }
+
+            return true;
+        }
+
+        Layer get_active_layer()
+        {
+            if (!is_valid())
+            {
+                std::cout << "\n\nIndex not found exception:\n\tCould not resolve active_index layer at 'Layer get_active_layer()'.\n\tContinuing would result in segmentation fault. Aborting.\n" << std::endl;
+                exit(1);
             }
             
             return layers[active_index];
@@ -196,6 +205,30 @@ class Layer_Manager
         void set_active_layer(int active_layer)
         {
             active_index = active_layer;
+        }
+
+        void switch_order(int l_origin, int l_target)
+        {
+            if (l_target >= layers.size() || l_target < 0)
+            {
+                return;
+            }
+
+            else
+            {
+                Layer tmp = layers[l_origin];
+                layers[l_origin] = layers[l_target];
+                layers[l_target] = tmp;
+            }
+        }
+
+        void safe_delete_layer(int layer_id)
+        {
+            layers.erase(layers.begin() + layer_id);
+            if (layer_id == active_index)
+            {
+                active_index = layers.size()-1;
+            }
         }
 };
 

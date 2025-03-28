@@ -193,7 +193,7 @@ class Editor
         {
             const char *action = get_selected_action();
 
-            if (action != NULL && is_inside_area(x, y))
+            if (action != NULL && is_inside_area(x, y) && layer_manager->is_valid())
             {
                 process_update(action, button, x-layer_manager->anchorX, y-layer_manager->anchorY, held);
                 mouse_last_x = x-layer_manager->anchorX;
