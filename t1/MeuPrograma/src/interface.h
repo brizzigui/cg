@@ -5,6 +5,7 @@
 #include <vector>
 #include "gl_canvas2d.h"
 #include "canvas_pro.h"
+#include "layer_manager.h"
 
 #define ICON_SIZE 40
 #define MENU_ANCHOR 10
@@ -16,10 +17,9 @@ struct action
     // de clique dos botões de ação
 
     // innate properties
-    void (*left_click_behavior)(void);
-    void (*right_click_behavior)(void);
     CVpro::image *icon;
     const char *label;
+    bool selectable;
 
     // state properties
     bool selected = false;
@@ -31,6 +31,7 @@ class Interface
 {
     private:
         int screenWidth, screenHeight;
+        Layer_Manager *layer_manager;
 
         void display_background()
         {
@@ -41,21 +42,45 @@ class Interface
     public:
         std::vector<Action> actions;
 
-        Interface(int screenWidth, int screenHeight)
+        Interface(int screenWidth, int screenHeight, Layer_Manager *layer_manager)
         {
             this->screenWidth = screenWidth;
             this->screenHeight = screenHeight;
+            this->layer_manager = layer_manager;
         }
 
-        void register_action(const char *label, CVpro::image *icon, void (*left_click_behavior)(void), void (*right_click_behavior)(void))
+        void register_action(const char *label, CVpro::image *icon, bool selectable)
         {
             Action a;
             a.label = label;
             a.icon = icon;
-            a.left_click_behavior = left_click_behavior;
-            a.right_click_behavior = right_click_behavior;
+            a.selectable = selectable;
 
             actions.push_back(a);
+        }
+
+        void create_default_actions()
+        {
+            CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
+            register_action("Pencil", pencil_icon, true);
+
+            CVpro::image *brush_icon = CVpro::load_bitmap("./MeuPrograma/images/brush.bmp");
+            register_action("Brush", brush_icon, true);
+
+            CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
+            register_action("Marker", marker_icon, true);
+
+            CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
+            register_action("Eraser", eraser_icon, true);
+
+            CVpro::image *effects_icon = CVpro::load_bitmap("./MeuPrograma/images/effects.bmp");
+            register_action("Effects", effects_icon, false);
+
+            CVpro::image *horizontal_flip = CVpro::load_bitmap("./MeuPrograma/images/horizontal_flip.bmp");
+            register_action("Horizontal Flip", horizontal_flip, false);
+
+            CVpro::image *vertical_flip = CVpro::load_bitmap("./MeuPrograma/images/vertical_flip.bmp");
+            register_action("Vertical Flip", vertical_flip, false);
         }
 
         bool validate_click(int i, int x, int y)
@@ -66,14 +91,43 @@ class Interface
                    (y <= MENU_ANCHOR + MENU_SPACING * i + ICON_SIZE);
         }
 
-        void change_selected_action(int i)
+
+        void instant_execute(Action a)
+        {
+            if (strcmp(a.label, "Effects") == 0)
+            {
+                std::cout << "Called Effects execute" << std::endl;
+            }
+            else if (strcmp(a.label, "Horizontal Flip") == 0)
+            {
+                layer_manager->flip_active_horizontal();
+            }
+            else if (strcmp(a.label, "Vertical Flip") == 0)
+            {
+                layer_manager->flip_active_vertical();
+            }
+        }
+
+        void change_selected_action(int index)
         {
             for (int i = 0; i < actions.size(); i++)
             {
                 actions[i].selected = false;
             }
-            
-            actions[i].selected = true;
+
+            if (actions[index].selectable)
+            {
+                actions[index].selected = true;
+            }
+            else
+            {
+                instant_execute(actions[index]);
+            }
+        }
+
+        void process_special_clicks(int i)
+        {
+            std::cout << "Recieved special click." << std::endl;
         }
 
         void update_state(int button, int x, int y)
@@ -88,20 +142,13 @@ class Interface
 
                         if (button == 0)    // left click
                         {
-                            printf("Called a left click event on action labled '%s'", actions[i].label);
-                            if (actions[i].left_click_behavior != NULL)
-                            {
-                                (actions[i].left_click_behavior)();
-                            }
+                            printf("Called a left click event on action labled '%s'\n", actions[i].label);
                         }
 
                         else    // right click
                         {
-                            printf("Called a right click event on action labled '%s'", actions[i].label);
-                            if (actions[i].right_click_behavior != NULL)
-                            {
-                                (actions[i].right_click_behavior)();
-                            }
+                            printf("Called a right click event on action labled '%s'\n", actions[i].label);
+                            process_special_clicks(i);
                         }   
                     }
                 }

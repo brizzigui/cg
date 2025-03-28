@@ -230,6 +230,24 @@ class Layer_Manager
                 active_index = layers.size()-1;
             }
         }
+
+        void flip_active_horizontal()
+        {
+            if (is_valid())
+            {
+                Layer l = get_active_layer();
+                l.image->flip_bitmap('h');
+            }
+        }
+
+        void flip_active_vertical()
+        {
+            if (is_valid())
+            {
+                Layer l = get_active_layer();
+                l.image->flip_bitmap('v');
+            }
+        }
 };
 
 

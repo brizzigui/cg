@@ -46,7 +46,7 @@ void render()
 
    auto stop = std::chrono::high_resolution_clock::now();
    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-   // std::cout << 1000.0 / duration.count() << std::endl;
+   //std::cout << 1000.0 / duration.count() << std::endl;
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -83,20 +83,6 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    }
 }
 
-void create_actions()
-{
-   CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
-   interface->register_action("Pencil", pencil_icon, NULL, NULL);
-
-   CVpro::image *brush_icon = CVpro::load_bitmap("./MeuPrograma/images/brush.bmp");
-   interface->register_action("Brush", brush_icon, NULL, NULL);
-
-   CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
-   interface->register_action("Marker", marker_icon, NULL, NULL);
-
-   CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
-   interface->register_action("Eraser", eraser_icon, NULL, NULL);
-}
 
 int main(void)
 {
@@ -104,11 +90,9 @@ int main(void)
    layer_manager->add_bmp_layer("./MeuPrograma/images/seville.bmp");
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
-   layer_manager->add_blank_layer();
-
    
-   interface = new Interface(screenWidth, screenHeight);
-   create_actions();
+   interface = new Interface(screenWidth, screenHeight, layer_manager);
+   interface->create_default_actions();
 
    editor = new Editor(layer_manager, interface);
 

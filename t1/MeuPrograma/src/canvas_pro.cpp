@@ -89,6 +89,54 @@ void CVpro::image::destroy_bitmap()
     free(matrix);
 }
 
+
+void flip_vertical(CVpro::image *img)
+{
+    subpixel *tmp = (subpixel *)malloc(img->width * 4);
+    for (int line = 0; line < img->height/2; line++)
+    {
+        memcpy(tmp, img->matrix + img->width * line * 4, img->width * 4);
+        memcpy(img->matrix + img->width * line * 4, img->matrix + img->width * (img->height-line-1) * 4, img->width * 4);
+        memcpy(img->matrix + img->width * (img->height-line-1) * 4, tmp, img->width * 4);
+    }
+    free(tmp);
+}
+
+void flip_horizontal(CVpro::image *img)
+{
+    subpixel tmp[4];
+    for (int line = 0; line < img->height; line++)
+    {
+        for (int pixel = 0; pixel < img->width/2; pixel++)
+        {
+            memcpy(tmp, img->matrix + line * img->width * 4 + pixel * 4, 4);
+            memcpy(img->matrix + line * img->width * 4 + pixel * 4, img->matrix + line * img->width * 4 + (img->width - pixel) * 4, 4);
+            memcpy(img->matrix + line * img->width * 4 + (img->width - pixel) * 4, tmp, 4);
+        }
+    }
+}
+
+/*
+Inverte a imagem.
+Recebe um CVpro::image e espelha conforme o eixo pedido.
+Eixos aceitos:
+    - 'V' = vertical
+    - 'H' = horizontal (default)
+*/
+void CVpro::image::flip_bitmap(char axis)
+{
+    if (axis == 'V' || axis == 'v')
+    {
+        flip_vertical(this);
+    }
+
+    else
+    {
+        flip_horizontal(this);
+    }
+    
+}
+
 /*
 Recebe coordenadas x e y e texto para formatação no padrão C.
 Não ultrapassar buffer de 256 chars.

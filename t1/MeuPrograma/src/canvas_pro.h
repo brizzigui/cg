@@ -32,6 +32,7 @@ namespace CVpro {
             void display_bitmap(float x, float y, float scale);
             void display_bitmap_anchored(float x, float y, float scale, char anchorX, char anchorY);
             void destroy_bitmap();
+            void flip_bitmap(char axis);
     };
 
     image *load_bitmap(const char *path);
