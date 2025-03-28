@@ -13,6 +13,7 @@ struct Layer
     int anchorX;
     int anchorY;
     const char *name;
+    bool visible;
 };
 
 class Layer_Manager
@@ -57,6 +58,7 @@ class Layer_Manager
             counter++;
             l.anchorX = 0;
             l.anchorY = 0;
+            l.visible = true;
 
             layers.push_back(l);
             active_index = layers.size()-1;
@@ -71,6 +73,7 @@ class Layer_Manager
             counter++;
             l.anchorX = 0;
             l.anchorY = 0; 
+            l.visible = true;
 
             layers.push_back(l);
             active_index = layers.size()-1;
@@ -160,6 +163,7 @@ class Layer_Manager
             while(true)
             {
                 flatten();
+                Sleep(0);
             }
         }
 
@@ -187,6 +191,11 @@ class Layer_Manager
             }
             
             return layers[active_index];
+        }
+
+        void set_active_layer(int active_layer)
+        {
+            active_index = active_layer;
         }
 };
 

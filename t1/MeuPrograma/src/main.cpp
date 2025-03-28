@@ -46,7 +46,7 @@ void render()
 
    auto stop = std::chrono::high_resolution_clock::now();
    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-   std::cout << 1000.0 / duration.count() << std::endl;
+   // std::cout << 1000.0 / duration.count() << std::endl;
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -101,11 +101,11 @@ void create_actions()
 int main(void)
 {
    layer_manager = new Layer_Manager();
+   layer_manager->add_bmp_layer("./MeuPrograma/images/seville.bmp");
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
    layer_manager->add_blank_layer();
    
-
    interface = new Interface(screenWidth, screenHeight);
    create_actions();
 

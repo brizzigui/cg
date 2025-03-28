@@ -8,6 +8,11 @@
 #define WIDGET_LAYER_SELECTOR 0
 #define WIDGET_COLOR_PICKER 1
 
+#define WIDGET_LAYER_NEW_BUTTON 0
+#define WIDGET_LAYER_UP_BUTTON 1
+#define WIDGET_LAYER_DOWN_BUTTON 2
+
+
 class Widget
 {
     private:
@@ -26,7 +31,7 @@ class Widget
 
         int usable_anchorY = anchorY + button_height + button_y_offset;
 
-        int first_shown = 0;
+        int first_shown;
 
         Layer_Manager *layer_manager;
         Interface *interface;
@@ -38,6 +43,8 @@ class Widget
         CVpro::image *down_arrow_icon;
         CVpro::image *new_layer_icon;
         CVpro::image *trash_icon;
+        CVpro::image *open_eye_icon;
+        CVpro::image *closed_eye_icon;
 
     public:
         Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
@@ -53,9 +60,14 @@ class Widget
             this->down_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/down_arrow.bmp");
             this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
             this->trash_icon = CVpro::load_bitmap("./MeuPrograma/images/trash.bmp");
+            this->open_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/open_eye.bmp");
+            this->closed_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/closed_eye.bmp");
+
+            first_shown = layer_manager->layers.size() - 3;
+            first_shown = (first_shown >= 0) ? first_shown : 0;
         }
 
-        int check_frame_click(int button, int x, int y)
+        int check_frame_click(int x, int y)
         {
             if (x > anchorX + button_x_offset 
                 && x < anchorX + button_x_offset + button_width 
@@ -76,46 +88,159 @@ class Widget
             return -1;
         }
 
-        void update_widget_frame(int button, int x, int y)
+        void update_widget_frame(int x, int y)
         {
-            if (button == 0)
+            int choice = check_frame_click(x, y);
+            if (choice == -1)
             {
-                int choice = check_frame_click(button, x, y);
-                if (choice == -1)
+                return;
+            }
+
+            else
+            {
+                current = choice;
+            }
+        }
+
+        int get_clicked_layer(int x, int y)
+        {
+            int total_layers = layer_manager->layers.size();
+            int max_iterations = first_shown + std::min(total_layers, 3);
+            for (int i = first_shown; i < max_iterations + first_shown; i++)
+            {
+                if(x > anchorX+10 &&
+                    y > usable_anchorY+60+85*(max_iterations-i-1) &&
+                    x < anchorX+width-10 &&
+                    y < usable_anchorY+60+85*(max_iterations-i-1)+75)
                 {
-                    return;
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        int check_other_layer_buttons(int x, int y)
+        {
+            if (x > anchorX + width/2.0 - new_layer_icon->width/2.0 &&
+                y > usable_anchorY+400 &&
+                x < anchorX + width/2.0 + 120 - new_layer_icon->width/2.0 &&
+                y < usable_anchorY+400+50)
+            {
+                return WIDGET_LAYER_NEW_BUTTON;
+            }
+
+            if (x > anchorX+width/2.0 - up_arrow_icon->width/2.0 &&
+                y > usable_anchorY+25 &&
+                x < anchorX+width/2.0+50 - up_arrow_icon->width/2.0 &&
+                y < usable_anchorY+25+25)
+            {
+                return WIDGET_LAYER_UP_BUTTON;
+            }
+        
+            if (x > anchorX+width/2.0 - up_arrow_icon->width/2.0&&
+                y > usable_anchorY+315 &&
+                x < anchorX+width/2.0+50 - up_arrow_icon->width/2.0 &&
+                y < usable_anchorY+315+25)
+            {
+                return WIDGET_LAYER_DOWN_BUTTON;
+            }
+            
+            return -1;
+        }
+
+        bool click_delete(int layer_id, int x, int y)
+        {
+            int total_layers = layer_manager->layers.size();
+            int max_iterations = first_shown + std::min(total_layers, 3);
+
+            return x > anchorX + width-20 - trash_icon->width &&
+                    y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 - trash_icon->height/2.0 &&
+                    x < anchorX + width-20 &&
+                    y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 + trash_icon->height/2.0;
+        }
+
+        bool click_toggle_eye(int layer_id, int x, int y)
+        {
+            int total_layers = layer_manager->layers.size();
+            int max_iterations = first_shown + std::min(total_layers, 3);
+
+            return x > anchorX + width-50 - open_eye_icon->width &&
+                    y > usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 - trash_icon->height/2.0 &&
+                    x < anchorX + width-50 &&
+                    y < usable_anchorY+60+85*(max_iterations-layer_id-1)+75/2.0 + trash_icon->height/2.0;
+        }
+
+        void update_layer_selector(int x, int y)
+        {
+            int layer_id = get_clicked_layer(x, y);
+            
+            if (layer_id == -1)
+            {
+                int clicked_button = check_other_layer_buttons(x, y);
+
+                if (clicked_button == WIDGET_LAYER_NEW_BUTTON)
+                {
+                    std::cout << "new layer called" << std::endl;
+                }
+                else if (clicked_button == WIDGET_LAYER_UP_BUTTON)
+                {
+                    first_shown = (first_shown + 3 + 1 > layer_manager->layers.size()) ? first_shown : first_shown + 1;
+                }
+                else if (clicked_button == WIDGET_LAYER_DOWN_BUTTON)
+                {
+                    first_shown = (first_shown - 1 < 0) ? first_shown : first_shown - 1;
+                }
+            }
+
+            else
+            {
+                if (click_delete(layer_id, x, y))
+                {
+                    std::cout << "delete layer called for #" << layer_id << std::endl;
+                }
+
+                else if (click_toggle_eye(layer_id, x, y))
+                {
+                    std::cout << "toggle eye called for #" << layer_id << std::endl;
                 }
 
                 else
                 {
-                    current = choice;
+                    layer_manager->set_active_layer(layer_id);
                 }
             }
         }
 
-        void update_layer_selector(int button, int x, int y)
+        void update_color_picker(int x, int y)
         {
-          
+
         }
 
-        void update_color_picker(int button, int x, int y)
+        bool inside_widget(int x, int y)
         {
-
+            return x > anchorX &&
+                    y > anchorY &&
+                    x < anchorX + width &&
+                    y < anchorY + height;
         }
 
         void update_state(int button, int x, int y)
         {
-            update_widget_frame(button, x, y);
-
-            if (current == WIDGET_LAYER_SELECTOR)
+            if (button == 0 && inside_widget(x, y)) // checks for left click
             {
-                update_layer_selector(button, x, y);
-            }
+                update_widget_frame(x, y);
 
-            if (current == WIDGET_COLOR_PICKER)
-            {
-                update_color_picker(button, x, y);
-            }
+                if (current == WIDGET_LAYER_SELECTOR)
+                {
+                    update_layer_selector(x, y);
+                }
+
+                if (current == WIDGET_COLOR_PICKER)
+                {
+                    update_color_picker(x, y);
+                }
+            }            
         }
 
         void display_widget_frame()
@@ -139,22 +264,41 @@ class Widget
             int total_layers = layer_manager->layers.size();
 
             int iterations = std::min(total_layers, 3);
+            int max_iterations = iterations + first_shown;
             for (int i = first_shown; i < iterations + first_shown; i++)
             {
+                // background
                 CVpro::color(32, 32, 32);
-                CV::rectFill(anchorX+10, usable_anchorY+60+85*(iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(iterations-i-1)+75);
+                CV::rectFill(anchorX+10, usable_anchorY+60+85*(max_iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(max_iterations-i-1)+75);
 
+                // show layer info
                 CVpro::color(255, 255, 255);
-                CVpro::text(anchorX+20, usable_anchorY+60+85*(iterations-i-1)+20, "#%d: %s", i+1, layer_manager->layers[i].name);
+                CVpro::text(anchorX+20, usable_anchorY+60+85*(max_iterations-i-1)+20, "#%d: %s", i+1, layer_manager->layers[i].name);
 
+                // show image scaled to small size
+                layer_manager->layers[i].image->display_bitmap(anchorX+20, usable_anchorY+60+85*(max_iterations-i-1)+30, 0.075);
+
+                // active highlight
                 if (layer_manager->active_index == i)
                 {
                     CVpro::color(255, 255, 255);
-                    CV::rect(anchorX+10, usable_anchorY+60+85*(iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(iterations-i-1)+75);
+                    CV::rect(anchorX+10, usable_anchorY+60+85*(max_iterations-i-1), anchorX+width-10, usable_anchorY+60+85*(max_iterations-i-1)+75);
                 }
 
-                trash_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                // delete icon
+                trash_icon->display_bitmap_anchored(anchorX + width-20, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
 
+                // visibility
+                if (layer_manager->layers[i].visible)
+                {
+                    open_eye_icon->display_bitmap_anchored(anchorX + width-50, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                }
+
+                else
+                {
+                    closed_eye_icon->display_bitmap_anchored(anchorX + width-50, usable_anchorY+60+85*(max_iterations-i-1)+75/2.0, 1.0, 'r', 'c');
+                }
+                
                 actual_shown++;
             }
             
