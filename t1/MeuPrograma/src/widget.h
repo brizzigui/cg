@@ -4,6 +4,7 @@
 #include "layer_manager.h"
 #include "interface.h"
 #include "editor.h"
+#include "popup.h"
 
 #define WIDGET_LAYER_SELECTOR 0
 #define WIDGET_COLOR_PICKER 1
@@ -36,6 +37,7 @@ class Widget
         Layer_Manager *layer_manager;
         Interface *interface;
         Editor *editor;
+        Popup *popup;
 
         CVpro::image *color_picker_icon;
         CVpro::image *layer_selector_icon;
@@ -50,12 +52,13 @@ class Widget
 
 
     public:
-        Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
+        Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor, Popup *popup)
         {
             this->current = WIDGET_LAYER_SELECTOR;
             this->layer_manager = layer_manager;
             this->interface = interface;
             this->editor = editor;
+            this->popup = popup;
 
             this->color_picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker_icon.bmp");
             this->layer_selector_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_selector.bmp");
@@ -225,7 +228,7 @@ class Widget
 
                 if (clicked_button == WIDGET_LAYER_NEW_BUTTON)
                 {
-                    std::cout << "new layer called" << std::endl;
+                    popup->open(POPUP_ROUTINE_NEW_LAYER);
                 }
                 else if (clicked_button == WIDGET_LAYER_UP_BUTTON)
                 {

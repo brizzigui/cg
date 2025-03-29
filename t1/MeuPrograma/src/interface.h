@@ -108,6 +108,14 @@ class Interface
             }
         }
 
+        void deselect_all_actions()
+        {
+            for (int i = 0; i < actions.size(); i++)
+            {
+                actions[i].selected = false;
+            }
+        }
+
         void change_selected_action(int index)
         {
             for (int i = 0; i < actions.size(); i++)

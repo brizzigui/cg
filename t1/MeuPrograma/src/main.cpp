@@ -20,15 +20,16 @@
 #include "layer_manager.h"
 #include "editor.h"
 #include "widget.h"
+#include "popup.h"
 
 //largura e altura inicial da tela . Alteram com o redimensionamento de tela.
 int screenWidth = 1280, screenHeight = 720;
-int mouseX, mouseY; //variaveis globais do mouse para poder exibir dentro da render().
 
 Interface *interface = NULL;
 Layer_Manager *layer_manager = NULL;
 Editor *editor = NULL;
 Widget *widget = NULL;
+Popup *popup = NULL;
 
 bool mouse_held = false;
 
@@ -43,6 +44,7 @@ void render()
    layer_manager->display();
    interface->display();
    widget->display();
+   popup->display();
 
    auto stop = std::chrono::high_resolution_clock::now();
    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
@@ -52,28 +54,39 @@ void render()
 //funcao chamada toda vez que uma tecla for pressionada.
 void keyboard(int key)
 {
-   printf("\nTecla: %d" , key);
+   // printf("\nTecla: %d" , key);
+   popup->listen(key);
 }
 
 //funcao chamada toda vez que uma tecla for liberada
 void keyboardUp(int key)
 {
-   printf("\nLiberou: %d" , key);
+   // printf("\nLiberou: %d" , key);
 }
 
 //funcao para tratamento de mouse: cliques, movimentos e arrastos
 void mouse(int button, int state, int wheel, int direction, int x, int y)
 {
-   mouseX = x; //guarda as coordenadas do mouse para exibir dentro da render()
-   mouseY = y;
-
    // printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
-   editor->update_state(button, x, y, mouse_held);
+   if (popup->is_open)
+   {
+      popup->update(button, x, y, mouse_held);
+   }
+
+   else
+   {
+      if (state == 0)
+      {
+         interface->update_state(button, x, y);
+         widget->update_state(button, x, y);
+      }
+   
+      editor->update_state(button, x, y, mouse_held);
+   }
+   
 
    if (state == 0) // state == 0 é um clique qualquer em um dos botões
    {
-      interface->update_state(button, x, y);
-      widget->update_state(button, x, y);
       mouse_held = true;
    }
 
@@ -86,20 +99,19 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 
 int main(void)
 {
+   popup = new Popup(screenWidth, screenHeight);
+
    layer_manager = new Layer_Manager();
-   layer_manager->add_bmp_layer("./MeuPrograma/images/seville.bmp");
-   layer_manager->add_blank_layer();
-   layer_manager->add_blank_layer();
    
    interface = new Interface(screenWidth, screenHeight, layer_manager);
    interface->create_default_actions();
 
    editor = new Editor(layer_manager, interface);
+   widget = new Widget(layer_manager, interface, editor, popup);
+   popup->give_root_access(layer_manager, interface, editor);
 
    // async for flatten() function (layer blending, check layer_manager.h for more info)
    std::thread(&Layer_Manager::flatten_worker, layer_manager).detach();
-
-   widget = new Widget(layer_manager, interface, editor);
 
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "BIMP - Brizzi Image Manipulation Program");
