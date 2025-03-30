@@ -6,6 +6,8 @@
 
 #include <chrono>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 struct Layer
 {
@@ -19,6 +21,7 @@ struct Layer
 class Layer_Manager
 {
     public:
+        std::mutex thread_mutex;
         std::vector<Layer> layers;
         CVpro::image *result;
 
@@ -34,7 +37,7 @@ class Layer_Manager
         int anchorX = 130, anchorY = 100;
 
         int active_index = 0;
-
+        
         CVpro::image *generate_blank_bmp()
         {
             int bytes = 4; // (rgb + alpha = 4)
@@ -51,6 +54,8 @@ class Layer_Manager
 
         void add_blank_layer()
         {
+            thread_mutex.lock();
+
             Layer l;
 
             l.image = generate_blank_bmp();
@@ -62,10 +67,14 @@ class Layer_Manager
 
             layers.push_back(l);
             active_index = layers.size()-1;
+
+            thread_mutex.unlock();
         }
 
         void add_bmp_layer(const char *path)
         {
+            thread_mutex.lock();
+
             Layer l;
 
             l.image = CVpro::load_bitmap(path);
@@ -77,6 +86,8 @@ class Layer_Manager
 
             layers.push_back(l);
             active_index = layers.size()-1;
+
+            thread_mutex.unlock();
         }
 
         void display_background()
@@ -119,6 +130,9 @@ class Layer_Manager
         {
             // modifies a CVpro::image (var result) as a result of color blending using alpha channel
             // allows accurate display and accurate export
+            thread_mutex.lock();
+            auto layers_cpy = layers;
+            thread_mutex.unlock();
 
             for (int i = 0; i < board_height; i++)
             {
@@ -126,17 +140,17 @@ class Layer_Manager
                 {
                     float r_out = 0.0, g_out = 0.0, b_out = 0.0, a_out = 0.0;
 
-                    for (int l = 0; l < layers.size(); l++)
+                    for (int l = 0; l < layers_cpy.size(); l++)
                     {
-                        if (layers[l].visible && is_valid_pixel(layers[l], i, j))
+                        if (layers_cpy[l].visible && is_valid_pixel(layers_cpy[l], i, j))
                         {
                             float r, g, b, a;
-                            int base_index = (i-layers[l].anchorY) * layers[l].image->width * 4 + (j-layers[l].anchorX) * 4;
+                            int base_index = (i-layers_cpy[l].anchorY) * layers_cpy[l].image->width * 4 + (j-layers_cpy[l].anchorX) * 4;
 
-                            r = layers[l].image->matrix[base_index + 2]/255.0;
-                            g = layers[l].image->matrix[base_index + 1]/255.0;
-                            b = layers[l].image->matrix[base_index]/255.0;
-                            a = layers[l].image->matrix[base_index + 3]/255.0;
+                            r = layers_cpy[l].image->matrix[base_index + 2]/255.0;
+                            g = layers_cpy[l].image->matrix[base_index + 1]/255.0;
+                            b = layers_cpy[l].image->matrix[base_index]/255.0;
+                            a = layers_cpy[l].image->matrix[base_index + 3]/255.0;
 
                             r_out = r * a + r_out * (1 - a);
                             g_out = g * a + g_out * (1 - a);
@@ -162,7 +176,7 @@ class Layer_Manager
 
             while(true)
             {
-                flatten();
+                flatten(); 
                 Sleep(0);
             }
         }
@@ -224,11 +238,16 @@ class Layer_Manager
 
         void safe_delete_layer(int layer_id)
         {
+            // thread sensitive operation locks all other threads
+            thread_mutex.lock();
+
             layers.erase(layers.begin() + layer_id);
             if (layer_id == active_index)
             {
                 active_index = layers.size()-1;
             }
+
+            thread_mutex.unlock();
         }
 
         void flip_active_horizontal()

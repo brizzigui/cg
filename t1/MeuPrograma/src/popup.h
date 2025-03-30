@@ -45,6 +45,7 @@ class Popup
             this->screen_height = screen_height;
             anchorX = screen_width/2.0-width/2.0;
             anchorY = screen_height/2.0-height/2.0;
+            strcpy(keyboard_buffer, "");
         }
 
         void give_root_access(Layer_Manager *layer_manager, Interface *interface, Editor *editor)
@@ -197,13 +198,16 @@ class Popup
             {
                 char tmp[256] = "./MeuPrograma/images/";
                 strcat(tmp, keyboard_buffer);
-                if (fopen(tmp, "r") == NULL)
+
+                FILE *ptr = fopen(tmp, "r");
+                if (ptr == NULL)
                 {
                     invalid_file_add_layer_routine = true;
                 }
                 
                 else
                 {
+                    fclose(ptr);
                     layer_manager->add_bmp_layer(tmp);
                     close();
                 }

@@ -101,6 +101,7 @@ int main(void)
    popup = new Popup(screenWidth, screenHeight);
 
    layer_manager = new Layer_Manager();
+   layer_manager->add_blank_layer();
    
    interface = new Interface(screenWidth, screenHeight, layer_manager);
    interface->create_default_actions();
