@@ -67,7 +67,17 @@ void keyboardUp(int key)
 //funcao para tratamento de mouse: cliques, movimentos e arrastos
 void mouse(int button, int state, int wheel, int direction, int x, int y)
 {
-   // printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
+   if (state == 0) // state == 0 é um clique qualquer em um dos botões
+   {
+      mouse_held = true;
+   }
+
+   else if (state == 1)
+   {
+      mouse_held = false;
+   }
+
+   //printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
    if (popup->is_open)
    {
       popup->update(button, x, y, mouse_held);
@@ -78,21 +88,10 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
       if (state == 0)
       {
          interface->update_state(button, x, y);
-         widget->update_state(button, x, y);
       }
    
+      widget->update_state(state, button, x, y, mouse_held);
       editor->update_state(button, x, y, mouse_held);
-   }
-   
-
-   if (state == 0) // state == 0 é um clique qualquer em um dos botões
-   {
-      mouse_held = true;
-   }
-
-   else if (state == 1)
-   {
-      mouse_held = false;
    }
 }
 

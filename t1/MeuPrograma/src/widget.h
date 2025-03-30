@@ -34,6 +34,12 @@ class Widget
 
         int first_shown;
 
+        int sv_map_width = width - 50;
+        int sv_map_height = 150;
+        int sv_map_margin = 25;
+
+        bool hue_slider_simple_held = false;
+
         Layer_Manager *layer_manager;
         Interface *interface;
         Editor *editor;
@@ -49,6 +55,7 @@ class Widget
         CVpro::image *closed_eye_icon;
         CVpro::image *z_index_up_icon;
         CVpro::image *z_index_down_icon;
+        CVpro::image *sv_map;
 
 
     public:
@@ -70,6 +77,8 @@ class Widget
             this->closed_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/closed_eye.bmp");
             this->z_index_up_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_up.bmp");
             this->z_index_down_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_down.bmp");
+            this->sv_map = generate_sv_map_base();
+            regenerate_sv_map();
 
             first_shown = layer_manager->layers.size() - 3;
             first_shown = (first_shown >= 0) ? first_shown : 0;
@@ -270,9 +279,72 @@ class Widget
             }
         }
 
-        void update_color_picker(int x, int y)
+        bool click_sv_map(int x, int y, bool held)
         {
+            return held &&
+                    x > anchorX + sv_map_margin &&
+                    y > usable_anchorY + sv_map_margin &&
+                    x < anchorX + sv_map_margin + sv_map_width &&
+                    y < usable_anchorY + sv_map_margin + sv_map_height;
+        }
 
+        void translate_sv_coords(int x, int y)
+        {
+            int i = y - usable_anchorY - sv_map_margin;
+            int j = x - anchorX - sv_map_margin;
+            editor->active_color.set_from_hsv(editor->active_color.h, (double)j/sv_map_width, (double)(sv_map_height-i)/sv_map_height, editor->active_color.a);
+        }
+
+        bool click_hue_slider(int button, int x, int y, bool held)
+        {
+            bool tap =
+                    button == 0 &&
+                    x > anchorX + sv_map_margin &&
+                    y > usable_anchorY + sv_map_margin*2 + sv_map_height &&
+                    x < anchorX + sv_map_margin + sv_map_width &&
+                    y < usable_anchorY + sv_map_margin*2 + sv_map_height + 10;
+
+            hue_slider_simple_held = hue_slider_simple_held || tap;
+
+            return tap || hue_slider_simple_held 
+                        && x > anchorX + sv_map_margin 
+                        && x < anchorX + sv_map_margin + sv_map_width;
+        }
+
+        void translate_hue_coords(int x, int y)
+        {
+            int hue = ((double)(x-anchorX-sv_map_margin)/sv_map_width)*360.0;
+            editor->active_color.set_from_hsv(hue, editor->active_color.s, editor->active_color.v, editor->active_color.a);
+            regenerate_sv_map();
+        }
+        
+
+        bool click_alpha_slider(int x, int y, bool held)
+        {
+            return false;
+        }
+
+        void update_color_picker(int button, int x, int y, bool held)
+        {
+            if (click_hue_slider(button, x, y, held))
+            {
+                translate_hue_coords(x, y);
+            }
+
+            else if (click_alpha_slider(x, y, held))
+            {
+                /* code */
+            }
+
+            else if (click_sv_map(x, y, held))
+            {
+                translate_sv_coords(x, y);
+            }
+
+            else
+            {
+                // there may be more buttons for rgb etc
+            }
         }
 
         bool inside_widget(int x, int y)
@@ -283,20 +355,29 @@ class Widget
                     y < anchorY + height;
         }
 
-        void update_state(int button, int x, int y)
+        void update_slider_bools(bool held)
         {
-            if (button == 0 && inside_widget(x, y)) // checks for left click
+            hue_slider_simple_held = hue_slider_simple_held && held;
+        }
+
+        void update_state(int state, int button, int x, int y, bool held)
+        {
+            update_slider_bools(held);
+            if (inside_widget(x, y)) // checks for left click
             {
-                update_widget_frame(x, y);
-
-                if (current == WIDGET_LAYER_SELECTOR)
+                if (state == 0 && button == 0)
                 {
-                    update_layer_selector(x, y);
-                }
+                    update_widget_frame(x, y);
 
+                    if (current == WIDGET_LAYER_SELECTOR)
+                    {
+                        update_layer_selector(x, y);
+                    }
+                }
+                
                 if (current == WIDGET_COLOR_PICKER)
                 {
-                    update_color_picker(x, y);
+                    update_color_picker(button, x, y, held);
                 }
             }            
         }
@@ -392,10 +473,80 @@ class Widget
             show_new_layer_icon();
         }
 
+        void regenerate_sv_map()
+        {
+            Color tmp;
+
+            for (int i = 0; i < sv_map_height; i++)
+            {
+                for (int j = 0; j < sv_map_width; j++)
+                {
+                    tmp.set_from_hsv(editor->active_color.h, (double)j/sv_map_width, (double)(sv_map_height-i)/sv_map_height, editor->active_color.a);
+                    int base_index = i * sv_map_width * 4 + j * 4;
+                    sv_map->matrix[base_index + 2] = tmp.r;
+                    sv_map->matrix[base_index + 1] = tmp.g; 
+                    sv_map->matrix[base_index    ] = tmp.b; 
+                    sv_map->matrix[base_index + 3] = tmp.a; 
+                }
+            }
+        }
+
+        CVpro::image *generate_sv_map_base()
+        {
+            int bytes = 4; // (rgb + alpha = 4)
+            subpixel *matrix = (subpixel *)calloc(1, sizeof(subpixel) * sv_map_width * sv_map_height * bytes);
+            CVpro::image *img = new CVpro::image(sv_map_width, sv_map_height, matrix);
+
+            return img;
+        }
+
+        void display_sv_map()
+        {
+           sv_map->display_bitmap(anchorX + sv_map_margin, usable_anchorY + sv_map_margin, 1.0);   
+
+           CVpro::color(editor->active_color.r, editor->active_color.g, editor->active_color.b, editor->active_color.a);
+           CV::circleFill(anchorX + sv_map_margin + editor->active_color.s*sv_map_width, usable_anchorY + sv_map_margin + (1-editor->active_color.v)*sv_map_height, 10, 20);
+
+           CVpro::color(255, 255, 255);
+           CV::circle(anchorX + sv_map_margin + editor->active_color.s*sv_map_width, usable_anchorY + sv_map_margin + (1-editor->active_color.v)*sv_map_height, 10, 20);         
+        }
+
+        void display_hue_slider()
+        {
+            Color tmp;
+            for (int j = 0; j < sv_map_width; j++)
+            {
+                tmp.set_from_hsv(((double)j/sv_map_width)*360, 1, 1, 255);
+                CVpro::color(tmp.r, tmp.g, tmp.b, tmp.a);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    CV::point(anchorX + sv_map_margin + j, usable_anchorY + sv_map_margin*2 + sv_map_height + i);
+                }   
+            }
+            
+            int posX = (editor->active_color.h/360.0)*sv_map_width;
+
+            tmp.set_from_hsv(editor->active_color.h, 1, 1, 255);
+            CVpro::color(tmp.r, tmp.g, tmp.b, tmp.a);
+            CV::circleFill(anchorX + sv_map_margin + posX, usable_anchorY + sv_map_margin*2 + sv_map_height + 5, 10, 20);
+
+            CVpro::color(255, 255, 255);
+            CV::circle(anchorX + sv_map_margin + posX, usable_anchorY + sv_map_margin*2 + sv_map_height + 5, 10, 20);
+        }
+
+        void display_alpha_slider()
+        {
+            // to do. will require a general purpose alpha blend...
+            // still need to optimize flatten(). maybe do both together
+        }
+
         void display_color_picker()
         {
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX+width/2.0, anchorY+height/2.0, 'c', 15, "I'm a color picker.\nMaybe implement me later.");
+            display_sv_map();
+            display_hue_slider();
+            display_alpha_slider();
         }
 
         void display()

@@ -3,6 +3,7 @@
 
 #include "layer_manager.h"
 #include "interface.h"
+#include "color.h"
 
 class Editor
 {
@@ -53,10 +54,10 @@ class Editor
                         if (is_valid_pixel(l, actual_y, actual_x))
                         {
                             int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
-                            l.image->matrix[base_index + 2] = (unsigned char)255;
-                            l.image->matrix[base_index + 1] = (unsigned char)0;
-                            l.image->matrix[base_index] = (unsigned char)0;
-                            l.image->matrix[base_index + 3] = (unsigned char)255;
+                            l.image->matrix[base_index + 2] = (unsigned char)active_color.r;
+                            l.image->matrix[base_index + 1] = (unsigned char)active_color.g;
+                            l.image->matrix[base_index] = (unsigned char)active_color.b;
+                            l.image->matrix[base_index + 3] = (unsigned char)active_color.a;
                         }
                     }
                 }
@@ -117,12 +118,12 @@ class Editor
                 int diff_x = x - mouse_last_x;
                 int diff_y = y - mouse_last_y;
 
-                int samples = std::max(std::abs(diff_x), std::abs(diff_y));
+                int samples = std::max(std::abs(diff_x), std::abs(diff_y)) + 1;
 
                 float step_x = (float)diff_x / samples;
                 float step_y = (float)diff_y / samples;
 
-                for (int subsample = 0; subsample < samples+1; subsample++)
+                for (int subsample = 0; subsample < samples; subsample++)
                 {
                     eraser_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
                 }           
@@ -183,10 +184,13 @@ class Editor
         }
         
     public:
+        Color active_color;
+
         Editor(Layer_Manager *layer_manager, Interface *interface)
         {
             this->layer_manager = layer_manager;
             this->interface = interface;
+            this->active_color.set_from_rgb(255, 0, 0, 255);
         }        
 
         void update_state(int button, int x, int y, bool held)

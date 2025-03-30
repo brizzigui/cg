@@ -72,6 +72,7 @@ class Popup
         {
             this->routine = -1;
             is_open = false;
+            invalid_file_add_layer_routine = false;
         }
 
         void display()
@@ -121,6 +122,12 @@ class Popup
             CV::color(1, 1, 1);
             CVpro::autotext(anchorX + 3.5*width/5.0, anchorY + 200, 'c', 15, "Import from file.\nType file name:\n(root dir: ./MeuPrograma/images/)");
 
+            if (invalid_file_add_layer_routine)
+            {
+                CVpro::color(200, 20, 20);
+                CVpro::autotext(anchorX + 3.5*width/5.0, anchorY + 250, 'c', 15, "File not found, try again.");
+            }
+            
             CV::color(0, 0, 0);
             CV::rectFill(anchorX + 2.5*width/5.0, anchorY + 255, anchorX + 4.5*width/5.0, anchorY + 285);
 
