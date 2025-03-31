@@ -248,6 +248,9 @@ class Layer_Manager
             }
 
             thread_mutex.unlock();
+
+            // theres a memory leak here, but solving it directly can endanger the thread
+            // so i wont - for now.
         }
 
         void flip_active_horizontal()

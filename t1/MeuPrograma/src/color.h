@@ -15,30 +15,36 @@ class Color
 
             double delta = c_max - c_min;
 
-            if (delta == 0)
+            if (delta == 0) 
             {
-                h = 0;
-            }
-            else if (c_max == r_prime)
-            {
-                h = 60 * fmod(((g_prime - b_prime)/delta), 6);
-            }
-            else if (c_max == g_prime)
-            {
-                h = 60 * (((b_prime - r_prime)/delta) + 2);
-            }
-            else if (c_max == g_prime)
-            {
-                h = 60 * (((r_prime - g_prime)/delta) + 4);
-            }
-            
-            if (c_max == 0)
-            {
+                h = 0; 
                 s = 0;
-            }
-            else
+            } 
+            
+            else 
             {
                 s = delta / c_max;
+        
+                if (r_prime == c_max) 
+                {
+                    h = (g_prime - b_prime) / delta;
+                }
+                
+                else if (g_prime == c_max)
+                {
+                    h = 2.0f + (b_prime - r_prime) / delta;
+                } 
+                
+                else 
+                {
+                    h = 4.0f + (r_prime - g_prime) / delta;
+                }
+        
+                h *= 60.0f;
+                if (h < 0) 
+                {
+                    h += 360.0f;
+                }
             }
 
             v = c_max;   
@@ -90,8 +96,7 @@ class Color
 
     public:
         int r, g, b;
-        int h;
-        double s, v;
+        double h, s, v;
         int a;
 
         Color()
@@ -111,7 +116,7 @@ class Color
             //std::cout << "(" << h << ", " << s << ", " << v << ")" << std::endl; 
         }
 
-        void set_from_hsv(int h, double s, double v, int a)
+        void set_from_hsv(double h, double s, double v, int a)
         {
             this->h = h;
             this->s = s;
@@ -123,5 +128,30 @@ class Color
             //std::cout << "(" << h << ", " << s << ", " << v << ")" << std::endl; 
         }
 };
+
+typedef struct pixel
+{
+    int r, g, b, a;
+} pixel;
+
+pixel alpha_blend_pixel(float r0, float g0, float b0, float a0,
+                        float r1, float g1, float b1, float a1)
+{
+    r0 /= 255, g0 /= 255, b0 /= 255, a0 /= 255;
+    r1 /= 255, g1 /= 255, b1 /= 255, a1 /= 255;
+
+    float r_out = r1 * a1 + r0 * (1 - a1);
+    float g_out = g1 * a1 + g0 * (1 - a1);
+    float b_out = b1 * a1 + b0 * (1 - a1);
+    float a_out = a1 + a0 * (1 - a1);
+
+    pixel p;
+    p.r = r_out * 255;
+    p.g = g_out * 255;
+    p.b = b_out * 255;
+    p.a = a_out * 255;
+
+    return p;
+}
 
 #endif

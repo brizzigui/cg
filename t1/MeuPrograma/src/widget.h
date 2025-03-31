@@ -39,6 +39,8 @@ class Widget
         int sv_map_margin = 25;
 
         bool hue_slider_simple_held = false;
+        bool alpha_slider_simple_held = false;
+        bool sv_map_simple_held = false;
 
         Layer_Manager *layer_manager;
         Interface *interface;
@@ -56,7 +58,10 @@ class Widget
         CVpro::image *z_index_up_icon;
         CVpro::image *z_index_down_icon;
         CVpro::image *sv_map;
-
+        CVpro::image *alpha_slider_base;
+        CVpro::image *alpha_slider_result;
+        CVpro::image *plus_icon;
+        CVpro::image *minus_icon;
 
     public:
         Widget(Layer_Manager *layer_manager, Interface *interface, Editor *editor, Popup *popup)
@@ -77,8 +82,15 @@ class Widget
             this->closed_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/closed_eye.bmp");
             this->z_index_up_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_up.bmp");
             this->z_index_down_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_down.bmp");
+            this->plus_icon = CVpro::load_bitmap("./MeuPrograma/images/plus.bmp");
+            this->minus_icon = CVpro::load_bitmap("./MeuPrograma/images/minus.bmp");
+
             this->sv_map = generate_sv_map_base();
             regenerate_sv_map();
+
+            this->alpha_slider_base = generate_alpha_slider_base();
+            this->alpha_slider_result = generate_alpha_slider_result();
+            regenerate_alpha_slider();
 
             first_shown = layer_manager->layers.size() - 3;
             first_shown = (first_shown >= 0) ? first_shown : 0;
@@ -281,18 +293,30 @@ class Widget
 
         bool click_sv_map(int x, int y, bool held)
         {
-            return held &&
+            bool tap = held &&
                     x > anchorX + sv_map_margin &&
                     y > usable_anchorY + sv_map_margin &&
                     x < anchorX + sv_map_margin + sv_map_width &&
                     y < usable_anchorY + sv_map_margin + sv_map_height;
+
+            sv_map_simple_held = sv_map_simple_held || tap;
+
+            return tap || sv_map_simple_held;
         }
 
         void translate_sv_coords(int x, int y)
         {
             int i = y - usable_anchorY - sv_map_margin;
             int j = x - anchorX - sv_map_margin;
+
+            i = (i < 0) ? 0 : i;
+            i = (i > sv_map_height) ? sv_map_height : i;
+
+            j = (j < 0) ? 0 : j;
+            j = (j > sv_map_width) ? sv_map_width : j;
+
             editor->active_color.set_from_hsv(editor->active_color.h, (double)j/sv_map_width, (double)(sv_map_height-i)/sv_map_height, editor->active_color.a);
+            regenerate_alpha_slider();
         }
 
         bool click_hue_slider(int button, int x, int y, bool held)
@@ -306,34 +330,79 @@ class Widget
 
             hue_slider_simple_held = hue_slider_simple_held || tap;
 
-            return tap || hue_slider_simple_held 
-                        && x > anchorX + sv_map_margin 
-                        && x < anchorX + sv_map_margin + sv_map_width;
+            return tap || hue_slider_simple_held;
         }
 
         void translate_hue_coords(int x, int y)
         {
-            int hue = ((double)(x-anchorX-sv_map_margin)/sv_map_width)*360.0;
+            x = (x-anchorX-sv_map_margin);
+            x = (x < 0) ? 0 : x;
+            x = (x > sv_map_width) ? sv_map_width : x;
+
+            int hue = ((double)(x)/sv_map_width)*360.0;
             editor->active_color.set_from_hsv(hue, editor->active_color.s, editor->active_color.v, editor->active_color.a);
             regenerate_sv_map();
+            regenerate_alpha_slider();
         }
         
-
-        bool click_alpha_slider(int x, int y, bool held)
+        void translate_alpha_coords(int x, int y)
         {
-            return false;
+            x = (x-anchorX-sv_map_margin);
+            x = (x < 0) ? 0 : x;
+            x = (x > sv_map_width) ? sv_map_width : x;
+
+            int alpha = ((double)(x)/sv_map_width)*255.0;
+            editor->active_color.set_from_hsv(editor->active_color.h, editor->active_color.s, editor->active_color.v, alpha);
         }
 
-        void update_color_picker(int button, int x, int y, bool held)
+        bool click_alpha_slider(int button, int x, int y, bool held)
+        {
+            bool tap =
+                    button == 0 &&
+                    x > anchorX + sv_map_margin &&
+                    y > usable_anchorY + sv_map_margin*3.5 + sv_map_height &&
+                    x < anchorX + sv_map_margin + sv_map_width &&
+                    y < usable_anchorY + sv_map_margin*3.5 + sv_map_height + 10;
+
+            alpha_slider_simple_held = alpha_slider_simple_held || tap;
+
+            return tap || alpha_slider_simple_held;
+        }
+
+        int click_rgba_plus_minus(int button, int x, int y)
+        {
+            int custom_anchorX = anchorX + sv_map_margin;
+            int custom_anchorY = usable_anchorY + sv_map_margin*5 + sv_map_height;
+
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    if (button == 0 &&
+                        x > custom_anchorX + 110 + 40*j &&
+                        y > custom_anchorY + 40*i &&
+                        x < custom_anchorX + 110 + 40*j + 30 &&
+                        y < custom_anchorY + 40*i + 30
+                    )
+                    {
+                        return i * 2 + j;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        void update_color_picker(int button, int x, int y, bool held, int state)
         {
             if (click_hue_slider(button, x, y, held))
             {
                 translate_hue_coords(x, y);
             }
 
-            else if (click_alpha_slider(x, y, held))
+            else if (click_alpha_slider(button, x, y, held))
             {
-                /* code */
+                translate_alpha_coords(x, y);
             }
 
             else if (click_sv_map(x, y, held))
@@ -341,9 +410,60 @@ class Widget
                 translate_sv_coords(x, y);
             }
 
-            else
+            else if(state == 0)
             {
-                // there may be more buttons for rgb etc
+                int button_clicked = click_rgba_plus_minus(button, x, y);
+                if (button_clicked == -1)
+                {
+                    return;
+                }
+                
+                int r, g, b, a;
+                switch (button_clicked)
+                {
+                    case 0:
+                        r = (editor->active_color.r > 0) ? editor->active_color.r-1 : editor->active_color.r;
+                        editor->active_color.set_from_rgb(r, editor->active_color.g, editor->active_color.b, editor->active_color.a);
+                        break;
+
+                    case 1:
+                        r = (editor->active_color.r < 255) ? editor->active_color.r+1 : editor->active_color.r;
+                        editor->active_color.set_from_rgb(r, editor->active_color.g, editor->active_color.b, editor->active_color.a);
+                        break;
+
+                    case 2:
+                        g = (editor->active_color.g > 0) ? editor->active_color.g-1 : editor->active_color.g;
+                        editor->active_color.set_from_rgb(editor->active_color.r, g, editor->active_color.b, editor->active_color.a);
+                        break;
+
+                    case 3:
+                        g = (editor->active_color.g < 255) ? editor->active_color.g+1 : editor->active_color.g;
+                        editor->active_color.set_from_rgb(editor->active_color.r, g, editor->active_color.b, editor->active_color.a);
+                        break;
+
+                    case 4:
+                        b = (editor->active_color.b > 0) ? editor->active_color.b-1 : editor->active_color.b;
+                        editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, b, editor->active_color.a);
+                        break;
+
+                    case 5:
+                        b = (editor->active_color.b < 255) ? editor->active_color.b+1 : editor->active_color.b;
+                        editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, b, editor->active_color.a);
+                        break;
+                        
+                    case 6:
+                        a = (editor->active_color.b > 0) ? editor->active_color.a-1 : editor->active_color.a;
+                        editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, editor->active_color.b, a);
+                        break;
+
+                    case 7:
+                        a = (editor->active_color.a < 255) ? editor->active_color.a+1 : editor->active_color.a;
+                        editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, editor->active_color.b, a);
+                        break;
+                }
+
+                regenerate_alpha_slider();
+                regenerate_sv_map();
             }
         }
 
@@ -358,6 +478,8 @@ class Widget
         void update_slider_bools(bool held)
         {
             hue_slider_simple_held = hue_slider_simple_held && held;
+            alpha_slider_simple_held = alpha_slider_simple_held && held;
+            sv_map_simple_held = sv_map_simple_held && held;
         }
 
         void update_state(int state, int button, int x, int y, bool held)
@@ -374,12 +496,12 @@ class Widget
                         update_layer_selector(x, y);
                     }
                 }
-                
-                if (current == WIDGET_COLOR_PICKER)
-                {
-                    update_color_picker(button, x, y, held);
-                }
             }            
+            
+            if (current == WIDGET_COLOR_PICKER)
+            {
+                update_color_picker(button, x, y, held, state);
+            }
         }
 
         void display_widget_frame()
@@ -500,6 +622,87 @@ class Widget
             return img;
         }
 
+        CVpro::image *generate_alpha_slider_base()
+        {
+            int bytes = 4; // (rgb + alpha = 4)
+            subpixel *matrix = (subpixel *)calloc(1, sizeof(subpixel) * sv_map_width * 10 * bytes);
+
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < sv_map_width; j++)
+                {
+                    int base_index = (sv_map_width * i * bytes + j * bytes);
+                    if (i > 4)
+                    {
+                        if ((j / 5) % 2 == 0)
+                        {
+                            matrix[base_index + 2] = (unsigned char)192;
+                            matrix[base_index + 1] = (unsigned char)192;
+                            matrix[base_index    ] = (unsigned char)192;
+                            matrix[base_index + 3] = (unsigned char)255;
+                        }
+                        
+                        else
+                        {
+                            matrix[base_index + 2] = (unsigned char)128;
+                            matrix[base_index + 1] = (unsigned char)128;
+                            matrix[base_index    ] = (unsigned char)128;
+                            matrix[base_index + 3] = (unsigned char)255;
+                        }
+                    }
+
+                    else
+                    {
+                        if ((j / 5) % 2 != 0)
+                        {
+                            matrix[base_index + 2] = (unsigned char)192;
+                            matrix[base_index + 1] = (unsigned char)192;
+                            matrix[base_index    ] = (unsigned char)192;
+                            matrix[base_index + 3] = (unsigned char)255;
+                        }
+                        
+                        else
+                        {
+                            matrix[base_index + 2] = (unsigned char)128;
+                            matrix[base_index + 1] = (unsigned char)128;
+                            matrix[base_index    ] = (unsigned char)128;
+                            matrix[base_index + 3] = (unsigned char)255;
+                        }
+                    }                    
+                }                   
+            }
+            
+            CVpro::image *img = new CVpro::image(sv_map_width, 10, matrix);
+            return img;
+        }
+
+        CVpro::image *generate_alpha_slider_result()
+        {
+            int bytes = 4; // (rgb + alpha = 4)
+            subpixel *matrix = (subpixel *)calloc(1, sizeof(subpixel) * sv_map_width * 10 * bytes);
+            CVpro::image *img = new CVpro::image(sv_map_width, 10, matrix);
+
+            return img;
+        }
+
+        void regenerate_alpha_slider()
+        {
+            for (int j = 0; j < sv_map_width; j++)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    int base_index = i * sv_map_width * 4 + j * 4;
+                    pixel blended = alpha_blend_pixel(alpha_slider_base->matrix[base_index + 2], alpha_slider_base->matrix[base_index + 1], alpha_slider_base->matrix[base_index], alpha_slider_base->matrix[base_index + 3],
+                                                        editor->active_color.r, editor->active_color.g, editor->active_color.b, 255*(j/(float)sv_map_width));
+                    
+                    alpha_slider_result->matrix[base_index + 2] = blended.r;
+                    alpha_slider_result->matrix[base_index + 1] = blended.g;
+                    alpha_slider_result->matrix[base_index    ] = blended.b;
+                    alpha_slider_result->matrix[base_index + 3] = blended.a;
+                }
+            }
+        }
+
         void display_sv_map()
         {
            sv_map->display_bitmap(anchorX + sv_map_margin, usable_anchorY + sv_map_margin, 1.0);   
@@ -537,8 +740,93 @@ class Widget
 
         void display_alpha_slider()
         {
-            // to do. will require a general purpose alpha blend...
-            // still need to optimize flatten(). maybe do both together
+            alpha_slider_result->display_bitmap(anchorX + sv_map_margin, usable_anchorY + sv_map_margin*3.5 + sv_map_height, 1.0);
+
+            Color tmp;
+            tmp.set_from_hsv(editor->active_color.h, std::min((double)editor->active_color.a/256.0, editor->active_color.s), std::max(1-(double)editor->active_color.a/256.0, editor->active_color.v), 255);
+
+            int posX = (editor->active_color.a/256.0)*sv_map_width;
+            CVpro::color(tmp.r, tmp.g, tmp.b);
+            CV::circleFill(anchorX + sv_map_margin + posX, usable_anchorY + sv_map_margin*3.5 + sv_map_height + 5, 10, 20);
+
+            CVpro::color(255, 255, 255);
+            CV::circle(anchorX + sv_map_margin + posX, usable_anchorY + sv_map_margin*3.5 + sv_map_height + 5, 10, 20);
+        }
+
+        void draw_special_alpha_symbol(int x, int y)
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    CVpro::color(192, 192, 192);
+                    CVpro::color(128, 128, 128);
+
+                    if (i % 2 == 0)
+                    {
+                        if (j % 2 == 0)
+                        {
+                            CVpro::color(192, 192, 192);
+                        }
+
+                        else
+                        {
+                            CVpro::color(128, 128, 128);
+                        }
+                    }
+
+                    else
+                    {
+                        if (j % 2 == 0)
+                        {
+                            CVpro::color(128, 128, 128);
+                        }
+
+                        else
+                        {
+                            CVpro::color(192, 192, 192);
+                        }
+                    }
+                    
+                    CV::rectFill(x + j*30/2, y + 40*3 + i*30/2, x + (j+1)*30/2, y + 40*3 + (i+1)*30/2);
+                }
+            }
+        }
+
+        void display_rgb_values()
+        {
+            int custom_anchorX = anchorX + sv_map_margin;
+            int custom_anchorY = usable_anchorY + sv_map_margin*5 + sv_map_height;
+            for (int i = 0; i < 4; i++)
+            {
+                CVpro::color(40, 40, 40);
+                CV::rectFill(custom_anchorX + 40, custom_anchorY + 40*i, custom_anchorX + 100, custom_anchorY + 40*i + 30);
+
+                CVpro::color(255, 255, 255);
+                CV::rect(custom_anchorX + 40, custom_anchorY + 40*i, custom_anchorX + 100, custom_anchorY + 40*i + 30);
+                
+                minus_icon->display_bitmap(custom_anchorX + 110, custom_anchorY + 40*i, 1.0);
+                plus_icon->display_bitmap(custom_anchorX + 150, custom_anchorY + 40*i, 1.0);
+            }
+
+            CVpro::color(255, 0, 0);
+            CV::rectFill(custom_anchorX, custom_anchorY, custom_anchorX + 30, custom_anchorY + 30);
+            CVpro::color(0, 255, 0);
+            CV::rectFill(custom_anchorX, custom_anchorY + 40*1, custom_anchorX + 30, custom_anchorY + 40*1 + 30);
+            CVpro::color(0, 0, 255);
+            CV::rectFill(custom_anchorX, custom_anchorY + 40*2, custom_anchorX + 30, custom_anchorY + 40*2 + 30);
+            
+            draw_special_alpha_symbol(custom_anchorX, custom_anchorY);
+            
+            CVpro::text_align(custom_anchorX + 40 + 60/2, custom_anchorY + 20, 'c', "%d", editor->active_color.r);
+            CVpro::text_align(custom_anchorX + 40 + 60/2, custom_anchorY + 20 + 40*1, 'c', "%d", editor->active_color.g);
+            CVpro::text_align(custom_anchorX + 40 + 60/2, custom_anchorY + 20 + 40*2, 'c', "%d", editor->active_color.b);
+            CVpro::text_align(custom_anchorX + 40 + 60/2, custom_anchorY + 20 + 40*3, 'c', "%d", editor->active_color.a);
+
+            CVpro::color(255, 255, 255);
+            CV::rect(custom_anchorX + 190, custom_anchorY, anchorX + sv_map_width + sv_map_margin, custom_anchorY + 150);
+            CVpro::color(editor->active_color.r, editor->active_color.g, editor->active_color.b);
+            CV::rectFill(custom_anchorX + 190, custom_anchorY, anchorX + sv_map_width + sv_map_margin, custom_anchorY + 150);
         }
 
         void display_color_picker()
@@ -547,6 +835,7 @@ class Widget
             display_sv_map();
             display_hue_slider();
             display_alpha_slider();
+            display_rgb_values();
         }
 
         void display()
