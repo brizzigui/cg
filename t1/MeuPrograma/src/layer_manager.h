@@ -24,6 +24,11 @@ class Layer_Manager
         std::mutex thread_mutex;
         std::vector<Layer> layers;
         CVpro::image *result;
+        CVpro::image *background;
+
+        CVpro::image *bottom;
+        CVpro::image *mid;
+        CVpro::image *top;
 
         // global layer counter for naming
         int counter = 1;
@@ -37,6 +42,7 @@ class Layer_Manager
         int anchorX = 130, anchorY = 100;
 
         int active_index = 0;
+
         
         CVpro::image *generate_blank_bmp()
         {
@@ -50,6 +56,7 @@ class Layer_Manager
         Layer_Manager()
         {
             this->result = generate_blank_bmp();
+            this->background = generate_background();
         }
 
         void add_blank_layer()
@@ -90,32 +97,60 @@ class Layer_Manager
             thread_mutex.unlock();
         }
 
-        void display_background()
+        CVpro::image *generate_background()
         {
-            int square_height = 30;
-            int square_width = 40;
+            int bytes = 4; // (rgb + alpha = 4)
+            subpixel *matrix = (subpixel *)calloc(1, sizeof(subpixel) * board_width * board_height * bytes);
+            CVpro::image *img = new CVpro::image(board_width, board_height, matrix);
+            
+            int square_size = 16;
 
-            for (int i = 0; i < square_height; i++)
+            for (int i = 0; i < board_height; i++)
             {
-                for (int j = 0; j < square_width; j++)
+                for (int j = 0; j < board_width; j++)
                 {
-                    if (j % 2 == 0 && i % 2 == 0 || j % 2 != 0 && i % 2 != 0)
+                    int base_index = i * board_width * 4 + j * 4;
+                    int v;
+                    
+                    if ((i / square_size) % 2 == 0)
                     {
-                        CVpro::color(240, 240, 240);                    
+                        if ((j / square_size) % 2 == 0)
+                        {
+                            v = 192;
+                        }
+                        
+                        else
+                        {
+                            v = 128;
+                        }
                     }
 
                     else
                     {
-                        CVpro::color(188, 188, 188);                    
-                    }
-
-                    int baseX = anchorX + j * (board_width / square_width);
-                    int baseY = anchorY + i * (board_width / square_width);
-                    CV::rectFill(baseX, baseY, baseX + (board_width / square_width), baseY + (board_width / square_width));             
+                        if ((j / square_size) % 2 != 0)
+                        {
+                            v = 192;
+                        }
+                        
+                        else
+                        {
+                            v = 128;
+                        }
+                    }   
+                    
+                    matrix[base_index + 2] = (unsigned char)v;
+                    matrix[base_index + 1] = (unsigned char)v;
+                    matrix[base_index    ] = (unsigned char)v;
+                    matrix[base_index + 3] = (unsigned char)255;
                 }
-                
             }
-            
+
+            return img;
+        }
+
+        void display_background()
+        {
+            background->display_bitmap(anchorX, anchorY, 1.0);
         }
 
         bool is_valid_pixel(Layer l, int i, int j)
@@ -176,7 +211,7 @@ class Layer_Manager
 
             while(true)
             {
-                flatten(); 
+                flatten();
                 Sleep(0);
             }
         }
@@ -191,7 +226,7 @@ class Layer_Manager
 
         void display()
         {
-            //display_background();
+            display_background();
             display_layers();
         }
 

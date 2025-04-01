@@ -319,6 +319,7 @@ class Widget
             j = (j > sv_map_width) ? sv_map_width : j;
 
             editor->active_color.set_from_hsv(editor->active_color.h, (double)j/sv_map_width, (double)(sv_map_height-i)/sv_map_height, editor->active_color.a);
+            regenerate_alpha_slider();
         }
 
         bool click_hue_slider(int button, int x, int y, bool held)
@@ -343,6 +344,9 @@ class Widget
 
             int hue = ((double)(x)/sv_map_width)*360.0;
             editor->active_color.set_from_hsv(hue, editor->active_color.s, editor->active_color.v, editor->active_color.a);
+
+            regenerate_sv_map();
+            regenerate_alpha_slider();
         }
         
         void translate_alpha_coords(int x, int y)
@@ -452,7 +456,7 @@ class Widget
                         break;
                         
                     case 6:
-                        a = (editor->active_color.b > 0) ? editor->active_color.a-1 : editor->active_color.a;
+                        a = (editor->active_color.a > 0) ? editor->active_color.a-1 : editor->active_color.a;
                         editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, editor->active_color.b, a);
                         break;
 
@@ -461,6 +465,9 @@ class Widget
                         editor->active_color.set_from_rgb(editor->active_color.r, editor->active_color.g, editor->active_color.b, a);
                         break;
                 }
+
+                regenerate_alpha_slider();
+                regenerate_sv_map();
 
             }
         }
@@ -630,22 +637,18 @@ class Widget
                 for (int j = 0; j < sv_map_width; j++)
                 {
                     int base_index = (sv_map_width * i * bytes + j * bytes);
+                    int v;
+                    
                     if (i > 4)
                     {
                         if ((j / 5) % 2 == 0)
                         {
-                            matrix[base_index + 2] = (unsigned char)192;
-                            matrix[base_index + 1] = (unsigned char)192;
-                            matrix[base_index    ] = (unsigned char)192;
-                            matrix[base_index + 3] = (unsigned char)255;
+                            v = 192;
                         }
                         
                         else
                         {
-                            matrix[base_index + 2] = (unsigned char)128;
-                            matrix[base_index + 1] = (unsigned char)128;
-                            matrix[base_index    ] = (unsigned char)128;
-                            matrix[base_index + 3] = (unsigned char)255;
+                            v = 128;
                         }
                     }
 
@@ -653,20 +656,19 @@ class Widget
                     {
                         if ((j / 5) % 2 != 0)
                         {
-                            matrix[base_index + 2] = (unsigned char)192;
-                            matrix[base_index + 1] = (unsigned char)192;
-                            matrix[base_index    ] = (unsigned char)192;
-                            matrix[base_index + 3] = (unsigned char)255;
+                            v = 192;
                         }
                         
                         else
                         {
-                            matrix[base_index + 2] = (unsigned char)128;
-                            matrix[base_index + 1] = (unsigned char)128;
-                            matrix[base_index    ] = (unsigned char)128;
-                            matrix[base_index + 3] = (unsigned char)255;
+                            v = 128;
                         }
-                    }                    
+                    }   
+                    
+                    matrix[base_index + 2] = (unsigned char)v;
+                    matrix[base_index + 1] = (unsigned char)v;
+                    matrix[base_index    ] = (unsigned char)v;
+                    matrix[base_index + 3] = (unsigned char)255;
                 }                   
             }
             
