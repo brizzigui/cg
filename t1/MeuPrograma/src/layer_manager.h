@@ -73,7 +73,7 @@ class Layer_Manager
             l.visible = true;
 
             layers.push_back(l);
-            active_index = layers.size()-1;
+            set_active_layer(layers.size()-1);
 
             thread_mutex.unlock();
         }
@@ -92,7 +92,7 @@ class Layer_Manager
             l.visible = true;
 
             layers.push_back(l);
-            active_index = layers.size()-1;
+            set_active_layer(layers.size()-1);
 
             thread_mutex.unlock();
         }
@@ -148,17 +148,17 @@ class Layer_Manager
             return img;
         }
 
-        void display_background()
-        {
-            background->display_bitmap(anchorX, anchorY, 1.0);
-        }
-
         bool is_valid_pixel(Layer l, int i, int j)
         {
             return (j >= l.anchorX) &&
                    (j < l.anchorX + l.image->width) &&
                    (i >= l.anchorY) &&
                    (i < l.anchorY + l.image->height);
+        }
+
+        void update_display_buffer()
+        {
+            
         }
 
         void flatten()
@@ -175,9 +175,31 @@ class Layer_Manager
                 {
                     float r_out = 0.0, g_out = 0.0, b_out = 0.0, a_out = 0.0;
 
-                    for (int l = 0; l < layers_cpy.size(); l++)
+                    // why the fuck -1? good question!
+                    // -1 represents the background, so its always there!
+
+                    for (int l = -1; l < (int)layers_cpy.size(); l++)
                     {
-                        if (layers_cpy[l].visible && is_valid_pixel(layers_cpy[l], i, j))
+                        // pseudolayer background
+                        if (l == -1)
+                        {
+                            float r, g, b, a;
+                            int base_index = i * background->width * 4 + j * 4;
+
+                            r = background->matrix[base_index + 2]/255.0;
+                            g = background->matrix[base_index + 1]/255.0;
+                            b = background->matrix[base_index]/255.0;
+                            a = background->matrix[base_index + 3]/255.0;
+
+                            r_out = r * a + r_out * (1 - a);
+                            g_out = g * a + g_out * (1 - a);
+                            b_out = b * a + b_out * (1 - a);
+                            a_out = a + a_out * (1 - a);
+
+                        }
+
+                        // actual layers
+                        else if (layers_cpy[l].visible && is_valid_pixel(layers_cpy[l], i, j))
                         {
                             float r, g, b, a;
                             int base_index = (i-layers_cpy[l].anchorY) * layers_cpy[l].image->width * 4 + (j-layers_cpy[l].anchorX) * 4;
@@ -216,18 +238,11 @@ class Layer_Manager
             }
         }
 
-        void display_layers()
+        void display()
         {
             // using own blend from flatten();
             // is being called using async thread for increased performance
             result->display_bitmap(anchorX, anchorY, 1.0);
-            return;
-        }
-
-        void display()
-        {
-            display_background();
-            display_layers();
         }
 
         bool is_valid()
@@ -254,6 +269,7 @@ class Layer_Manager
         void set_active_layer(int active_layer)
         {
             active_index = active_layer;
+            update_display_buffer();
         }
 
         void switch_order(int l_origin, int l_target)
