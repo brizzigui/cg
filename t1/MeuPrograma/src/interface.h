@@ -23,6 +23,7 @@ struct action
 
     // state properties
     bool selected = false;
+    bool label_active = false;
 };
 
 typedef struct action Action;
@@ -61,26 +62,47 @@ class Interface
 
         void create_default_actions()
         {
+            CVpro::image *move_icon = CVpro::load_bitmap("./MeuPrograma/images/move.bmp");
+            register_action("Move", move_icon, true);
+
             CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
             register_action("Pencil", pencil_icon, true);
 
-            CVpro::image *brush_icon = CVpro::load_bitmap("./MeuPrograma/images/brush.bmp");
-            register_action("Brush", brush_icon, true);
+            CVpro::image *spray_icon = CVpro::load_bitmap("./MeuPrograma/images/spray.bmp");
+            register_action("Spray", spray_icon, true);
 
             CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
             register_action("Marker", marker_icon, true);
 
+            CVpro::image *fill_icon = CVpro::load_bitmap("./MeuPrograma/images/fill.bmp");
+            register_action("Fill", fill_icon, true);
+
             CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
             register_action("Eraser", eraser_icon, true);
 
+            CVpro::image *picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker.bmp");
+            register_action("Color Picker", picker_icon, true);
+
             CVpro::image *effects_icon = CVpro::load_bitmap("./MeuPrograma/images/effects.bmp");
             register_action("Effects", effects_icon, false);
+
+            CVpro::image *adjustments_icon = CVpro::load_bitmap("./MeuPrograma/images/adjustments.bmp");
+            register_action("Adjustments", adjustments_icon, false);
+
+            CVpro::image *resize_icon = CVpro::load_bitmap("./MeuPrograma/images/resize.bmp");
+            register_action("Resize", resize_icon, false);
 
             CVpro::image *horizontal_flip = CVpro::load_bitmap("./MeuPrograma/images/horizontal_flip.bmp");
             register_action("Horizontal Flip", horizontal_flip, false);
 
             CVpro::image *vertical_flip = CVpro::load_bitmap("./MeuPrograma/images/vertical_flip.bmp");
             register_action("Vertical Flip", vertical_flip, false);
+
+            CVpro::image *save_icon = CVpro::load_bitmap("./MeuPrograma/images/save.bmp");
+            register_action("Save", save_icon, false);
+
+            CVpro::image *export_icon = CVpro::load_bitmap("./MeuPrograma/images/export.bmp");
+            register_action("Export", export_icon, false);            
         }
 
         bool validate_click(int i, int x, int y)
@@ -98,6 +120,10 @@ class Interface
             {
                 std::cout << "Called Effects execute" << std::endl;
             }
+            else if (strcmp(a.label, "Adjustments") == 0)
+            {
+                std::cout << "Called Adjustments execute" << std::endl;
+            }
             else if (strcmp(a.label, "Horizontal Flip") == 0)
             {
                 layer_manager->flip_active_horizontal();
@@ -105,6 +131,14 @@ class Interface
             else if (strcmp(a.label, "Vertical Flip") == 0)
             {
                 layer_manager->flip_active_vertical();
+            }
+            else if (strcmp(a.label, "Save") == 0)
+            {
+                std::cout << "Called Save execute" << std::endl;
+            }
+            else if (strcmp(a.label, "Export") == 0)
+            {
+                std::cout << "Called Export execute" << std::endl;
             }
         }
 
@@ -138,13 +172,23 @@ class Interface
             std::cout << "Recieved special click." << std::endl;
         }
 
-        void update_state(int button, int x, int y)
+        void set_label_active(int i)
         {
-            if (button == 0 || button == 2) // left click or right click
+            actions[i].label_active = true;
+        }
+
+        void set_label_inactive(int i)
+        {
+            actions[i].label_active = false;
+        }
+
+        void update_state(int state, int button, int x, int y)
+        {
+            for (int i = 0; i < actions.size(); i++)
             {
-                for (int i = 0; i < actions.size(); i++)
+                if (validate_click(i, x, y))
                 {
-                    if (validate_click(i, x, y))
+                    if ((button == 0 || button == 2) && state == 0)
                     {
                         change_selected_action(i);
 
@@ -159,8 +203,31 @@ class Interface
                             process_special_clicks(i);
                         }   
                     }
+
+                    else
+                    {
+                        set_label_active(i);
+                    }
+                }
+
+                else
+                {
+                    set_label_inactive(i);
                 }
             }
+        }
+
+        void draw_label(Action a, int x, int y)
+        {
+            int text_width = strlen(a.label) * 10;
+
+            CVpro::color(0, 0, 0);
+            CV::rectFill(x + 10, y+(ICON_SIZE/4.0), x + 30 + text_width, y + (ICON_SIZE/4.0) + 20);
+
+            CVpro::color(255, 255, 255);
+            CV::rect(x + 10, y+(ICON_SIZE/4.0), x + 30 + text_width, y + (ICON_SIZE/4.0) + 20);
+
+            CVpro::text_align(x + 10 + 10 + text_width/2.0, y+(ICON_SIZE/4.0)+20/2.0+5, 'c', a.label);
         }
 
         void draw_action(Action a, int x, int y)
@@ -171,6 +238,12 @@ class Interface
                 CV::color(0.5, 0.5, 0.5);
                 CV::rect(x, y, x + ICON_SIZE, y + ICON_SIZE);
             }
+
+            if (a.label_active)
+            {
+                draw_label(a, x + MENU_SPACING, y);
+            }
+            
         }
 
         void display_actions()

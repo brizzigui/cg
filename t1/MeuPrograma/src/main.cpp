@@ -38,17 +38,14 @@ bool mouse_held = false;
 //Deve-se manter essa fun��o com poucas linhas de codigo.
 void render()
 {
-   auto start = std::chrono::high_resolution_clock::now();
-
    CV::clear(0.1, 0.1, 0.1);
+   
    layer_manager->display();
    interface->display();
    widget->display();
    popup->display();
 
-   auto stop = std::chrono::high_resolution_clock::now();
-   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-   //std::cout << 1000.0 / duration.count() << std::endl;
+   Sleep(0);
 }
 
 //funcao chamada toda vez que uma tecla for pressionada.
@@ -85,19 +82,17 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 
    else
    {
-      if (state == 0)
-      {
-         interface->update_state(button, x, y);
-      }
-   
+      interface->update_state(state, button, x, y);   
       widget->update_state(state, button, x, y, mouse_held);
-      editor->update_state(button, x, y, mouse_held);
+      editor->update_state(state, button, x, y, mouse_held);
    }
 }
 
 
 int main(void)
 {
+   srand(time(NULL));
+
    popup = new Popup(screenWidth, screenHeight);
 
    layer_manager = new Layer_Manager();
