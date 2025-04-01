@@ -127,6 +127,14 @@ class Color
             //std::cout << "(" << r << ", " << g << ", " << b << ")" << std::endl; 
             //std::cout << "(" << h << ", " << s << ", " << v << ")" << std::endl; 
         }
+
+        bool operator==(const Color& other) const {
+            return this->r == other.r &&
+                    this->g == other.g &&
+                    this->b == other.b &&
+                    this->a == other.a;
+        }
+        
 };
 
 typedef struct pixel

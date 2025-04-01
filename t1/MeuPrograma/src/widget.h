@@ -13,7 +13,6 @@
 #define WIDGET_LAYER_UP_BUTTON 1
 #define WIDGET_LAYER_DOWN_BUTTON 2
 
-
 class Widget
 {
     private:
@@ -46,6 +45,8 @@ class Widget
         Interface *interface;
         Editor *editor;
         Popup *popup;
+
+        Color last_color;
 
         CVpro::image *color_picker_icon;
         CVpro::image *layer_selector_icon;
@@ -94,6 +95,8 @@ class Widget
 
             first_shown = layer_manager->layers.size() - 3;
             first_shown = (first_shown >= 0) ? first_shown : 0;
+
+            last_color = editor->active_color;
         }
 
         int check_frame_click(int x, int y)
@@ -316,7 +319,6 @@ class Widget
             j = (j > sv_map_width) ? sv_map_width : j;
 
             editor->active_color.set_from_hsv(editor->active_color.h, (double)j/sv_map_width, (double)(sv_map_height-i)/sv_map_height, editor->active_color.a);
-            regenerate_alpha_slider();
         }
 
         bool click_hue_slider(int button, int x, int y, bool held)
@@ -341,8 +343,6 @@ class Widget
 
             int hue = ((double)(x)/sv_map_width)*360.0;
             editor->active_color.set_from_hsv(hue, editor->active_color.s, editor->active_color.v, editor->active_color.a);
-            regenerate_sv_map();
-            regenerate_alpha_slider();
         }
         
         void translate_alpha_coords(int x, int y)
@@ -462,8 +462,6 @@ class Widget
                         break;
                 }
 
-                regenerate_alpha_slider();
-                regenerate_sv_map();
             }
         }
 
@@ -831,6 +829,13 @@ class Widget
 
         void display_color_picker()
         {
+            if (!(last_color == editor->active_color))
+            {
+                last_color = editor->active_color;
+                regenerate_alpha_slider();
+                regenerate_sv_map();
+            }
+
             CV::color(1, 1, 1);
             display_sv_map();
             display_hue_slider();

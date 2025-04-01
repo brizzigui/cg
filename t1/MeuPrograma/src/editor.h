@@ -13,6 +13,7 @@ class Editor
         // to keep track of changes, the editor needs to know the other classes
         Layer_Manager *layer_manager;
         Interface *interface;
+        
         int mouse_last_x = 0;
         int mouse_last_y = 0;
 
@@ -63,7 +64,6 @@ class Editor
                 Layer *l = &layer_manager->layers[layer_manager->active_index];
                 l->anchorX = x-grab_x; 
                 l->anchorY = y-grab_y;   
-                std::cout << l->anchorX << ", " << l->anchorY << std::endl;          
             }
         }
 
@@ -310,6 +310,16 @@ class Editor
             
         }
 
+        void pick(int state, int button, int x, int y)
+        {
+            Layer l = layer_manager->get_active_layer();
+            if (state == 0 && button == 0 && is_valid_pixel(l, y, x))
+            {
+                int base_index = (y-l.anchorY) * l.image->width * 4 + (x-l.anchorX) * 4;
+                active_color.set_from_rgb(l.image->matrix[base_index + 2], l.image->matrix[base_index + 1], l.image->matrix[base_index], l.image->matrix[base_index + 3]);
+            }   
+        }
+
         void process_update(const char *action, int state, int button, int x, int y, bool held)
         {
             if (strcmp(action, "Move") == 0)
@@ -340,6 +350,11 @@ class Editor
             else if (strcmp(action, "Fill") == 0)
             {
                 fill(state, button, x, y, held);
+            }
+
+            else if (strcmp(action, "Color Picker") == 0)
+            {
+                pick(state, button, x, y);
             }
             
         }
