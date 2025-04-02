@@ -26,10 +26,6 @@ class Layer_Manager
         CVpro::image *result;
         CVpro::image *background;
 
-        CVpro::image *bottom;
-        CVpro::image *mid;
-        CVpro::image *top;
-
         // global layer counter for naming
         int counter = 1;
 
@@ -156,11 +152,6 @@ class Layer_Manager
                    (i < l.anchorY + l.image->height);
         }
 
-        void update_display_buffer()
-        {
-            
-        }
-
         void flatten()
         {
             // modifies a CVpro::image (var result) as a result of color blending using alpha channel
@@ -247,7 +238,7 @@ class Layer_Manager
 
         bool is_valid()
         {
-            if (active_index >= layers.size())
+            if (active_index >= (int)layers.size() || (int)layers.size() <= 0)
             {
                 return false;
             }
@@ -269,7 +260,6 @@ class Layer_Manager
         void set_active_layer(int active_layer)
         {
             active_index = active_layer;
-            update_display_buffer();
         }
 
         void switch_order(int l_origin, int l_target)
