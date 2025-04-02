@@ -395,7 +395,7 @@ class Layer_Manager
                 {
                     int base_index = i * copy->width * 4 + j * 4;
                     c.set_from_rgb(copy->matrix[base_index + 2], copy->matrix[base_index + 1], copy->matrix[base_index], copy->matrix[base_index + 3]);
-                    c.set_from_hsv(c.h, fmod(c.s*1.3, 1.0), c.v, c.a);
+                    c.set_from_hsv(c.h, ((c.s * 1.25 > 1.0) ? 1.0 : c.s), c.v, c.a);
 
                     int red_out = c.r;
                     int green_out = c.g;
