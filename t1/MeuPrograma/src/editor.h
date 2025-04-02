@@ -6,6 +6,7 @@
 #include "layer_manager.h"
 #include "interface.h"
 #include "color.h"
+#include "shared.h"
 
 class Editor
 {
@@ -22,13 +23,13 @@ class Editor
 
         bool grabbed = false;
 
-        const char* get_selected_action()
+        Action* get_selected_action()
         {
             for (int i = 0; i < interface->actions.size(); i++)
             {
                 if (interface->actions[i].selected)
                 {
-                    return interface->actions[i].label;
+                    return &interface->actions[i];
                 }
             }
 
@@ -67,9 +68,8 @@ class Editor
             }
         }
 
-        void pencil_to_bmp(Layer l, int x, int y)
+        void pencil_to_bmp(Layer l, int x, int y, int radius)
         {
-            int radius = 5;
             for (int offset_y = -radius; offset_y < radius; offset_y++)
             {
                 for (int offset_x = -radius; offset_x < radius; offset_x++)
@@ -91,7 +91,7 @@ class Editor
             }
         }
 
-        void pencil(int button, int x, int y, bool held)
+        void pencil(Action *action, int button, int x, int y, bool held)
         {            
             if (held)
             {
@@ -107,14 +107,13 @@ class Editor
 
                 for (int subsample = 0; subsample < samples; subsample++)
                 {
-                    pencil_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                    pencil_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
                 }           
             }
         }
 
-        void spray_to_bmp(Layer l, int x, int y)
+        void spray_to_bmp(Layer l, int x, int y, int radius)
         {
-            int radius = 10;
             for (int offset_y = -radius; offset_y < radius; offset_y++)
             {
                 for (int offset_x = -radius; offset_x < radius; offset_x++)
@@ -136,7 +135,7 @@ class Editor
             }
         }
 
-        void spray(int button, int x, int y, bool held)
+        void spray(Action *action, int button, int x, int y, bool held)
         {
             if (held)
             {
@@ -152,14 +151,13 @@ class Editor
 
                 for (int subsample = 0; subsample < samples+1; subsample++)
                 {
-                    spray_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                    spray_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
                 }           
             }
         }
 
-        void eraser_to_bmp(Layer l, int x, int y)
+        void eraser_to_bmp(Layer l, int x, int y, int radius)
         {
-            int radius = 10;
             for (int offset_y = -radius; offset_y < radius; offset_y++)
             {
                 for (int offset_x = -radius; offset_x < radius; offset_x++)
@@ -181,7 +179,7 @@ class Editor
             }
         }
 
-        void eraser(int button, int x, int y, bool held)
+        void eraser(Action *action, int button, int x, int y, bool held)
         {
             if (held)
             {
@@ -197,14 +195,13 @@ class Editor
 
                 for (int subsample = 0; subsample < samples; subsample++)
                 {
-                    eraser_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                    eraser_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
                 }           
             }
         }
 
-        void marker_to_bmp(Layer l, int x, int y)
+        void marker_to_bmp(Layer l, int x, int y, int size)
         {
-            int size = 10;
             for (int i = 0; i < size; i++)
             {
                 int actual_x = x;
@@ -220,7 +217,7 @@ class Editor
             }
         }
 
-        void marker(int button, int x, int y, bool held)
+        void marker(Action *action, int button, int x, int y, bool held)
         {
             if (held)
             {
@@ -236,7 +233,7 @@ class Editor
 
                 for (int subsample = 0; subsample < samples; subsample++)
                 {
-                    marker_to_bmp(l, x - step_x*subsample, y - step_y*subsample);
+                    marker_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
                 }           
             }
         }
@@ -320,39 +317,39 @@ class Editor
             }   
         }
 
-        void process_update(const char *action, int state, int button, int x, int y, bool held)
+        void process_update(Action *action, int state, int button, int x, int y, bool held)
         {
-            if (strcmp(action, "Move") == 0)
+            if (strcmp(action->label, "Move") == 0)
             {
                 move(state, button, x, y, held);
             }
 
-            else if (strcmp(action, "Pencil") == 0)
+            else if (strcmp(action->label, "Pencil") == 0)
             {
-                pencil(button, x, y, held);
+                pencil(action, button, x, y, held);
             }
 
-            else if (strcmp(action, "Spray") == 0)
+            else if (strcmp(action->label, "Spray") == 0)
             {
-                spray(button, x, y, held);
+                spray(action, button, x, y, held);
             }
 
-            else if (strcmp(action, "Eraser") == 0)
+            else if (strcmp(action->label, "Eraser") == 0)
             {
-                eraser(button, x, y, held);
+                eraser(action, button, x, y, held);
             }
 
-            else if (strcmp(action, "Marker") == 0)
+            else if (strcmp(action->label, "Marker") == 0)
             {
-                marker(button, x, y, held);
+                marker(action, button, x, y, held);
             }
 
-            else if (strcmp(action, "Fill") == 0)
+            else if (strcmp(action->label, "Fill") == 0)
             {
                 fill(state, button, x, y, held);
             }
 
-            else if (strcmp(action, "Color Picker") == 0)
+            else if (strcmp(action->label, "Color Picker") == 0)
             {
                 pick(state, button, x, y);
             }
@@ -384,7 +381,7 @@ class Editor
 
         void update_state(int state, int button, int x, int y, bool held)
         {
-            const char *action = get_selected_action();
+            Action *action = get_selected_action();
 
             if (action != NULL && is_inside_area(x, y) && layer_manager->is_valid())
             {

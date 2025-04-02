@@ -3,6 +3,7 @@
 
 #include "gl_canvas2d.h"
 #include "canvas_pro.h"
+#include "color.h"
 
 #include <chrono>
 #include <vector>
@@ -310,6 +311,119 @@ class Layer_Manager
                 Layer l = get_active_layer();
                 l.image->flip_bitmap('v');
             }
+        }
+
+        void save_project(char *path)
+        {
+            std::cout << "TODO: save project" << std::endl;
+        }
+
+        void export_image(char *path)
+        {
+            std::cout << "TODO: export image" << std::endl;
+        }
+
+        // does a shallow copy of a CVpro::image
+        CVpro::image *copy_image(CVpro::image *old_img)
+        {
+            subpixel *new_mat = (subpixel *)malloc(sizeof(subpixel) * old_img->width * old_img->height * 4);
+            memcpy(new_mat, old_img->matrix, sizeof(subpixel) * old_img->width * old_img->height * 4);
+
+            CVpro::image *new_img = new CVpro::image(old_img->width, old_img->height, new_mat);
+            return new_img;
+        }
+
+        CVpro::image *create_grayscale()
+        {
+            CVpro::image *copy = copy_image(layers[active_index].image);
+            for (int i = 0; i < copy->height; i++)
+            {
+                for (int j = 0; j < copy->width; j++)
+                {
+                    int base_index = i * copy->width * 4 + j * 4;
+                    int luminance = (
+                        copy->matrix[base_index] + copy->matrix[base_index + 1] + copy->matrix[base_index + 2]
+                    )/3;
+
+                    copy->matrix[base_index] = (unsigned char)luminance;
+                    copy->matrix[base_index + 1] = (unsigned char)luminance;
+                    copy->matrix[base_index + 2] = (unsigned char)luminance;
+                }
+            }
+
+            return copy;
+        }
+
+        CVpro::image *create_sepia()
+        {
+            CVpro::image *copy = copy_image(layers[active_index].image);
+            for (int i = 0; i < copy->height; i++)
+            {
+                for (int j = 0; j < copy->width; j++)
+                {
+                    int base_index = i * copy->width * 4 + j * 4;
+                    int red_out = (copy->matrix[base_index + 2] * 0.393) + (copy->matrix[base_index + 1] * 0.769) + (copy->matrix[base_index] * 0.189);
+                    int green_out = (copy->matrix[base_index + 2] * 0.349) + (copy->matrix[base_index + 1] * 0.686) + (copy->matrix[base_index] * 0.168);
+                    int blue_out = (copy->matrix[base_index + 2] * 0.272) + (copy->matrix[base_index + 1] * 0.534) + (copy->matrix[base_index] * 0.131);
+
+                    red_out = std::min(255, std::max(0, red_out));
+                    green_out = std::min(255, std::max(0, green_out));
+                    blue_out = std::min(255, std::max(0, blue_out));                    
+
+                    copy->matrix[base_index + 2] = (unsigned char)red_out;
+                    copy->matrix[base_index + 1] = (unsigned char)green_out;
+                    copy->matrix[base_index] = (unsigned char)blue_out;
+                }
+            }
+
+            return copy;
+        }
+
+        CVpro::image *create_gauss()
+        {
+            CVpro::image *copy = copy_image(layers[active_index].image);
+            return copy;
+        }
+
+        CVpro::image *create_vivid()
+        {
+            CVpro::image *copy = copy_image(layers[active_index].image);
+            Color c;
+            for (int i = 0; i < copy->height; i++)
+            {
+                for (int j = 0; j < copy->width; j++)
+                {
+                    int base_index = i * copy->width * 4 + j * 4;
+                    c.set_from_rgb(copy->matrix[base_index + 2], copy->matrix[base_index + 1], copy->matrix[base_index], copy->matrix[base_index + 3]);
+                    c.set_from_hsv(c.h, fmod(c.s*1.3, 1.0), c.v, c.a);
+
+                    int red_out = c.r;
+                    int green_out = c.g;
+                    int blue_out = c.b;                
+
+                    copy->matrix[base_index + 2] = (unsigned char)red_out;
+                    copy->matrix[base_index + 1] = (unsigned char)green_out;
+                    copy->matrix[base_index] = (unsigned char)blue_out;
+                }
+            }
+
+            return copy;
+        }
+
+        std::vector<CVpro::image *> create_previews()
+        {
+            if (!is_valid())
+            {
+                return std::vector<CVpro::image *>();
+            }
+            
+            std::vector<CVpro::image *> previews;
+            previews.push_back(create_grayscale());
+            previews.push_back(create_sepia());
+            previews.push_back(create_gauss());
+            previews.push_back(create_vivid());  
+            
+            return previews;
         }
 };
 

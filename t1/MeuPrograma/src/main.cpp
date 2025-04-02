@@ -77,7 +77,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    //printf("\nmouse %d %d %d %d %d %d", button, state, wheel, direction, x, y);
    if (popup->is_open)
    {
-      popup->update(button, x, y, mouse_held);
+      popup->update(state, button, x, y, mouse_held);
    }
 
    else
@@ -91,6 +91,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 
 int main(void)
 {
+   std::cout << "BIMP is starting." << std::endl;
    srand(time(NULL));
 
    popup = new Popup(screenWidth, screenHeight);
@@ -98,17 +99,21 @@ int main(void)
    layer_manager = new Layer_Manager();
    layer_manager->add_blank_layer();
    
-   interface = new Interface(screenWidth, screenHeight, layer_manager);
+   interface = new Interface(screenWidth, screenHeight, layer_manager, popup);
    interface->create_default_actions();
 
    editor = new Editor(layer_manager, interface);
    widget = new Widget(layer_manager, interface, editor, popup);
-   popup->give_root_access(layer_manager, interface, editor);
+   popup->give_root_access(layer_manager);
 
    // async for flatten() function (layer blending, check layer_manager.h for more info)
    std::thread(&Layer_Manager::flatten_worker, layer_manager).detach();
 
+   std::cout << "Opening BIMP UI." << std::endl;
+
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "BIMP - Brizzi Image Manipulation Program");
    CV::run();
+
+   std::cout << std::endl;
 }

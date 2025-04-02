@@ -6,6 +6,8 @@
 #include "gl_canvas2d.h"
 #include "canvas_pro.h"
 #include "layer_manager.h"
+#include "popup.h"
+#include "shared.h"
 
 #define ICON_SIZE 40
 #define MENU_ANCHOR 10
@@ -24,6 +26,7 @@ struct action
     // state properties
     bool selected = false;
     bool label_active = false;
+    void *values_ptr; // values may mean different things, such as size, type, etc
 };
 
 typedef struct action Action;
@@ -33,6 +36,7 @@ class Interface
     private:
         int screenWidth, screenHeight;
         Layer_Manager *layer_manager;
+        Popup *popup;
 
         void display_background()
         {
@@ -43,66 +47,74 @@ class Interface
     public:
         std::vector<Action> actions;
 
-        Interface(int screenWidth, int screenHeight, Layer_Manager *layer_manager)
+        Interface(int screenWidth, int screenHeight, Layer_Manager *layer_manager, Popup *popup)
         {
             this->screenWidth = screenWidth;
             this->screenHeight = screenHeight;
             this->layer_manager = layer_manager;
+            this->popup = popup;
         }
 
-        void register_action(const char *label, CVpro::image *icon, bool selectable)
+        void register_action(const char *label, CVpro::image *icon, bool selectable, void *values_ptr)
         {
             Action a;
             a.label = label;
             a.icon = icon;
             a.selectable = selectable;
+            a.values_ptr = values_ptr;
 
             actions.push_back(a);
         }
 
         void create_default_actions()
         {
+            std_selectable_values *values;
+
             CVpro::image *move_icon = CVpro::load_bitmap("./MeuPrograma/images/move.bmp");
-            register_action("Move", move_icon, true);
+            register_action("Move", move_icon, true, NULL);
 
+            values = new std_selectable_values(5, 0);
             CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
-            register_action("Pencil", pencil_icon, true);
+            register_action("Pencil", pencil_icon, true, values);
 
+            values = new std_selectable_values(10, 0);
             CVpro::image *spray_icon = CVpro::load_bitmap("./MeuPrograma/images/spray.bmp");
-            register_action("Spray", spray_icon, true);
+            register_action("Spray", spray_icon, true, values);
 
+            values = new std_selectable_values(10, 0);
             CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
-            register_action("Marker", marker_icon, true);
+            register_action("Marker", marker_icon, true, values);
 
             CVpro::image *fill_icon = CVpro::load_bitmap("./MeuPrograma/images/fill.bmp");
-            register_action("Fill", fill_icon, true);
+            register_action("Fill", fill_icon, true, NULL);
 
+            values = new std_selectable_values(10, 0);
             CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
-            register_action("Eraser", eraser_icon, true);
+            register_action("Eraser", eraser_icon, true, values);
 
             CVpro::image *picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker.bmp");
-            register_action("Color Picker", picker_icon, true);
-
+            register_action("Color Picker", picker_icon, true, NULL);
+            
+            CVpro::image *resize_icon = CVpro::load_bitmap("./MeuPrograma/images/resize.bmp");
+            register_action("Resize", resize_icon, true, NULL);
+            
             CVpro::image *effects_icon = CVpro::load_bitmap("./MeuPrograma/images/effects.bmp");
-            register_action("Effects", effects_icon, false);
+            register_action("Effects", effects_icon, false, NULL);
 
             CVpro::image *adjustments_icon = CVpro::load_bitmap("./MeuPrograma/images/adjustments.bmp");
-            register_action("Adjustments", adjustments_icon, false);
-
-            CVpro::image *resize_icon = CVpro::load_bitmap("./MeuPrograma/images/resize.bmp");
-            register_action("Resize", resize_icon, false);
+            register_action("Adjustments", adjustments_icon, false, NULL);
 
             CVpro::image *horizontal_flip = CVpro::load_bitmap("./MeuPrograma/images/horizontal_flip.bmp");
-            register_action("Horizontal Flip", horizontal_flip, false);
+            register_action("Horizontal Flip", horizontal_flip, false, NULL);
 
             CVpro::image *vertical_flip = CVpro::load_bitmap("./MeuPrograma/images/vertical_flip.bmp");
-            register_action("Vertical Flip", vertical_flip, false);
+            register_action("Vertical Flip", vertical_flip, false, NULL);
 
             CVpro::image *save_icon = CVpro::load_bitmap("./MeuPrograma/images/save.bmp");
-            register_action("Save", save_icon, false);
+            register_action("Save", save_icon, false, NULL);
 
             CVpro::image *export_icon = CVpro::load_bitmap("./MeuPrograma/images/export.bmp");
-            register_action("Export", export_icon, false);            
+            register_action("Export", export_icon, false, NULL);            
         }
 
         bool validate_click(int i, int x, int y)
@@ -119,10 +131,12 @@ class Interface
             if (strcmp(a.label, "Effects") == 0)
             {
                 std::cout << "Called Effects execute" << std::endl;
+                popup->open(POPUP_ROUTINE_EFFECTS);
             }
             else if (strcmp(a.label, "Adjustments") == 0)
             {
                 std::cout << "Called Adjustments execute" << std::endl;
+                popup->open(POPUP_ROUTINE_ADJUSTMENTS);
             }
             else if (strcmp(a.label, "Horizontal Flip") == 0)
             {
@@ -135,10 +149,12 @@ class Interface
             else if (strcmp(a.label, "Save") == 0)
             {
                 std::cout << "Called Save execute" << std::endl;
+                popup->open(POPUP_ROUTINE_SAVE);
             }
             else if (strcmp(a.label, "Export") == 0)
             {
                 std::cout << "Called Export execute" << std::endl;
+                popup->open(POPUP_ROUTINE_EXPORT);
             }
         }
 
@@ -169,7 +185,22 @@ class Interface
 
         void process_special_clicks(int i)
         {
-            std::cout << "Recieved special click." << std::endl;
+            if (strcmp(actions[i].label, "Pencil") == 0)
+            {
+                popup->open(POPUP_ROUTINE_PENCIL_SETTINGS, actions[i].values_ptr);
+            }
+            else if (strcmp(actions[i].label, "Spray") == 0)
+            {
+                popup->open(POPUP_ROUTINE_SPRAY_SETTINGS, actions[i].values_ptr);
+            }
+            else if (strcmp(actions[i].label, "Marker") == 0)
+            {
+                popup->open(POPUP_ROUTINE_MARKER_SETTINGS, actions[i].values_ptr);
+            }
+            else if (strcmp(actions[i].label, "Eraser") == 0)
+            {
+                popup->open(POPUP_ROUTINE_ERASER_SETTINGS, actions[i].values_ptr);
+            }
         }
 
         void set_label_active(int i)
@@ -192,16 +223,12 @@ class Interface
                     {
                         change_selected_action(i);
 
-                        if (button == 0)    // left click
+                        if (button == 2)
                         {
-                            printf("Called a left click event on action labled '%s'\n", actions[i].label);
-                        }
-
-                        else    // right click
-                        {
+                            // right click
                             printf("Called a right click event on action labled '%s'\n", actions[i].label);
                             process_special_clicks(i);
-                        }   
+                        }
                     }
 
                     else

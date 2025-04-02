@@ -252,6 +252,7 @@ class Widget
 
                 if (clicked_button == WIDGET_LAYER_NEW_BUTTON)
                 {
+                    interface->deselect_all_actions();
                     popup->open(POPUP_ROUTINE_NEW_LAYER);
                 }
                 else if (clicked_button == WIDGET_LAYER_UP_BUTTON)
