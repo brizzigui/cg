@@ -9,6 +9,8 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <algorithm>
+#include <cmath>
 
 struct Layer
 {
@@ -247,6 +249,17 @@ class Layer_Manager
             return true;
         }
 
+        Layer *get_active_layer_ptr()
+        {
+            if (!is_valid())
+            {
+                std::cout << "\n\nIndex not found exception:\n\tCould not resolve active_index layer at 'Layer get_active_layer()'.\n\tContinuing would result in segmentation fault. Aborting.\n" << std::endl;
+                exit(1);
+            }
+            
+            return &layers[active_index];
+        }
+
         Layer get_active_layer()
         {
             if (!is_valid())
@@ -379,9 +392,78 @@ class Layer_Manager
             return copy;
         }
 
+        // returns a gaussian kernel
+        // sigma is the sd
+        std::vector<std::vector<double>> generate_gaussian_kernel(int size, double sigma)
+        {
+            int radius = size/2;
+            double sum = 0.0;
+
+            std::vector<std::vector<double>> kernel;
+
+            for (int i = -radius; i <= radius; i++)
+            {
+                kernel.push_back(std::vector<double>());
+                for (int j = -radius; j <= radius; j++)
+                {
+                    double v = (1/(2*PI*sigma*sigma))*exp(-(j*j + i*i)/(2*sigma*sigma));
+                    kernel[i + radius].push_back(v);
+                    sum += v;
+                }
+            }
+
+            for (int i = 0; i < size; i++) 
+            {
+                for (int j = 0; j < size; j++) 
+                {
+                    kernel[i][j] /= sum;
+                }
+            }
+            
+            return kernel;
+        }
+
         CVpro::image *create_gauss()
         {
             CVpro::image *copy = copy_image(layers[active_index].image);
+
+            int sigma = 3;
+            std::vector<std::vector<double>> kernel = generate_gaussian_kernel(sigma * 3, sigma);   // size = 3*sigma is what i read is best
+            
+            int radius = (sigma*3)/2;
+
+            for (int i = 0; i < copy->height; i++)
+            {
+                for (int j = 0; j < copy->width; j++)
+                {
+                    double out_r, out_g, out_b, out_a;
+                    out_r = out_g = out_b = out_a = 0;
+
+                    for (int ki = -radius; ki <= radius; ki++)
+                    {
+                        for (int kj = -radius; kj <= radius; kj++)
+                        {
+                            int ni = std::clamp(i + ki, 0, copy->height - 1);
+                            int nj = std::clamp(j + kj, 0, copy->width - 1);
+                            int base_index = ni * copy->width * 4 + nj * 4;
+                            double weight = kernel[ki + radius][kj + radius];
+                            
+                            out_r += layers[active_index].image->matrix[base_index + 2] * weight;
+                            out_g += layers[active_index].image->matrix[base_index + 1] * weight;
+                            out_b += layers[active_index].image->matrix[base_index + 0] * weight;
+                            out_a += layers[active_index].image->matrix[base_index + 3] * weight;
+                        }
+                    }
+                    
+                    int base_index = i * copy->width * 4 + j * 4;
+                    copy->matrix[base_index + 2] = (unsigned char)std::clamp((int)out_r, 0, 255);
+                    copy->matrix[base_index + 1] = (unsigned char)std::clamp((int)out_g, 0, 255);
+                    copy->matrix[base_index + 0] = (unsigned char)std::clamp((int)out_b, 0, 255);
+                    copy->matrix[base_index + 3] = (unsigned char)std::clamp((int)out_a, 0, 255);                    
+                }
+                
+            }
+            
             return copy;
         }
 
@@ -395,7 +477,7 @@ class Layer_Manager
                 {
                     int base_index = i * copy->width * 4 + j * 4;
                     c.set_from_rgb(copy->matrix[base_index + 2], copy->matrix[base_index + 1], copy->matrix[base_index], copy->matrix[base_index + 3]);
-                    c.set_from_hsv(c.h, ((c.s * 1.25 > 1.0) ? 1.0 : c.s), c.v, c.a);
+                    c.set_from_hsv(c.h, (((c.s * 1.3) > 1.0) ? 1.0 : c.s*1.3), c.v, c.a);
 
                     int red_out = c.r;
                     int green_out = c.g;

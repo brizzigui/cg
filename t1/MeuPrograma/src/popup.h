@@ -36,6 +36,8 @@ class Popup
         bool invalid_file_add_layer_routine = false;
         bool simple_held = false;
 
+        int effect_selected = -1;
+
         Layer_Manager *layer_manager;
 
         CVpro::image *new_layer_icon;
@@ -85,6 +87,7 @@ class Popup
             if (routine == POPUP_ROUTINE_EFFECTS)
             {   
                 previews = layer_manager->create_previews();
+                effect_selected = -1;
             }
         }
 
@@ -187,11 +190,15 @@ class Popup
                 {
                     CVpro::color(70, 70, 70);
                     CV::rectFill(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
-        
+                
                     CV::color(1, 1, 1);
-                    CV::rect(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
-                    CVpro::text_align(anchorX + 30 + (k+0.5)*(width-90)/4.0 + k*10, anchorY + 280, 'c', effect_names[k]);
 
+                    if (effect_selected == k)
+                    {
+                        CV::rect(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
+                    }
+                    
+                    CVpro::text_align(anchorX + 30 + (k+0.5)*(width-90)/4.0 + k*10, anchorY + 280, 'c', effect_names[k]);
                     previews[k]->display_bitmap_anchored(anchorX + 30 + (int)((k+0.5)*(width-90)/4.0 + k*10), anchorY + 110, ((width-90)/4.0 - 20)/layer_manager->board_width, 'c', 't');
                 }
 
@@ -448,6 +455,52 @@ class Popup
             }
         }
 
+        int check_selected_effect(int x, int y)
+        {
+            for (int k = 0; k < 4; k++)
+            {
+                if(x > anchorX + 30 + k*(width-90)/4.0 + k*10 &&
+                    y > anchorY + 100 &&
+                    x < anchorX + 30 + (k+1)*(width-90)/4.0 + k*10 &&
+                    y < anchorY + 300)
+                {
+                    return k;
+                }
+            }
+            
+            return -1;
+        }
+
+        bool check_accept_effect(int x, int y)
+        {
+            return (x > anchorX + width/2.0 - 75 &&
+                    y > anchorY + height - 70 &&
+                    x < anchorX + width/2.0 + 75 &&
+                    y < anchorY + height - 30);
+        }
+
+        void update_routine_effects(int state, int button, int x, int y)
+        {
+           
+            if (state != 0 || button != 0)
+            {
+                return;
+            }
+            
+            if (check_accept_effect(x, y) && this->effect_selected != -1 && layer_manager->is_valid())
+            {
+                Layer *l = layer_manager->get_active_layer_ptr();
+                l->image = previews[this->effect_selected];
+                close();
+            }
+
+            else
+            {
+                this->effect_selected = check_selected_effect(x, y);
+            }
+            
+        }
+
         bool check_close_button(int button, int x, int y)
         {
             return (button == 0) &&
@@ -482,6 +535,10 @@ class Popup
 
                 case POPUP_ROUTINE_EXPORT:
                     update_export_routine(state, button, x, y);
+                    break;
+
+                case POPUP_ROUTINE_EFFECTS:
+                    update_routine_effects(state, button, x, y);
                     break;
 
                 case POPUP_ROUTINE_PENCIL_SETTINGS:
