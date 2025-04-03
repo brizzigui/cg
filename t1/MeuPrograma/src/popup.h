@@ -420,7 +420,9 @@ class Popup
         {
             if (check_common_accept_button(state, button, x, y))
             {
-                layer_manager->export_image(keyboard_buffer);
+                char path[256];
+                sprintf(path, "./MeuPrograma/exports/%s.bmp", keyboard_buffer);
+                layer_manager->export_image(path);
             }
         }
 

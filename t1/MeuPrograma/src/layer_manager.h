@@ -12,6 +12,27 @@
 #include <algorithm>
 #include <cmath>
 
+typedef struct bmp_header
+{
+    char signature[2];
+    uint32_t file_size;
+    uint32_t reserved;
+    uint32_t offset;
+
+    uint32_t size;
+    uint32_t width;
+    uint32_t height;
+    uint16_t planes;
+    uint16_t bit_count;
+    uint32_t compression;
+    uint32_t img_size;
+    uint32_t x_px_m;
+    uint32_t y_px_m;
+    uint32_t colors_used;
+    uint32_t colors_important;
+
+} bmp_header;
+
 struct Layer
 {
     CVpro::image *image;
@@ -326,14 +347,90 @@ class Layer_Manager
             }
         }
 
+        void restore_project(char *path)
+        {
+
+        }
+
         void save_project(char *path)
         {
             std::cout << "TODO: save project" << std::endl;
+
+            FILE *output = fopen(path, "wb");
+
+
+
+        }
+
+        int get_stride(int width)
+        {
+            int bytes_per_pixel = 3;  // number of bytes for 8 bit RGB pixels
+            int alignment = 4;  // required byte alignment for BMP image rows
+
+            // number of bytes in a row (round _up_ by alignment)
+            int stride = (width * bytes_per_pixel) + (alignment - 1);
+            stride /= alignment;
+            stride *= alignment;
+
+            return stride;
+        }
+
+        bmp_header create_header()
+        {
+            bmp_header h; 
+
+            h.signature[0] = 'B';
+            h.signature[1] = 'M'; 
+            h.file_size = (54 + get_stride(result->width)*result->height);
+            h.reserved = 0;
+            h.offset = 54;
+
+            h.size = 40;
+            h.width = result->width;
+            h.height = result->height;
+            h.planes = 1;
+            h.bit_count = 24;
+            h.compression = 0;
+            h.img_size = 0;
+            h.x_px_m = 0;
+            h.y_px_m = 0;
+
+            h.colors_used = 256;
+            h.colors_important = 0;
+
+            return h;
         }
 
         void export_image(char *path)
         {
-            std::cout << "TODO: export image" << std::endl;
+            bmp_header h = create_header(); 
+
+            FILE *output = fopen(path, "wb");
+            fwrite(h.signature, sizeof(char), 2, output);
+            fwrite(&h.file_size, sizeof(uint32_t), 1, output);
+            fwrite(&h.reserved, sizeof(uint32_t), 1, output);
+            fwrite(&h.offset, sizeof(uint32_t), 1, output);
+
+            fwrite(&h.size, sizeof(uint32_t), 1, output);
+            fwrite(&h.width, sizeof(uint32_t), 1, output);
+            fwrite(&h.height, sizeof(uint32_t), 1, output);
+            fwrite(&h.planes, sizeof(uint16_t), 1, output);
+            fwrite(&h.bit_count, sizeof(uint16_t), 1, output);
+            fwrite(&h.compression, sizeof(uint32_t), 1, output);
+            fwrite(&h.img_size, sizeof(uint32_t), 1, output);
+            fwrite(&h.x_px_m, sizeof(uint32_t), 1, output);
+            fwrite(&h.y_px_m, sizeof(uint32_t), 1, output);           
+
+            fwrite(&h.colors_used, sizeof(uint32_t), 1, output);           
+            fwrite(&h.colors_important, sizeof(uint32_t), 1, output); 
+            
+            for (int i = 0; i < result->height; i++)
+            {
+                for (int j = 0; j < result->width; j++)
+                {
+                    fwrite(result->matrix + (result->height-i-1) * result->width * 4 + j * 4, sizeof(subpixel) * 3, 1, output);
+                }
+            }
         }
 
         // does a shallow copy of a CVpro::image
