@@ -743,8 +743,8 @@ class Widget
         {
             alpha_slider_result->display_bitmap(anchorX + sv_map_margin, usable_anchorY + sv_map_margin*3.5 + sv_map_height, 1.0);
 
-            Color tmp;
-            tmp.set_from_hsv(editor->active_color.h, std::min((double)editor->active_color.a/256.0, editor->active_color.s), std::max(1-(double)editor->active_color.a/256.0, editor->active_color.v), 255);
+            pixel tmp = alpha_blend_pixel(255, 255, 255, 255,
+                                            editor->active_color.r, editor->active_color.g, editor->active_color.b, editor->active_color.a);
 
             int posX = (editor->active_color.a/256.0)*sv_map_width;
             CVpro::color(tmp.r, tmp.g, tmp.b);
