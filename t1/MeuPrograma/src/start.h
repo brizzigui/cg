@@ -29,6 +29,7 @@ class Start
         bool import_failure;
 
         char keyboard_buffer[256];
+        char demo_path[64];
 
     public:
         bool is_open;
@@ -48,6 +49,7 @@ class Start
 
             this->layer_manager = layer_manager;
             strcpy(keyboard_buffer, "");
+            strcpy(demo_path, "./MeuPrograma/projects/demo.bimp");
         };
 
         void close()
@@ -141,6 +143,8 @@ class Start
             {
                 display_splash_screen();
             }
+
+            Sleep(10);
         }
 
         bool clicked_open_project(int x, int y)
@@ -219,7 +223,7 @@ class Start
                     break;
 
                 case START_LOAD_DEMO:
-                    layer_manager->restore_project("./MeuPrograma/projects/demo.bimp");
+                    layer_manager->restore_project(demo_path);
                     close();
                     break;
                 
@@ -246,7 +250,7 @@ class Start
 
         void listen(int key)
         {
-            if (is_open)
+            if (is_open && opening_project)
             {
                 int cur = strlen(keyboard_buffer);
                 if (cur < 255)

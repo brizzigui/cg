@@ -23,6 +23,8 @@ class Editor
 
         bool grabbed = false;
 
+        Color eraser_color;
+
         Action* get_selected_action()
         {
             for (int i = 0; i < interface->actions.size(); i++)
@@ -68,7 +70,7 @@ class Editor
             }
         }
 
-        void pencil_to_bmp(Layer l, int x, int y, int radius)
+        void circle_to_bmp(Layer l, int x, int y, int radius, Color color)
         {
             for (int offset_y = -radius; offset_y < radius; offset_y++)
             {
@@ -81,11 +83,55 @@ class Editor
                         if (is_valid_pixel(l, actual_y, actual_x))
                         {
                             int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
-                            l.image->matrix[base_index + 2] = (unsigned char)active_color.r;
-                            l.image->matrix[base_index + 1] = (unsigned char)active_color.g;
-                            l.image->matrix[base_index] = (unsigned char)active_color.b;
-                            l.image->matrix[base_index + 3] = (unsigned char)active_color.a;
+                            l.image->matrix[base_index + 2] = (unsigned char)color.r;
+                            l.image->matrix[base_index + 1] = (unsigned char)color.g;
+                            l.image->matrix[base_index] = (unsigned char)color.b;
+                            l.image->matrix[base_index + 3] = (unsigned char)color.a;
                         }
+                    }
+                }
+            }
+        }
+
+        void square_to_bmp(Layer l, int x, int y, int size, Color color)
+        {
+            int radius = size/2;
+            for (int offset_y = -radius; offset_y < radius; offset_y++)
+            {
+                for (int offset_x = -radius; offset_x < radius; offset_x++)
+                {
+                    int actual_x = x + offset_x;
+                    int actual_y = y + offset_y;
+                    if (is_valid_pixel(l, actual_y, actual_x))
+                    {
+                        int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
+                        l.image->matrix[base_index + 2] = (unsigned char)color.r;
+                        l.image->matrix[base_index + 1] = (unsigned char)color.g;
+                        l.image->matrix[base_index] = (unsigned char)color.b;
+                        l.image->matrix[base_index + 3] = (unsigned char)color.a;
+                    }
+                }
+            }
+        }
+
+        void grid_to_bmp(Layer l, int x, int y, int size, Color color)
+        {
+            int square_x = x/size;
+            int square_y = y/size;
+
+            for (int start_y = square_y*size; start_y < (square_y+1)*size; start_y++)
+            {
+                for (int start_x = square_x*size; start_x < (square_x+1)*size; start_x++)
+                {
+                    int actual_x = start_x;
+                    int actual_y = start_y;
+                    if (is_valid_pixel(l, actual_y, actual_x))
+                    {
+                        int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
+                        l.image->matrix[base_index + 2] = (unsigned char)color.r;
+                        l.image->matrix[base_index + 1] = (unsigned char)color.g;
+                        l.image->matrix[base_index] = (unsigned char)color.b;
+                        l.image->matrix[base_index + 3] = (unsigned char)color.a;
                     }
                 }
             }
@@ -107,7 +153,21 @@ class Editor
 
                 for (int subsample = 0; subsample < samples; subsample++)
                 {
-                    pencil_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
+                    if (((std_selectable_values *)action->values_ptr)->type == SELECTABLE_TYPE_CIRCLE)
+                    {
+                        circle_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, active_color);
+                    }
+
+                    else if (((std_selectable_values *)action->values_ptr)->type == SELECTABLE_TYPE_SQUARE)
+                    {
+                        square_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, active_color);
+                    }
+
+                    else
+                    {
+                        grid_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, active_color);
+                    }
+                    
                 }           
             }
         }
@@ -156,28 +216,6 @@ class Editor
             }
         }
 
-        void eraser_to_bmp(Layer l, int x, int y, int radius)
-        {
-            for (int offset_y = -radius; offset_y < radius; offset_y++)
-            {
-                for (int offset_x = -radius; offset_x < radius; offset_x++)
-                {
-                    if (offset_x * offset_x + offset_y * offset_y < radius * radius)
-                    {
-                        int actual_x = x + offset_x;
-                        int actual_y = y + offset_y;
-                        if (is_valid_pixel(l, actual_y, actual_x))
-                        {
-                            int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
-                            l.image->matrix[base_index + 2] = (unsigned char)0;
-                            l.image->matrix[base_index + 1] = (unsigned char)0;
-                            l.image->matrix[base_index] = (unsigned char)0;
-                            l.image->matrix[base_index + 3] = (unsigned char)0;
-                        }
-                    }
-                }
-            }
-        }
 
         void eraser(Action *action, int button, int x, int y, bool held)
         {
@@ -195,7 +233,20 @@ class Editor
 
                 for (int subsample = 0; subsample < samples; subsample++)
                 {
-                    eraser_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size);
+                    if (((std_selectable_values *)action->values_ptr)->type == SELECTABLE_TYPE_CIRCLE)
+                    {
+                        circle_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, eraser_color);  
+                    }
+
+                    else if (((std_selectable_values *)action->values_ptr)->type == SELECTABLE_TYPE_SQUARE)
+                    {
+                        square_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, eraser_color);  
+                    }
+                    
+                    else
+                    {
+
+                    }
                 }           
             }
         }
@@ -377,6 +428,7 @@ class Editor
             this->layer_manager = layer_manager;
             this->interface = interface;
             this->active_color.set_from_rgb(255, 0, 0, 255);
+            this->eraser_color.set_from_rgb(0, 0, 0, 0);
         }        
 
         void update_state(int state, int button, int x, int y, bool held)

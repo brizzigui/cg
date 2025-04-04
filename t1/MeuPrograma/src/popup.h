@@ -317,7 +317,7 @@ class Popup
             CV::color(1, 1, 1);
             CVpro::text_align(anchorX + width/2.0, anchorY + 40, 'c', "%s settings", title);
             CV::line(anchorX + 30, anchorY + 50, anchorX + width - 30, anchorY + 50);
-            CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Change size and type of the %s.", title);
+            CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Change the %s's settings.", title);
 
             // size slider
             CVpro::text_align(anchorX + 30, anchorY + 125, 'l', "Size");
@@ -335,6 +335,64 @@ class Popup
             CV::color(1, 1, 1);
             CVpro::text_align(anchorX + 325, anchorY + 160, 'c', "%02d", size);
             CV::rect(anchorX + 300, anchorY + 140, anchorX + 350, anchorY + 170);
+
+
+            // tip types (for pencil and eraser)
+            if (strcmp(title, "Pencil") == 0 || strcmp(title, "Eraser") == 0)
+            {
+                CV::color(1, 1, 1);
+                CVpro::text_align(anchorX + 30, anchorY + 200, 'l', "Type");
+
+                const char* type_names[3] = {"Circle", "Square", "Grid\n(Pixel Art)"};
+
+                int type_box_width = 125;
+                int type_box_height = 125;
+
+                for (int type = 0; type < 3; type++)
+                {
+                    CVpro::color(90, 90, 90);
+                    CV::rectFill(anchorX + 30 + type_box_width*type + 20*type, anchorY + 220, anchorX + 30 + type_box_width*(type+1) + 20*type, anchorY + 220 + type_box_height);
+
+                    if (((std_selectable_values *)var)->type == type)
+                    {
+                        CVpro::color(255, 255, 255);
+                        CV::rect(anchorX + 30 + type_box_width*type + 20*type, anchorY + 220, anchorX + 30 + type_box_width*(type+1) + 20*type, anchorY + 220 + type_box_height);
+                    }
+                    
+                    CVpro::color(255, 255, 255);
+
+                    if (type == SELECTABLE_TYPE_CIRCLE)
+                    {
+                        CV::circleFill(anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0, anchorY + 220 + type_box_height/3.0, 20, 20); 
+                    }
+
+                    else if (type == SELECTABLE_TYPE_SQUARE)
+                    {
+                        CV::rectFill(anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 - 20, anchorY + 220 + type_box_height/3.0 - 20,
+                                        anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 + 20, anchorY + 220 + type_box_height/3.0 + 20); 
+                    }
+                    
+                    else
+                    {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            CV::line(anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 - 20, anchorY + 220 + type_box_height/3.0 - 20 + 10*i,
+                                    anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 + 20, anchorY + 220 + type_box_height/3.0 - 20 + 10*i); 
+                        }
+
+                        for (int j = 0; j < 5; j++)
+                        {
+                            CV::line(anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 - 20 + 10*j, anchorY + 220 + type_box_height/3.0 - 20,
+                                    anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0 - 20 + 10*j, anchorY + 220 + type_box_height/3.0 + 20); 
+                        }
+                    }
+                    
+                    CVpro::color(255, 255, 255);
+                    CVpro::autotext(anchorX + 30 + type_box_width*type + 20*type + type_box_width/2.0, anchorY + 220 + type_box_height-24, 'c', 12, type_names[type]);
+                }
+
+                CVpro::autotext(anchorX + 30 + type_box_width*3 + 20*3.5, anchorY+220, 'l', 15, "Tip:\n\nGrid type (Pixel\nArt Mode) allows you\nto draw with the\nhelp of a grid.\n\nUse it to create\namazing pixel art\non BIMP.");
+            }
         }
 
         void display_popup()
@@ -495,10 +553,7 @@ class Popup
         void translate_common_slider(int x, int y)
         {
             x = (x-anchorX-30);
-            x = (x < 0) ? 0 : x;
-            x = (x > 250) ? 250 : x;
-
-            ((std_selectable_values *)(var))->size = (x/250.0)*100+1;
+            ((std_selectable_values *)(var))->size = std::clamp((x/250.0)*100, 1.0, 100.0);
         }
 
         void update_special_click_configs(int state, int button, int x, int y, bool held)
@@ -506,6 +561,37 @@ class Popup
             if(check_common_slider(state, button, x, y))
             {
                 translate_common_slider(x, y);
+            }
+        }
+
+        int check_clicked_type(int x, int y)
+        {
+            int type_box_width = 125;
+            int type_box_height = 125;
+
+            for (int type = 0; type < 3; type++)
+            {
+                if (x > anchorX + 30 + type_box_width*type + 20*type &&
+                    y > anchorY + 220 &&
+                    x < anchorX + 30 + type_box_width*(type+1) + 20*type &&
+                    y < anchorY + 220 + type_box_height)
+                {
+                    return type;
+                }
+            }
+
+            return -1;
+        }
+
+        void update_type_special_click_configs(int state, int button, int x, int y)
+        {
+            if (state == 0 && button == 0)
+            {
+                int pick = check_clicked_type(x, y);
+                if (pick != -1)
+                {
+                    ((std_selectable_values *)var)->type = pick;
+                }
             }
         }
 
@@ -595,11 +681,15 @@ class Popup
                     update_routine_effects(state, button, x, y);
                     break;
 
-                case POPUP_ROUTINE_PENCIL_SETTINGS:
                 case POPUP_ROUTINE_SPRAY_SETTINGS:
                 case POPUP_ROUTINE_MARKER_SETTINGS:
-                case POPUP_ROUTINE_ERASER_SETTINGS:
                     update_special_click_configs(state, button, x, y, held);
+                    break;
+
+                case POPUP_ROUTINE_ERASER_SETTINGS:
+                case POPUP_ROUTINE_PENCIL_SETTINGS:
+                    update_special_click_configs(state, button, x, y, held);
+                    update_type_special_click_configs(state, button, x, y);
                     break;
                 
                 default:

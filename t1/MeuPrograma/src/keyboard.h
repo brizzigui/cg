@@ -29,7 +29,7 @@ namespace CVkeyboard
 
         else
         {
-            std::cout << "Key unavaliable with code " << key << std::endl;
+            std::cout << "Keyboard log: Key pressed unavaliable with code " << key << std::endl;
         }
     } 
 }
