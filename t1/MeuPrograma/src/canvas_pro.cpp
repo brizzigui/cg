@@ -110,8 +110,8 @@ void flip_horizontal(CVpro::image *img)
         for (int pixel = 0; pixel < img->width/2; pixel++)
         {
             memcpy(tmp, img->matrix + line * img->width * 4 + pixel * 4, 4);
-            memcpy(img->matrix + line * img->width * 4 + pixel * 4, img->matrix + line * img->width * 4 + (img->width - pixel) * 4, 4);
-            memcpy(img->matrix + line * img->width * 4 + (img->width - pixel) * 4, tmp, 4);
+            memcpy(img->matrix + line * img->width * 4 + pixel * 4, img->matrix + line * img->width * 4 + (img->width - pixel - 1) * 4, 4);
+            memcpy(img->matrix + line * img->width * 4 + (img->width - pixel - 1) * 4, tmp, 4);
         }
     }
 }
