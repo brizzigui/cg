@@ -347,19 +347,78 @@ class Layer_Manager
             }
         }
 
-        void restore_project(char *path)
+        bool restore_project(char *path)
         {
+            FILE *input = fopen(path, "rb");
+            if (input == NULL)
+            {
+                return false;
+            }
+            
+            uint32_t n_layers;
+            fread(&n_layers, sizeof(uint32_t), 1, input);
+            
+            for (int i = 0; i < n_layers; i++)
+            {
+                Layer l;
 
+                int width, height;
+                fread(&height, sizeof(int), 1, input);
+                fread(&width, sizeof(int), 1, input);
+
+                subpixel *mat = (subpixel *)malloc(sizeof(subpixel) * width * height * 4);
+                fread(mat, sizeof(subpixel), 4 * height * width, input);
+                CVpro::image *img = new CVpro::image(width, height, mat);
+
+                l.image = img;
+                
+                fread(&l.anchorX, sizeof(int), 1, input);
+                fread(&l.anchorY, sizeof(int), 1, input);
+                fread(&l.visible, sizeof(bool), 1, input);
+
+                uint32_t name_len;
+                fread(&name_len, sizeof(uint32_t), 1, input);
+                
+                char tmp[256];
+                fread(tmp, sizeof(char), name_len, input);
+                tmp[name_len] = '\0';
+                const char *name = (strcmp(tmp, "Blank Layer") == 0) ? "Blank Layer" : "Image Layer";
+                l.name = name;
+
+                layers.push_back(l);
+            }
+
+            fclose(input);
+
+            return true;
         }
 
-        void save_project(char *path)
+        bool save_project(char *path)
         {
-            std::cout << "TODO: save project" << std::endl;
-
             FILE *output = fopen(path, "wb");
+            if (output == NULL)
+            {
+                return false;
+            }
+            
+            uint32_t n_layers = layers.size();
+            fwrite(&n_layers, sizeof(uint32_t), 1, output);
 
+            for (int i = 0; i < n_layers; i++)
+            {
+                fwrite(&layers[i].image->height, sizeof(int), 1, output);
+                fwrite(&layers[i].image->width, sizeof(int), 1, output);
+                fwrite(layers[i].image->matrix, sizeof(subpixel), 4 * layers[i].image->height * layers[i].image->width, output);
+                fwrite(&layers[i].anchorX, sizeof(int), 1, output);
+                fwrite(&layers[i].anchorY, sizeof(int), 1, output);
+                fwrite(&layers[i].visible, sizeof(bool), 1, output);
 
+                uint32_t name_len = strlen(layers[i].name);
+                fwrite(&name_len, sizeof(uint32_t), 1, output);
+                fwrite(layers[i].name, sizeof(char), name_len, output);
+            }
 
+            return true;
         }
 
         int get_stride(int width)
@@ -401,11 +460,16 @@ class Layer_Manager
             return h;
         }
 
-        void export_image(char *path)
+        bool export_image(char *path)
         {
             bmp_header h = create_header(); 
 
             FILE *output = fopen(path, "wb");
+            if (output == NULL)
+            {
+                return false;
+            }
+            
             fwrite(h.signature, sizeof(char), 2, output);
             fwrite(&h.file_size, sizeof(uint32_t), 1, output);
             fwrite(&h.reserved, sizeof(uint32_t), 1, output);
@@ -431,6 +495,10 @@ class Layer_Manager
                     fwrite(result->matrix + (result->height-i-1) * result->width * 4 + j * 4, sizeof(subpixel) * 3, 1, output);
                 }
             }
+
+            fclose(output);
+
+            return true;
         }
 
         // does a shallow copy of a CVpro::image

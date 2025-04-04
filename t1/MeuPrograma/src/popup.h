@@ -35,6 +35,8 @@ class Popup
 
         bool invalid_file_add_layer_routine = false;
         bool simple_held = false;
+        bool export_failure = false;
+        int load_previews = -1;
 
         int effect_selected = -1;
 
@@ -86,7 +88,7 @@ class Popup
 
             if (routine == POPUP_ROUTINE_EFFECTS)
             {   
-                previews = layer_manager->create_previews();
+                load_previews = 1;
                 effect_selected = -1;
             }
         }
@@ -107,7 +109,10 @@ class Popup
         {
             this->routine = -1;
             is_open = false;
+
             invalid_file_add_layer_routine = false;
+            load_previews = -1;
+            export_failure = false;
         }
 
         void display()
@@ -181,33 +186,49 @@ class Popup
             CVpro::text_align(anchorX + width/2.0, anchorY + 40, 'c', "Effects");
             CV::line(anchorX + 30, anchorY + 50, anchorX + width - 30, anchorY + 50);
 
-            if (layer_manager->is_valid())
+            if (layer_manager->is_valid() )
             {
-                CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Select an effect and then apply it.");
-
-                const char* effect_names[4] = {"Grayscale", "Sepia", "Gaussian Blur", "Vivid"};
-                for (int k = 0; k < 4; k++)
+                if (load_previews == 1)
                 {
-                    CVpro::color(70, 70, 70);
-                    CV::rectFill(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
+                    CVpro::autotext(anchorX + width/2.0, anchorY + height/2.0, 'c', 15, "Loading effects...\nPlease wait.");
+                    load_previews--;
+                }
                 
-                    CV::color(1, 1, 1);
-
-                    if (effect_selected == k)
-                    {
-                        CV::rect(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
-                    }
-                    
-                    CVpro::text_align(anchorX + 30 + (k+0.5)*(width-90)/4.0 + k*10, anchorY + 280, 'c', effect_names[k]);
-                    previews[k]->display_bitmap_anchored(anchorX + 30 + (int)((k+0.5)*(width-90)/4.0 + k*10), anchorY + 110, ((width-90)/4.0 - 20)/layer_manager->board_width, 'c', 't');
+                else if (load_previews == 0)
+                {
+                    previews = layer_manager->create_previews();
+                    load_previews--;
                 }
 
-                CVpro::color(70, 70, 70);
-                CV::rectFill(anchorX + width/2.0 - 75, anchorY + height - 70, anchorX + width/2.0 + 75, anchorY + height - 30);
+                else
+                {
+                    CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Select an effect and then apply it.");
+
+                    const char* effect_names[4] = {"Grayscale", "Sepia", "Gaussian Blur", "Vivid"};
+                    for (int k = 0; k < 4; k++)
+                    {
+                        CVpro::color(70, 70, 70);
+                        CV::rectFill(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
+                    
+                        CV::color(1, 1, 1);
     
-                CV::color(1, 1, 1);
-                CV::rect(anchorX + width/2.0 - 75, anchorY + height - 70, anchorX + width/2.0 + 75, anchorY + height - 30);
-                CVpro::text_align(anchorX + width/2.0, anchorY + height - 45, 'c', "Accept");
+                        if (effect_selected == k)
+                        {
+                            CV::rect(anchorX + 30 + k*(width-90)/4.0 + k*10, anchorY + 100, anchorX + 30 + (k+1)*(width-90)/4.0 + k*10, anchorY + 300);
+                        }
+                        
+                        CVpro::text_align(anchorX + 30 + (k+0.5)*(width-90)/4.0 + k*10, anchorY + 280, 'c', effect_names[k]);
+                        previews[k]->display_bitmap_anchored(anchorX + 30 + (int)((k+0.5)*(width-90)/4.0 + k*10), anchorY + 110, ((width-90)/4.0 - 20)/layer_manager->board_width, 'c', 't');
+                    }
+    
+                    CVpro::color(70, 70, 70);
+                    CV::rectFill(anchorX + width/2.0 - 75, anchorY + height - 70, anchorX + width/2.0 + 75, anchorY + height - 30);
+        
+                    CV::color(1, 1, 1);
+                    CV::rect(anchorX + width/2.0 - 75, anchorY + height - 70, anchorX + width/2.0 + 75, anchorY + height - 30);
+                    CVpro::text_align(anchorX + width/2.0, anchorY + height - 45, 'c', "Accept");
+                }
+                
             }
 
             else
@@ -249,6 +270,12 @@ class Popup
             CV::color(1, 1, 1);
             CV::rect(anchorX + width/2.0 - 75, anchorY + 270, anchorX + width/2.0 + 75, anchorY + 310);
             CVpro::text_align(anchorX + width/2.0, anchorY + 295, 'c', "Accept");
+
+            if (export_failure)
+            {
+                CV::color(1, 0, 0);
+                CVpro::autotext(anchorX + width/2.0, anchorY + 340, 'c', 15, "Something went wrong.\nTry again later.");
+            }
         }
 
         void display_export_routine()
@@ -275,6 +302,12 @@ class Popup
             CV::color(1, 1, 1);
             CV::rect(anchorX + width/2.0 - 75, anchorY + 270, anchorX + width/2.0 + 75, anchorY + 310);
             CVpro::text_align(anchorX + width/2.0, anchorY + 295, 'c', "Accept");
+
+            if (export_failure)
+            {
+                CV::color(1, 0, 0);
+                CVpro::autotext(anchorX + width/2.0, anchorY + 340, 'c', 15, "Something went wrong.\nTry again later.");
+            }
         }
 
         void display_special_click_configs(const char *title)
@@ -412,7 +445,17 @@ class Popup
         {
             if (check_common_accept_button(state, button, x, y))
             {
-                layer_manager->save_project(keyboard_buffer);
+                char path[256];
+                sprintf(path, "./MeuPrograma/projects/%s.bimp", keyboard_buffer);
+                if(layer_manager->save_project(path))
+                {
+                    close();
+                }
+
+                else
+                {
+                    export_failure = true;
+                }
             }
         }
 
@@ -422,7 +465,16 @@ class Popup
             {
                 char path[256];
                 sprintf(path, "./MeuPrograma/exports/%s.bmp", keyboard_buffer);
-                layer_manager->export_image(path);
+                if(layer_manager->export_image(path))
+                {
+                    close();
+                }
+
+                else
+                {
+                    export_failure = true;
+                }
+                
             }
         }
 

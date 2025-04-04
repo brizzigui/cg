@@ -21,10 +21,12 @@
 #include "editor.h"
 #include "widget.h"
 #include "popup.h"
+#include "start.h"
 
 //largura e altura inicial da tela . Alteram com o redimensionamento de tela.
 int screenWidth = 1280, screenHeight = 720;
 
+Start *start = NULL;
 Interface *interface = NULL;
 Layer_Manager *layer_manager = NULL;
 Editor *editor = NULL;
@@ -40,10 +42,18 @@ void render()
 {
    CV::clear(0.1, 0.1, 0.1);
    
-   layer_manager->display();
-   interface->display();
-   widget->display();
-   popup->display();
+   if (start->is_open)
+   {
+      start->display();
+   }
+   
+   else
+   {
+      layer_manager->display();
+      interface->display();
+      widget->display();
+      popup->display();
+   }
 
    Sleep(0);
 }
@@ -53,6 +63,7 @@ void keyboard(int key)
 {
    // printf("\nTecla: %d" , key);
    popup->listen(key);
+   start->listen(key);
 }
 
 //funcao chamada toda vez que uma tecla for liberada
@@ -80,6 +91,11 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
       popup->update(state, button, x, y, mouse_held);
    }
 
+   else if (start->is_open)
+   {
+      start->update(state, button, x, y);
+   }
+   
    else
    {
       interface->update_state(state, button, x, y);   
@@ -95,9 +111,8 @@ int main(void)
    srand(time(NULL));
 
    popup = new Popup(screenWidth, screenHeight);
-
    layer_manager = new Layer_Manager();
-   layer_manager->add_blank_layer();
+   start = new Start(screenWidth, screenHeight, layer_manager);
    
    interface = new Interface(screenWidth, screenHeight, layer_manager, popup);
    interface->create_default_actions();
