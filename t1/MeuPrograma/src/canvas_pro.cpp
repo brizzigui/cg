@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 #include "canvas_pro.h"
 
@@ -12,9 +13,9 @@ CVpro::image::image(int width, int height, subpixel *matrix)
     this->matrix = matrix;
 }
 
-int get_stride(int width)
+int get_stride(int width, int bytes)
 {
-    int bytes_per_pixel = 3;  // number of bytes for 8 bit RGB pixels
+    int bytes_per_pixel = bytes;  // number of bytes for 8 bit RGB pixels
     int alignment = 4;  // required byte alignment for BMP image rows
 
     // number of bytes in a row (round _up_ by alignment)
@@ -281,13 +282,18 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     }
 
     // pega dimensões no header
-    int width, height, bytes = 3;
+    int width, height, bytes;
+    uint16_t bits;
+
     fseek(descriptor, 18, SEEK_CUR);
     fread(&width, 4, 1, descriptor);
     fread(&height, 4, 1, descriptor);
+    fseek(descriptor, 2, SEEK_CUR);
+    int read = fread(&bits, 2, 1, descriptor);
+    bytes = bits/8;
 
     // número de bytes em uma linha (data + 4-indexing alignment)
-    int stride = get_stride(width);
+    int stride = get_stride(width, bytes);
     int padding = stride - width * bytes;
 
     subpixel *matrix = (subpixel *)malloc(sizeof(subpixel) * width * height * (bytes+1));
@@ -297,9 +303,18 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     {
         for (int pixel = 0; pixel < width; pixel++)
         {
-            subpixel *address = matrix + (height - line - 1) * width * (bytes + 1) + pixel * (bytes + 1);
-            fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
-            *(address + bytes) = (unsigned char)255;
+            if (bytes == 3)
+            {
+                subpixel *address = matrix + (height - line - 1) * width * (bytes + 1) + pixel * (bytes + 1);
+                fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+                *(address + bytes) = (unsigned char)255;
+            }
+
+            else
+            {
+                subpixel *address = matrix + (height - line - 1) * width * bytes + pixel * bytes;
+                fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+            }
         }
         
         fseek(descriptor, padding, SEEK_CUR);

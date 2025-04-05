@@ -104,7 +104,6 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    }
 }
 
-
 int main(void)
 {
    std::cout << "BIMP is starting." << std::endl;

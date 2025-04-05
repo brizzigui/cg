@@ -421,26 +421,13 @@ class Layer_Manager
             return true;
         }
 
-        int get_stride(int width)
-        {
-            int bytes_per_pixel = 3;  // number of bytes for 8 bit RGB pixels
-            int alignment = 4;  // required byte alignment for BMP image rows
-
-            // number of bytes in a row (round _up_ by alignment)
-            int stride = (width * bytes_per_pixel) + (alignment - 1);
-            stride /= alignment;
-            stride *= alignment;
-
-            return stride;
-        }
-
         bmp_header create_header()
         {
             bmp_header h; 
 
             h.signature[0] = 'B';
             h.signature[1] = 'M'; 
-            h.file_size = (54 + get_stride(result->width)*result->height);
+            h.file_size = (54 + result->width*result->height*4);
             h.reserved = 0;
             h.offset = 54;
 
@@ -448,7 +435,7 @@ class Layer_Manager
             h.width = result->width;
             h.height = result->height;
             h.planes = 1;
-            h.bit_count = 24;
+            h.bit_count = 32;
             h.compression = 0;
             h.img_size = 0;
             h.x_px_m = 0;
@@ -460,9 +447,52 @@ class Layer_Manager
             return h;
         }
 
+        CVpro::image *create_export_input()
+        {
+            CVpro::image *export_input = generate_blank_bmp();
+
+            for (int i = 0; i < board_height; i++)
+            {
+                for (int j = 0; j < board_width; j++)
+                {
+                    float r_out = 0.0, g_out = 0.0, b_out = 0.0, a_out = 0.0;
+
+                    for (int l = 0; l < (int)layers.size(); l++)
+                    {
+                        // actual layers
+                        if(layers[l].visible && is_valid_pixel(layers[l], i, j))
+                        {
+                            float r, g, b, a;
+                            int base_index = (i-layers[l].anchorY) * layers[l].image->width * 4 + (j-layers[l].anchorX) * 4;
+
+                            r = layers[l].image->matrix[base_index + 2]/255.0;
+                            g = layers[l].image->matrix[base_index + 1]/255.0;
+                            b = layers[l].image->matrix[base_index]/255.0;
+                            a = layers[l].image->matrix[base_index + 3]/255.0;
+
+                            r_out = r * a + r_out * (1 - a);
+                            g_out = g * a + g_out * (1 - a);
+                            b_out = b * a + b_out * (1 - a);
+                            a_out = a + a_out * (1 - a);
+                        }
+
+                    }
+                    
+                    int base_index = i * board_width * 4 + j * 4;
+                    export_input->matrix[base_index + 2] = (unsigned char)(r_out*255);
+                    export_input->matrix[base_index + 1] = (unsigned char)(g_out*255);
+                    export_input->matrix[base_index] = (unsigned char)(b_out*255);
+                    export_input->matrix[base_index + 3] = (unsigned char)(a_out*255);
+                }
+            }
+
+            return export_input;
+        }
+
         bool export_image(char *path)
         {
             bmp_header h = create_header(); 
+            CVpro::image *input = create_export_input();
 
             FILE *output = fopen(path, "wb");
             if (output == NULL)
@@ -488,15 +518,16 @@ class Layer_Manager
             fwrite(&h.colors_used, sizeof(uint32_t), 1, output);           
             fwrite(&h.colors_important, sizeof(uint32_t), 1, output); 
             
-            for (int i = 0; i < result->height; i++)
+            for (int i = 0; i < input->height; i++)
             {
-                for (int j = 0; j < result->width; j++)
+                for (int j = 0; j < input->width; j++)
                 {
-                    fwrite(result->matrix + (result->height-i-1) * result->width * 4 + j * 4, sizeof(subpixel) * 3, 1, output);
+                    fwrite(input->matrix + (input->height-i-1) * input->width * 4 + j * 4, sizeof(subpixel) * 4, 1, output);
                 }
             }
 
             fclose(output);
+            free(input);
 
             return true;
         }
