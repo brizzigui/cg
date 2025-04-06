@@ -80,6 +80,11 @@ class Editor
                     {
                         int actual_x = x + offset_x;
                         int actual_y = y + offset_y;
+
+                        std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                        actual_x = actual_coords.first;
+                        actual_y = actual_coords.second;
+
                         if (is_valid_pixel(l, actual_y, actual_x))
                         {
                             int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
@@ -102,6 +107,11 @@ class Editor
                 {
                     int actual_x = x + offset_x;
                     int actual_y = y + offset_y;
+
+                    std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                    actual_x = actual_coords.first;
+                    actual_y = actual_coords.second;
+
                     if (is_valid_pixel(l, actual_y, actual_x))
                     {
                         int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
@@ -125,6 +135,11 @@ class Editor
                 {
                     int actual_x = start_x;
                     int actual_y = start_y;
+
+                    std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                    actual_x = actual_coords.first;
+                    actual_y = actual_coords.second;
+
                     if (is_valid_pixel(l, actual_y, actual_x))
                     {
                         int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
@@ -182,6 +197,12 @@ class Editor
                     {
                         int actual_x = x + offset_x;
                         int actual_y = y + offset_y;
+
+                        std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+
+                        actual_x = actual_coords.first;
+                        actual_y = actual_coords.second;
+
                         if (is_valid_pixel(l, actual_y, actual_x))
                         {
                             int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
@@ -245,7 +266,7 @@ class Editor
                     
                     else
                     {
-
+                        grid_to_bmp(l, x - step_x*subsample, y - step_y*subsample, ((std_selectable_values *)action->values_ptr)->size, eraser_color);  
                     }
                 }           
             }
@@ -257,6 +278,12 @@ class Editor
             {
                 int actual_x = x;
                 int actual_y = y + i - size/2.0;
+
+                std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+
+                actual_x = actual_coords.first;
+                actual_y = actual_coords.second;
+
                 if (is_valid_pixel(l, actual_y, actual_x))
                 {
                     int base_index = (actual_y-l.anchorY) * l.image->width * 4 + (actual_x-l.anchorX) * 4;
@@ -313,7 +340,13 @@ class Editor
         {
             Layer l = layer_manager->get_active_layer();
             // must have clicked and must be starting at a valid layer pixel
-            if (!(state == 0 && button == 0 && is_valid_pixel(l, y, x))) return;
+            if (!(state == 0 && button == 0)) return;
+
+            std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, x, y);
+            x = actual_coords.first;
+            y = actual_coords.second;
+
+            if (!is_valid_pixel(l, y, x)) return;
             
             // can't start setting in color already equal to expected
             // removing this will cause bugs (infinite loop)!
@@ -361,11 +394,32 @@ class Editor
         void pick(int state, int button, int x, int y)
         {
             Layer l = layer_manager->get_active_layer();
+            std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, x, y);
+
+            x = actual_coords.first;
+            y = actual_coords.second;
+
             if (state == 0 && button == 0 && is_valid_pixel(l, y, x))
             {
                 int base_index = (y-l.anchorY) * l.image->width * 4 + (x-l.anchorX) * 4;
                 active_color.set_from_rgb(l.image->matrix[base_index + 2], l.image->matrix[base_index + 1], l.image->matrix[base_index], l.image->matrix[base_index + 3]);
             }   
+        }
+
+        void set_rotation(Layer* l, int rotation)
+        {
+            l->rotation++;
+            l->sin = sin(l->rotation * PI / 180.0);
+            l->cos = cos(l->rotation * PI / 180.0);
+        }
+
+        void resize_and_rotate(int state, int button, int x, int y, bool held)
+        {
+            if (button == 0)
+            {
+                Layer *l = layer_manager->get_active_layer_ptr();
+                set_rotation(l, l->rotation++);
+            }
         }
 
         void process_update(Action *action, int state, int button, int x, int y, bool held)
@@ -403,6 +457,11 @@ class Editor
             else if (strcmp(action->label, "Color Picker") == 0)
             {
                 pick(state, button, x, y);
+            }
+            
+            else if (strcmp(action->label, "Resize & Rotate") == 0)
+            {
+                resize_and_rotate(state, button, x, y, held);
             }
             
         }

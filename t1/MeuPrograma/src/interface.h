@@ -96,7 +96,7 @@ class Interface
             register_action("Color Picker", picker_icon, true, NULL);
             
             CVpro::image *resize_icon = CVpro::load_bitmap("./MeuPrograma/images/resize.bmp");
-            register_action("Resize", resize_icon, true, NULL);
+            register_action("Resize & Rotate", resize_icon, true, NULL);
             
             CVpro::image *effects_icon = CVpro::load_bitmap("./MeuPrograma/images/effects.bmp");
             register_action("Effects", effects_icon, false, NULL);

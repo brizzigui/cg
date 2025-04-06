@@ -40,6 +40,9 @@ struct Layer
     int anchorY;
     const char *name;
     bool visible;
+    int rotation;
+    float sin;
+    float cos;
 };
 
 class Layer_Manager
@@ -91,6 +94,9 @@ class Layer_Manager
             l.anchorX = 0;
             l.anchorY = 0;
             l.visible = true;
+            l.rotation = 0;
+            l.sin = sin(l.rotation * PI / 180.0);
+            l.cos = cos(l.rotation * PI / 180.0);
 
             layers.push_back(l);
             set_active_layer(layers.size()-1);
@@ -110,6 +116,9 @@ class Layer_Manager
             l.anchorX = 0;
             l.anchorY = 0; 
             l.visible = true;
+            l.rotation = 0;
+            l.sin = sin(l.rotation * PI / 180.0);
+            l.cos = cos(l.rotation * PI / 180.0);
 
             layers.push_back(l);
             set_active_layer(layers.size()-1);
@@ -176,6 +185,27 @@ class Layer_Manager
                    (i < l.anchorY + l.image->height);
         }
 
+        static std::pair<int, int> translate_rotation(Layer l, int display_x, int display_y)
+        {
+            if (l.rotation == 0)
+            {
+                return std::make_pair(display_x, display_y);
+            }
+            
+            float angle = l.rotation * PI / 180.0;
+            
+            int center_x = l.anchorX + l.image->width/2.0;
+            int center_y = l.anchorY + l.image->height/2.0;
+
+            float offset_x = display_x - center_x;
+            float offset_y = display_y - center_y;
+
+            int sourceX =  offset_x * l.cos + offset_y * l.sin + center_x;
+            int sourceY = -offset_x * l.sin + offset_y * l.cos + center_y;
+
+            return std::make_pair(sourceX, sourceY);
+        }
+
         void flatten()
         {
             // modifies a CVpro::image (var result) as a result of color blending using alpha channel
@@ -214,22 +244,29 @@ class Layer_Manager
                         }
 
                         // actual layers
-                        else if (layers_cpy[l].visible && is_valid_pixel(layers_cpy[l], i, j))
+                        else if (layers_cpy[l].visible)
                         {
-                            float r, g, b, a;
-                            int base_index = (i-layers_cpy[l].anchorY) * layers_cpy[l].image->width * 4 + (j-layers_cpy[l].anchorX) * 4;
+                            std::pair<int, int> actual_coords = translate_rotation(layers_cpy[l], j, i);
+                            int actual_i = actual_coords.second;
+                            int actual_j = actual_coords.first;
+                            
+                            if (is_valid_pixel(layers_cpy[l], actual_i, actual_j))
+                            {
+                                int base_index = (actual_i-layers_cpy[l].anchorY) * layers_cpy[l].image->width * 4 + (actual_j-layers_cpy[l].anchorX) * 4;
 
-                            r = layers_cpy[l].image->matrix[base_index + 2]/255.0;
-                            g = layers_cpy[l].image->matrix[base_index + 1]/255.0;
-                            b = layers_cpy[l].image->matrix[base_index]/255.0;
-                            a = layers_cpy[l].image->matrix[base_index + 3]/255.0;
+                                float r, g, b, a;
 
-                            r_out = r * a + r_out * (1 - a);
-                            g_out = g * a + g_out * (1 - a);
-                            b_out = b * a + b_out * (1 - a);
-                            a_out = a + a_out * (1 - a);
+                                r = layers_cpy[l].image->matrix[base_index + 2]/255.0;
+                                g = layers_cpy[l].image->matrix[base_index + 1]/255.0;
+                                b = layers_cpy[l].image->matrix[base_index]/255.0;
+                                a = layers_cpy[l].image->matrix[base_index + 3]/255.0;
+    
+                                r_out = r * a + r_out * (1 - a);
+                                g_out = g * a + g_out * (1 - a);
+                                b_out = b * a + b_out * (1 - a);
+                                a_out = a + a_out * (1 - a);
+                            }
                         }
-
                     }
                     
                     int base_index = i * board_width * 4 + j * 4;
@@ -375,6 +412,9 @@ class Layer_Manager
                 fread(&l.anchorX, sizeof(int), 1, input);
                 fread(&l.anchorY, sizeof(int), 1, input);
                 fread(&l.visible, sizeof(bool), 1, input);
+                fread(&l.rotation, sizeof(int), 1, input);
+                l.sin = sin(l.rotation * PI / 180.0);
+                l.cos = cos(l.rotation * PI / 180.0);
 
                 uint32_t name_len;
                 fread(&name_len, sizeof(uint32_t), 1, input);
@@ -412,6 +452,7 @@ class Layer_Manager
                 fwrite(&layers[i].anchorX, sizeof(int), 1, output);
                 fwrite(&layers[i].anchorY, sizeof(int), 1, output);
                 fwrite(&layers[i].visible, sizeof(bool), 1, output);
+                fwrite(&layers[i].rotation, sizeof(int), 1, output);
 
                 uint32_t name_len = strlen(layers[i].name);
                 fwrite(&name_len, sizeof(uint32_t), 1, output);
