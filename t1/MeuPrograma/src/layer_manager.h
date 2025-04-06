@@ -703,6 +703,146 @@ class Layer_Manager
             
             return previews;
         }
+
+        CVpro::image *create_adjustments_preview()
+        {
+            CVpro::image *copy = copy_image(get_active_layer().image);            
+            return copy;
+        }
+
+        void adjust_brightness(CVpro::image *img, int brightness)
+        {
+            Color tmp;
+            for (int i = 0; i < img->height; i++)
+            {
+                for (int j = 0; j < img->width; j++)
+                {
+                    int base_index = i * img->width * 4 + j * 4;
+                    tmp.set_from_rgb(img->matrix[base_index + 2], img->matrix[base_index + 1], img->matrix[base_index], img->matrix[base_index + 3]);
+                    tmp.set_from_hsv(tmp.h, tmp.s, std::clamp(tmp.v + brightness/200.0, 0.0, 1.0), tmp.a);
+                    // dividing by 200 makes our scale a little more usable
+
+                    img->matrix[base_index + 2] = (unsigned char)tmp.r;
+                    img->matrix[base_index + 1] = (unsigned char)tmp.g;
+                    img->matrix[base_index    ] = (unsigned char)tmp.b;
+                }
+            }
+        }
+
+        void adjust_contrast(CVpro::image *img, int contrast)
+        {
+            pixel tmp;
+            for (int i = 0; i < img->height; i++)
+            {
+                for (int j = 0; j < img->width; j++)
+                {
+                    int base_index = i * img->width * 4 + j * 4;
+
+                    tmp.r = std::clamp((img->matrix[base_index + 2]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    tmp.g = std::clamp((img->matrix[base_index + 1]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    tmp.b = std::clamp((img->matrix[base_index + 0]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    // dividing by 200 makes our scale a little more usable
+
+                    img->matrix[base_index + 2] = (unsigned char)tmp.r;
+                    img->matrix[base_index + 1] = (unsigned char)tmp.g;
+                    img->matrix[base_index    ] = (unsigned char)tmp.b;
+                }
+            }
+        }
+
+        int get_sign(int x)
+        {
+            return (x > 0) ? 1 : ((x < 0) ? -1 : 0);
+        }
+
+        void adjust_saturation(CVpro::image *img, int saturation)
+        {
+            Color tmp;
+            for (int i = 0; i < img->height; i++)
+            {
+                for (int j = 0; j < img->width; j++)
+                {
+                    int base_index = i * img->width * 4 + j * 4;
+                    tmp.set_from_rgb(img->matrix[base_index + 2], img->matrix[base_index + 1], img->matrix[base_index], img->matrix[base_index + 3]);
+                    tmp.set_from_hsv(tmp.h, std::clamp(tmp.s + pow(saturation/100.0, 2) * get_sign(saturation), 0.0, 1.0), tmp.v, tmp.a);
+                    // squaring makes it more usable
+
+                    img->matrix[base_index + 2] = (unsigned char)tmp.r;
+                    img->matrix[base_index + 1] = (unsigned char)tmp.g;
+                    img->matrix[base_index    ] = (unsigned char)tmp.b;
+                }
+            }
+        }
+
+        void adjust_temperature(CVpro::image *img, int temperature)
+        {
+            pixel tmp;
+            for (int i = 0; i < img->height; i++)
+            {
+                for (int j = 0; j < img->width; j++)
+                {
+                    int base_index = i * img->width * 4 + j * 4;
+
+                    tmp.r = std::clamp(img->matrix[base_index + 2] * (1 + temperature/200.0), 0.0, 255.0);
+                    tmp.b = std::clamp(img->matrix[base_index + 0] * (1 - temperature/200.0), 0.0, 255.0);
+
+                    img->matrix[base_index + 2] = (unsigned char)tmp.r;
+                    img->matrix[base_index    ] = (unsigned char)tmp.b;
+                }
+            }
+        }
+
+        void adjust_gamma(CVpro::image *img, double gamma)
+        {
+            pixel tmp;
+            for (int i = 0; i < img->height; i++)
+            {
+                for (int j = 0; j < img->width; j++)
+                {
+                    int base_index = i * img->width * 4 + j * 4;
+
+                    tmp.r = std::clamp(pow((double)img->matrix[base_index + 2]/255.0, 1/gamma)*255, 0.0, 255.0);
+                    tmp.g = std::clamp(pow((double)img->matrix[base_index + 1]/255.0, 1/gamma)*255, 0.0, 255.0);
+                    tmp.b = std::clamp(pow((double)img->matrix[base_index + 0]/255.0, 1/gamma)*255, 0.0, 255.0);
+
+                    img->matrix[base_index + 2] = (unsigned char)tmp.r;
+                    img->matrix[base_index + 1] = (unsigned char)tmp.g;
+                    img->matrix[base_index    ] = (unsigned char)tmp.b;
+                }
+            }
+        }
+
+        void clean_non_malloc_copy(CVpro::image *old_img, CVpro::image *new_img)
+        {
+            memcpy(new_img->matrix, old_img->matrix, sizeof(subpixel) * old_img->width * old_img->height * 4);
+        }
+
+        CVpro::image *create_adjustments_preview(CVpro::image *img, int brightness, int contrast, int saturation, int temperature, double gamma_correction)
+        {   
+            clean_non_malloc_copy(get_active_layer().image, img);
+            if (brightness != 0)
+            {
+                adjust_brightness(img, brightness);
+            }
+            if (contrast != 0)
+            {
+                adjust_contrast(img, contrast);
+            }
+            if (saturation != 0)
+            {
+                adjust_saturation(img, saturation);
+            }
+            if (temperature != 0)
+            {
+                adjust_temperature(img, temperature);
+            }
+            if (fabs(gamma_correction - 1.0) > 0.01)
+            {
+                adjust_gamma(img, gamma_correction);
+            }
+            
+            return img;
+        }
 };
 
 

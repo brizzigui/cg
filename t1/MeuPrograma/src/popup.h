@@ -18,6 +18,16 @@
 #define POPUP_ROUTINE_MARKER_SETTINGS 7
 #define POPUP_ROUTINE_ERASER_SETTINGS 8
 
+typedef struct Adjustment
+{
+    double value;
+    double range;
+    const char* label;
+    bool held;
+
+} Adjustment;
+
+
 class Popup
 {
     private:
@@ -54,6 +64,10 @@ class Popup
         // for effects
         std::vector<CVpro::image *> previews;
 
+        // for adjustments
+        std::vector<Adjustment> adjustment_tracker;
+        CVpro::image *adjustments_preview;
+
     public:
         bool is_open = false;
 
@@ -64,11 +78,6 @@ class Popup
             anchorX = screen_width/2.0-width/2.0;
             anchorY = screen_height/2.0-height/2.0;
             strcpy(keyboard_buffer, "");
-        }
-
-        void give_root_access(Layer_Manager *layer_manager)
-        {
-            this->layer_manager = layer_manager;
 
             this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
             this->blank_to_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/blank_to_layer.bmp");
@@ -76,6 +85,11 @@ class Popup
             this->layer_to_file_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_to_file.bmp");
             this->layer_to_img_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_to_img.bmp");
             this->x_icon = CVpro::load_bitmap("./MeuPrograma/images/x.bmp");
+        }
+
+        void give_root_access(Layer_Manager *layer_manager)
+        {
+            this->layer_manager = layer_manager;
         }
 
         void open(int routine)
@@ -91,6 +105,13 @@ class Popup
                 load_previews = 1;
                 effect_selected = -1;
             }
+
+            else if (routine == POPUP_ROUTINE_ADJUSTMENTS && layer_manager->is_valid())
+            {
+                create_adjustments_tracker();
+                adjustments_preview = layer_manager->create_adjustments_preview();
+            }
+            
         }
 
         void open(int routine, void *var)
@@ -186,7 +207,7 @@ class Popup
             CVpro::text_align(anchorX + width/2.0, anchorY + 40, 'c', "Effects");
             CV::line(anchorX + 30, anchorY + 50, anchorX + width - 30, anchorY + 50);
 
-            if (layer_manager->is_valid() )
+            if (layer_manager->is_valid())
             {
                 if (load_previews == 1)
                 {
@@ -238,12 +259,93 @@ class Popup
             
         }
 
+        void create_adjustments_tracker()
+        {
+            adjustment_tracker.erase(adjustment_tracker.begin(), adjustment_tracker.end());
+            const char *slider_labels[] = {"Brightness", "Contrast", "Saturation", "Temperature", "Gamma Correction"};
+            int range[] = {200, 200, 200, 200, 2};
+
+            for (int i = 0; i < 5; i++)
+            {
+                Adjustment a;
+                a.label = slider_labels[i];
+                a.value = 0;
+                a.held = false;
+                a.range = range[i];
+
+                adjustment_tracker.push_back(a);
+            }
+
+            // sets gamma correction start value manually
+            adjustment_tracker[4].value = 1;
+        }
+
+        void draw_adjustment_slider(int i)
+        {
+            int actual_anchorY = anchorY + 110;
+
+            // size slider
+            CVpro::text_align(anchorX + 30, actual_anchorY - 5 + 60*i, 'l', adjustment_tracker[i].label);
+
+            CVpro::color(90, 90, 90);
+            CV::rectFill(anchorX + 30, actual_anchorY + 10 + 60*i, anchorX + 280, actual_anchorY + 20 + 60*i);
+
+            CV::color(1, 1, 1);
+            CV::rect(anchorX + 30, actual_anchorY + 10 + 60*i, anchorX + 280, actual_anchorY + 20 + 60*i);
+
+            int posX;
+            if (i < 4)
+            {
+                posX = ((adjustment_tracker[i].value+adjustment_tracker[i].range/2.0) / adjustment_tracker[i].range) * 250;
+            }
+            else
+            {
+                posX = ((adjustment_tracker[i].value - 1) / adjustment_tracker[i].range) * 250;
+            }
+            
+            CV::circleFill(anchorX + 30 + posX, actual_anchorY + 10 + 5 + 60*i, 10, 20);
+
+            CV::color(0, 0, 0);
+            CV::rectFill(anchorX + 300, actual_anchorY + 60*i, anchorX + 350, actual_anchorY + 30 + 60*i);
+
+            CV::color(1, 1, 1);
+            CVpro::text_align(anchorX + 325, actual_anchorY + 20 + 60*i, 'c', "%.3g", adjustment_tracker[i].value);
+            CV::rect(anchorX + 300, actual_anchorY + 60*i, anchorX + 350, actual_anchorY + 30 + 60*i);
+        }
+
         void display_adjustments_routine()
         {
             CV::color(1, 1, 1);
             CVpro::text_align(anchorX + width/2.0, anchorY + 40, 'c', "Adjustments");
             CV::line(anchorX + 30, anchorY + 50, anchorX + width - 30, anchorY + 50);
-            CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Use the sliders to adjust properties and then apply them.");
+
+            if (layer_manager->is_valid())
+            {
+                // header
+                CV::line(anchorX + 30, anchorY + 50, anchorX + width - 30, anchorY + 50);
+                CVpro::autotext(anchorX + width/2.0, anchorY + 75, 'c', 15, "Use the sliders to adjust properties and then apply them.");
+
+                // sliders
+                for (int i = 0; i < 5; i++)
+                {
+                    draw_adjustment_slider(i);
+                }
+
+                // button
+                CV::color(1, 1, 1);
+                CV::rect(anchorX + 3*width/4.0 - 75, anchorY + height - 70, anchorX + 3*width/4.0 + 75, anchorY + height - 30);
+                CVpro::text_align(anchorX + 3*width/4.0, anchorY + height - 45, 'c', "Accept");
+
+                // preview
+                CVpro::text_align(anchorX + 3*width/4.0, anchorY + 110, 'c', "Preview");
+                adjustments_preview->display_bitmap_anchored(anchorX + 3*width/4.0, anchorY + 120, 1/3.0, 'c', 't');
+
+            }
+
+            else
+            {
+                CVpro::autotext(anchorX + width/2.0, anchorY + height/2.0, 'c', 15, "No active layer.\nSelect a layer to apply an adjustment.");
+            }
         }
 
         void display_save_routine()
@@ -641,6 +743,80 @@ class Popup
             
         }
 
+        bool adjustment_slider_check(int index, int state, int button, int x, int y, bool held)
+        {
+            int actual_anchorY = anchorY + 110;
+
+            bool tap =
+                state == 0 && button == 0 &&
+                x > anchorX + 30 &&
+                y > actual_anchorY + 10 + 60*index &&
+                x < anchorX + 280 &&
+                y < actual_anchorY + 20 + 60*index;
+
+            adjustment_tracker[index].held = adjustment_tracker[index].held || tap;
+
+            return tap || adjustment_tracker[index].held;
+        }
+
+        void translate_adjustment_slider(int index, int x, int y)
+        {
+            x = (x-anchorX-30);
+
+            if (index < 4)  // 4 is gamma correction, which has a different scale
+            {
+                adjustment_tracker[index].value = std::clamp((int)((x/250.0)*200-100), -100, 100);  
+            }
+            
+            else            // gamma correction scale
+            {
+                adjustment_tracker[index].value = std::clamp((x/250.0)*2+1, 1.0, 3.0);  
+            }
+        }
+
+        bool check_accept_adjustments(int button, int state, int x, int y)
+        {
+            return button == 0 && state == 0 &&
+                    x > anchorX + 3*width/4.0 - 75 &&
+                    y > anchorY + height - 70 && 
+                    x < anchorX + 3*width/4.0 + 75 &&
+                    y < anchorY + height - 30;
+        }
+
+        void update_adjustments_routine(int state, int button, int x, int y, bool held)
+        {
+            if (!layer_manager->is_valid())
+            {
+                return;
+            }
+            
+            for (int i = 0; i < adjustment_tracker.size(); i++)
+            {
+                if (adjustment_slider_check(i, state, button, x, y, held))
+                {
+                    translate_adjustment_slider(i, x, y);
+                }
+            } 
+
+            if (button == 0 && state == 1)
+            {
+                adjustments_preview = layer_manager->create_adjustments_preview(
+                    adjustments_preview,
+                    adjustment_tracker[0].value,
+                    adjustment_tracker[1].value,
+                    adjustment_tracker[2].value,
+                    adjustment_tracker[3].value,
+                    adjustment_tracker[4].value
+                );
+            }
+
+            if (check_accept_adjustments(button, state, x, y))
+            {
+                layer_manager->layers[layer_manager->active_index].image = adjustments_preview;
+                close();
+            }            
+        }
+
         bool check_close_button(int button, int x, int y)
         {
             return (button == 0) &&
@@ -658,9 +834,18 @@ class Popup
             }
         }
 
-        void update(int state, int button, int x, int y, bool held)
+        void update_helds(bool held)
         {
             simple_held &= held;
+            for (int i = 0; i < adjustment_tracker.size(); i++)
+            {
+                adjustment_tracker[i].held &= held;
+            }
+        }
+
+        void update(int state, int button, int x, int y, bool held)
+        {
+            update_helds(held);
             check_common_ui(button, x, y);
 
             switch (routine)
@@ -675,6 +860,10 @@ class Popup
 
                 case POPUP_ROUTINE_EXPORT:
                     update_export_routine(state, button, x, y);
+                    break;
+
+                case POPUP_ROUTINE_ADJUSTMENTS:
+                    update_adjustments_routine(state, button, x, y, held);
                     break;
 
                 case POPUP_ROUTINE_EFFECTS:
