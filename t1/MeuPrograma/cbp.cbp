@@ -42,9 +42,22 @@
 			<Add library="../lib/libglu32.a" />
 		</Linker>
 		<Unit filename="src/Vector2.h" />
+		<Unit filename="src/canvas_pro.cpp" />
+		<Unit filename="src/canvas_pro.h" />
+		<Unit filename="src/clamp.cpp" />
+		<Unit filename="src/clamp.h" />
+		<Unit filename="src/color.h" />
+		<Unit filename="src/editor.h" />
 		<Unit filename="src/gl_canvas2d.cpp" />
 		<Unit filename="src/gl_canvas2d.h" />
+		<Unit filename="src/interface.h" />
+		<Unit filename="src/keyboard.h" />
+		<Unit filename="src/layer_manager.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/popup.h" />
+		<Unit filename="src/shared.h" />
+		<Unit filename="src/start.h" />
+		<Unit filename="src/widget.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
