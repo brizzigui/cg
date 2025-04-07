@@ -23,6 +23,15 @@ class Editor
 
         bool grabbed = false;
 
+        int start_resize_x;
+        int start_resize_y;
+        float start_scale;
+        int resize_grabbed = 0;
+
+        int start_rotate_x;
+        int start_rotate_y;
+        bool rotate_grabbed = false;
+
         Color eraser_color;
 
         Action* get_selected_action()
@@ -81,7 +90,7 @@ class Editor
                         int actual_x = x + offset_x;
                         int actual_y = y + offset_y;
 
-                        std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                        std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, actual_x, actual_y);
                         actual_x = actual_coords.first;
                         actual_y = actual_coords.second;
 
@@ -108,7 +117,7 @@ class Editor
                     int actual_x = x + offset_x;
                     int actual_y = y + offset_y;
 
-                    std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                    std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, actual_x, actual_y);
                     actual_x = actual_coords.first;
                     actual_y = actual_coords.second;
 
@@ -136,7 +145,7 @@ class Editor
                     int actual_x = start_x;
                     int actual_y = start_y;
 
-                    std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                    std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, actual_x, actual_y);
                     actual_x = actual_coords.first;
                     actual_y = actual_coords.second;
 
@@ -198,7 +207,7 @@ class Editor
                         int actual_x = x + offset_x;
                         int actual_y = y + offset_y;
 
-                        std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                        std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, actual_x, actual_y);
 
                         actual_x = actual_coords.first;
                         actual_y = actual_coords.second;
@@ -279,7 +288,7 @@ class Editor
                 int actual_x = x;
                 int actual_y = y + i - size/2.0;
 
-                std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, actual_x, actual_y);
+                std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, actual_x, actual_y);
 
                 actual_x = actual_coords.first;
                 actual_y = actual_coords.second;
@@ -342,7 +351,7 @@ class Editor
             // must have clicked and must be starting at a valid layer pixel
             if (!(state == 0 && button == 0)) return;
 
-            std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, x, y);
+            std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, x, y);
             x = actual_coords.first;
             y = actual_coords.second;
 
@@ -394,7 +403,7 @@ class Editor
         void pick(int state, int button, int x, int y)
         {
             Layer l = layer_manager->get_active_layer();
-            std::pair<int, int> actual_coords = Layer_Manager::translate_rotation(l, x, y);
+            std::pair<int, int> actual_coords = Layer_Manager::translate_scale_rotation(l, x, y);
 
             x = actual_coords.first;
             y = actual_coords.second;
@@ -413,12 +422,81 @@ class Editor
             l->cos = cos(l->rotation * PI / 180.0);
         }
 
+        void check_resize_and_rotate_clicks(int state, int button, int x, int y, bool held)
+        {            
+            Layer l = layer_manager->get_active_layer();
+
+            int startX = l.anchorX;
+            int startY = l.anchorY;
+            int side = 10;
+
+            if (resize_grabbed == 0)
+            {
+                bool tap = (state == 0 && button == 0) &&
+                            x > startX + l.image->width*l.scale - side &&
+                    	    y > startY + l.image->height*l.scale - side &&
+                            x < startX + l.image->width*l.scale + side &&
+                            y < startY + l.image->height*l.scale + side;
+
+                resize_grabbed = tap;
+                
+                if (tap)
+                {
+                    start_resize_x = x;
+                    start_resize_y = y;
+                    start_scale = l.scale;
+                }
+            }
+
+            if (!rotate_grabbed)
+            {
+                int center_x = startX + l.image->width*l.scale/2.0;
+                int center_y = startY - 50;
+
+                bool tap = 
+                    state == 0 && button == 0 && 
+                    (x-center_x)*(x-center_x) + (y-center_y)*(y-center_y) < 10*10;
+
+                rotate_grabbed = tap;
+                if (tap)
+                {
+                    start_rotate_x = x;
+                    start_rotate_y = y;
+                }
+            }
+        }
+
+        void apply_resize(Layer *l, int x, int y)
+        {
+            int change = ((x-l->anchorX-l->image->width*start_scale) + (y-l->anchorY-l->image->height*start_scale)) / 2.0;
+            l->scale = start_scale*(start_scale*l->image->width + change) / (start_scale*l->image->width);
+        }
+
+        void apply_rotate(Layer *l, int x, int y)
+        {
+            float center_x = l->anchorX + l->image->width/2.0;
+            float center_y = l->anchorY + l->image->height/2.0;
+
+            float rotation = atan2(center_y - y, center_x - x) + 3*PI/2.0;
+            l->rotation = (int)(rotation/PI * 180);
+            l->sin = sin(l->rotation*PI/180.0);
+            l->cos = cos(l->rotation*PI/180.0);
+        }
+
         void resize_and_rotate(int state, int button, int x, int y, bool held)
         {
-            if (button == 0)
+            check_resize_and_rotate_clicks(state, button, x, y, held);
+
+            Layer *l = layer_manager->get_active_layer_ptr();
+            if (resize_grabbed)
             {
-                Layer *l = layer_manager->get_active_layer_ptr();
-                set_rotation(l, l->rotation++);
+                apply_resize(l, x, y);
+            }
+            
+
+            if (rotate_grabbed)
+            {
+                apply_rotate(l, x, y);
             }
         }
 
@@ -477,7 +555,29 @@ class Editor
         void update_grabbing(bool held)
         {
             grabbed &= held;
+            resize_grabbed = (held) ? resize_grabbed : 0;
+            rotate_grabbed &= held;
         }
+
+        void draw_guides()
+        {
+            Layer l = layer_manager->get_active_layer();
+            int startX = layer_manager->anchorX + l.anchorX;
+            int startY = layer_manager->anchorY + l.anchorY;
+            int side = 10;
+
+            CVpro::color(255, 127, 39);
+            CV::line(startX, startY, startX + l.image->width*l.scale, startY);
+            CV::line(startX, startY, startX, startY + l.image->height*l.scale);
+            CV::line(startX + l.image->width*l.scale, startY, startX + l.image->width*l.scale, startY + l.image->height*l.scale);
+            CV::line(startX, startY + l.image->height*l.scale, startX + l.image->width*l.scale, startY + l.image->height*l.scale);
+
+            CV::rectFill(startX + l.image->width*l.scale - side, startY + l.image->height*l.scale - side, startX + l.image->width*l.scale + side, startY + l.image->height*l.scale + side);
+            
+            CV::line(startX + l.image->width*l.scale/2.0, startY - 50, startX + l.image->width*l.scale/2.0, startY);
+            CV::circleFill(startX + l.image->width*l.scale/2.0, startY - 50, 10, 20);
+        }
+
         
     public:
         Color active_color;
@@ -494,7 +594,7 @@ class Editor
         {
             Action *action = get_selected_action();
 
-            if (action != NULL && is_inside_area(x, y) && layer_manager->is_valid())
+            if (action != NULL && (is_inside_area(x, y) || strcmp(action->label, "Resize & Rotate") == 0) && layer_manager->is_valid())
             {
                 process_update(action, state, button, x-layer_manager->anchorX, y-layer_manager->anchorY, held);
                 mouse_last_x = x-layer_manager->anchorX;
@@ -502,6 +602,18 @@ class Editor
             }
 
             update_grabbing(held);
+        }
+
+        void display()
+        {
+            Action *action = get_selected_action();
+            if (action != NULL && layer_manager->is_valid())
+            {
+                if (strcmp(action->label, "Resize & Rotate") == 0)
+                {
+                    draw_guides();
+                }
+            }
         }
 };
 

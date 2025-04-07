@@ -50,6 +50,7 @@ void render()
    else
    {
       layer_manager->display();
+      editor->display();
       interface->display();
       widget->display();
       popup->display();

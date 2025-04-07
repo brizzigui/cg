@@ -40,6 +40,7 @@ struct Layer
     int anchorY;
     const char *name;
     bool visible;
+    float scale;
     int rotation;
     float sin;
     float cos;
@@ -94,6 +95,7 @@ class Layer_Manager
             l.anchorX = 0;
             l.anchorY = 0;
             l.visible = true;
+            l.scale = 1.0;
             l.rotation = 0;
             l.sin = sin(l.rotation * PI / 180.0);
             l.cos = cos(l.rotation * PI / 180.0);
@@ -116,6 +118,7 @@ class Layer_Manager
             l.anchorX = 0;
             l.anchorY = 0; 
             l.visible = true;
+            l.scale = 1.0;
             l.rotation = 0;
             l.sin = sin(l.rotation * PI / 180.0);
             l.cos = cos(l.rotation * PI / 180.0);
@@ -185,17 +188,17 @@ class Layer_Manager
                    (i < l.anchorY + l.image->height);
         }
 
-        static std::pair<int, int> translate_rotation(Layer l, int display_x, int display_y)
+        static std::pair<int, int> translate_scale_rotation(Layer l, int display_x, int display_y)
         {
             if (l.rotation == 0)
             {
-                return std::make_pair(display_x, display_y);
+                return std::make_pair(round((display_x-l.anchorX)/l.scale+l.anchorX), round((display_y-l.anchorY)/l.scale+l.anchorY));
             }
             
             float angle = l.rotation * PI / 180.0;
             
-            int center_x = l.anchorX + l.image->width/2.0;
-            int center_y = l.anchorY + l.image->height/2.0;
+            int center_x = l.anchorX + (l.image->width*l.scale)/2.0;
+            int center_y = l.anchorY + (l.image->height*l.scale)/2.0;
 
             float offset_x = display_x - center_x;
             float offset_y = display_y - center_y;
@@ -203,7 +206,7 @@ class Layer_Manager
             int sourceX =  offset_x * l.cos + offset_y * l.sin + center_x;
             int sourceY = -offset_x * l.sin + offset_y * l.cos + center_y;
 
-            return std::make_pair(sourceX, sourceY);
+            return std::make_pair(round((sourceX-l.anchorX)/l.scale+l.anchorX), round((sourceY-l.anchorY)/l.scale+l.anchorY));
         }
 
         void flatten()
@@ -246,7 +249,7 @@ class Layer_Manager
                         // actual layers
                         else if (layers_cpy[l].visible)
                         {
-                            std::pair<int, int> actual_coords = translate_rotation(layers_cpy[l], j, i);
+                            std::pair<int, int> actual_coords = translate_scale_rotation(layers_cpy[l], j, i);
                             int actual_i = actual_coords.second;
                             int actual_j = actual_coords.first;
                             
@@ -412,6 +415,7 @@ class Layer_Manager
                 fread(&l.anchorX, sizeof(int), 1, input);
                 fread(&l.anchorY, sizeof(int), 1, input);
                 fread(&l.visible, sizeof(bool), 1, input);
+                fread(&l.scale, sizeof(int), 1, input);
                 fread(&l.rotation, sizeof(int), 1, input);
                 l.sin = sin(l.rotation * PI / 180.0);
                 l.cos = cos(l.rotation * PI / 180.0);
@@ -452,6 +456,7 @@ class Layer_Manager
                 fwrite(&layers[i].anchorX, sizeof(int), 1, output);
                 fwrite(&layers[i].anchorY, sizeof(int), 1, output);
                 fwrite(&layers[i].visible, sizeof(bool), 1, output);
+                fwrite(&layers[i].scale, sizeof(int), 1, output);
                 fwrite(&layers[i].rotation, sizeof(int), 1, output);
 
                 uint32_t name_len = strlen(layers[i].name);
