@@ -7,6 +7,7 @@
 #include "interface.h"
 #include "color.h"
 #include "shared.h"
+#include "clamp.h"
 
 class Editor
 {
@@ -26,8 +27,9 @@ class Editor
         int start_resize_x;
         int start_resize_y;
         float start_scale;
-        int resize_grabbed = 0;
-
+        bool resize_grabbed = false;
+        
+        int start_rotation;
         int start_rotate_x;
         int start_rotate_y;
         bool rotate_grabbed = false;
@@ -415,13 +417,6 @@ class Editor
             }   
         }
 
-        void set_rotation(Layer* l, int rotation)
-        {
-            l->rotation++;
-            l->sin = sin(l->rotation * PI / 180.0);
-            l->cos = cos(l->rotation * PI / 180.0);
-        }
-
         void check_resize_and_rotate_clicks(int state, int button, int x, int y, bool held)
         {            
             Layer l = layer_manager->get_active_layer();
@@ -460,6 +455,7 @@ class Editor
                 rotate_grabbed = tap;
                 if (tap)
                 {
+                    start_rotation = l.rotation;
                     start_rotate_x = x;
                     start_rotate_y = y;
                 }
@@ -474,10 +470,10 @@ class Editor
 
         void apply_rotate(Layer *l, int x, int y)
         {
-            float center_x = l->anchorX + l->image->width/2.0;
-            float center_y = l->anchorY + l->image->height/2.0;
+            float center_x = l->anchorX + l->image->width*l->scale/2.0;
+            float center_y = l->anchorY + l->image->height*l->scale/2.0;
 
-            float rotation = atan2(center_y - y, center_x - x) + 3*PI/2.0;
+            float rotation = fmod(start_rotation*PI/180.0 + atan2(center_y - y, center_x - x) + 3*PI/2.0, 2*PI);
             l->rotation = (int)(rotation/PI * 180);
             l->sin = sin(l->rotation*PI/180.0);
             l->cos = cos(l->rotation*PI/180.0);

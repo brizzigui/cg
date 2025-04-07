@@ -7,6 +7,7 @@
 #include "layer_manager.h"
 #include "keyboard.h"
 #include "shared.h"
+#include "clamp.h"
 
 #define POPUP_ROUTINE_NEW_LAYER 0
 #define POPUP_ROUTINE_EFFECTS 1
@@ -655,7 +656,7 @@ class Popup
         void translate_common_slider(int x, int y)
         {
             x = (x-anchorX-30);
-            ((std_selectable_values *)(var))->size = std::clamp((x/250.0)*100, 1.0, 100.0);
+            ((std_selectable_values *)(var))->size = clamp((x/250.0)*100, 1.0, 100.0);
         }
 
         void update_special_click_configs(int state, int button, int x, int y, bool held)
@@ -765,12 +766,12 @@ class Popup
 
             if (index < 4)  // 4 is gamma correction, which has a different scale
             {
-                adjustment_tracker[index].value = std::clamp((int)((x/250.0)*200-100), -100, 100);  
+                adjustment_tracker[index].value = clamp((int)((x/250.0)*200-100), -100, 100);  
             }
             
             else            // gamma correction scale
             {
-                adjustment_tracker[index].value = std::clamp((x/250.0)*2+1, 1.0, 3.0);  
+                adjustment_tracker[index].value = clamp((x/250.0)*2+1, 1.0, 3.0);  
             }
         }
 

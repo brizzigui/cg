@@ -4,6 +4,7 @@
 #include "gl_canvas2d.h"
 #include "canvas_pro.h"
 #include "color.h"
+#include "clamp.h"
 
 #include <chrono>
 #include <vector>
@@ -685,8 +686,8 @@ class Layer_Manager
                     {
                         for (int kj = -radius; kj <= radius; kj++)
                         {
-                            int ni = std::clamp(i + ki, 0, copy->height - 1);
-                            int nj = std::clamp(j + kj, 0, copy->width - 1);
+                            int ni = clamp(i + ki, 0, copy->height - 1);
+                            int nj = clamp(j + kj, 0, copy->width - 1);
                             int base_index = ni * copy->width * 4 + nj * 4;
                             double weight = kernel[ki + radius][kj + radius];
                             
@@ -698,10 +699,10 @@ class Layer_Manager
                     }
                     
                     int base_index = i * copy->width * 4 + j * 4;
-                    copy->matrix[base_index + 2] = (unsigned char)std::clamp((int)out_r, 0, 255);
-                    copy->matrix[base_index + 1] = (unsigned char)std::clamp((int)out_g, 0, 255);
-                    copy->matrix[base_index + 0] = (unsigned char)std::clamp((int)out_b, 0, 255);
-                    copy->matrix[base_index + 3] = (unsigned char)std::clamp((int)out_a, 0, 255);                    
+                    copy->matrix[base_index + 2] = (unsigned char)clamp((int)out_r, 0, 255);
+                    copy->matrix[base_index + 1] = (unsigned char)clamp((int)out_g, 0, 255);
+                    copy->matrix[base_index + 0] = (unsigned char)clamp((int)out_b, 0, 255);
+                    copy->matrix[base_index + 3] = (unsigned char)clamp((int)out_a, 0, 255);                    
                 }
                 
             }
@@ -765,7 +766,7 @@ class Layer_Manager
                 {
                     int base_index = i * img->width * 4 + j * 4;
                     tmp.set_from_rgb(img->matrix[base_index + 2], img->matrix[base_index + 1], img->matrix[base_index], img->matrix[base_index + 3]);
-                    tmp.set_from_hsv(tmp.h, tmp.s, std::clamp(tmp.v + brightness/200.0, 0.0, 1.0), tmp.a);
+                    tmp.set_from_hsv(tmp.h, tmp.s, clamp(tmp.v + brightness/200.0, 0.0, 1.0), tmp.a);
                     // dividing by 200 makes our scale a little more usable
 
                     img->matrix[base_index + 2] = (unsigned char)tmp.r;
@@ -784,9 +785,9 @@ class Layer_Manager
                 {
                     int base_index = i * img->width * 4 + j * 4;
 
-                    tmp.r = std::clamp((img->matrix[base_index + 2]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
-                    tmp.g = std::clamp((img->matrix[base_index + 1]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
-                    tmp.b = std::clamp((img->matrix[base_index + 0]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    tmp.r = clamp((img->matrix[base_index + 2]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    tmp.g = clamp((img->matrix[base_index + 1]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
+                    tmp.b = clamp((img->matrix[base_index + 0]-128) * (1 + contrast/200.0) + 128, 0.0, 255.0);
                     // dividing by 200 makes our scale a little more usable
 
                     img->matrix[base_index + 2] = (unsigned char)tmp.r;
@@ -810,7 +811,7 @@ class Layer_Manager
                 {
                     int base_index = i * img->width * 4 + j * 4;
                     tmp.set_from_rgb(img->matrix[base_index + 2], img->matrix[base_index + 1], img->matrix[base_index], img->matrix[base_index + 3]);
-                    tmp.set_from_hsv(tmp.h, std::clamp(tmp.s + pow(saturation/100.0, 2) * get_sign(saturation), 0.0, 1.0), tmp.v, tmp.a);
+                    tmp.set_from_hsv(tmp.h, clamp(tmp.s + pow(saturation/100.0, 2) * get_sign(saturation), 0.0, 1.0), tmp.v, tmp.a);
                     // squaring makes it more usable
 
                     img->matrix[base_index + 2] = (unsigned char)tmp.r;
@@ -829,8 +830,8 @@ class Layer_Manager
                 {
                     int base_index = i * img->width * 4 + j * 4;
 
-                    tmp.r = std::clamp(img->matrix[base_index + 2] * (1 + temperature/200.0), 0.0, 255.0);
-                    tmp.b = std::clamp(img->matrix[base_index + 0] * (1 - temperature/200.0), 0.0, 255.0);
+                    tmp.r = clamp(img->matrix[base_index + 2] * (1 + temperature/200.0), 0.0, 255.0);
+                    tmp.b = clamp(img->matrix[base_index + 0] * (1 - temperature/200.0), 0.0, 255.0);
 
                     img->matrix[base_index + 2] = (unsigned char)tmp.r;
                     img->matrix[base_index    ] = (unsigned char)tmp.b;
@@ -847,9 +848,9 @@ class Layer_Manager
                 {
                     int base_index = i * img->width * 4 + j * 4;
 
-                    tmp.r = std::clamp(pow((double)img->matrix[base_index + 2]/255.0, 1/gamma)*255, 0.0, 255.0);
-                    tmp.g = std::clamp(pow((double)img->matrix[base_index + 1]/255.0, 1/gamma)*255, 0.0, 255.0);
-                    tmp.b = std::clamp(pow((double)img->matrix[base_index + 0]/255.0, 1/gamma)*255, 0.0, 255.0);
+                    tmp.r = clamp(pow((double)img->matrix[base_index + 2]/255.0, 1/gamma)*255, 0.0, 255.0);
+                    tmp.g = clamp(pow((double)img->matrix[base_index + 1]/255.0, 1/gamma)*255, 0.0, 255.0);
+                    tmp.b = clamp(pow((double)img->matrix[base_index + 0]/255.0, 1/gamma)*255, 0.0, 255.0);
 
                     img->matrix[base_index + 2] = (unsigned char)tmp.r;
                     img->matrix[base_index + 1] = (unsigned char)tmp.g;
