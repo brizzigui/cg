@@ -227,7 +227,7 @@ class Widget
 
         int safe_first_shown_index_update()
         {
-            if (first_shown + 3 > layer_manager->layers.size())
+            if (first_shown + 3 > (int)layer_manager->layers.size())
             {
                 if (first_shown - 1 < 0)
                 {
@@ -257,7 +257,7 @@ class Widget
                 }
                 else if (clicked_button == WIDGET_LAYER_UP_BUTTON)
                 {
-                    first_shown = (first_shown + 3 + 1 > layer_manager->layers.size()) ? first_shown : first_shown + 1;
+                    first_shown = (first_shown + 3 + 1 > (int)layer_manager->layers.size()) ? first_shown : first_shown + 1;
                 }
                 else if (clicked_button == WIDGET_LAYER_DOWN_BUTTON)
                 {
@@ -323,7 +323,7 @@ class Widget
             regenerate_alpha_slider();
         }
 
-        bool click_hue_slider(int button, int x, int y, bool held)
+        bool click_hue_slider(int button, int x, int y)
         {
             bool tap =
                     button == 0 &&
@@ -337,7 +337,7 @@ class Widget
             return tap || hue_slider_simple_held;
         }
 
-        void translate_hue_coords(int x, int y)
+        void translate_hue_coords(int x)
         {
             x = (x-anchorX-sv_map_margin);
             x = (x < 0) ? 0 : x;
@@ -350,7 +350,7 @@ class Widget
             regenerate_alpha_slider();
         }
         
-        void translate_alpha_coords(int x, int y)
+        void translate_alpha_coords(int x)
         {
             x = (x-anchorX-sv_map_margin);
             x = (x < 0) ? 0 : x;
@@ -360,7 +360,7 @@ class Widget
             editor->active_color.set_from_hsv(editor->active_color.h, editor->active_color.s, editor->active_color.v, alpha);
         }
 
-        bool click_alpha_slider(int button, int x, int y, bool held)
+        bool click_alpha_slider(int button, int x, int y)
         {
             bool tap =
                     button == 0 &&
@@ -400,14 +400,14 @@ class Widget
 
         void update_color_picker(int button, int x, int y, bool held, int state)
         {
-            if (click_hue_slider(button, x, y, held))
+            if (click_hue_slider(button, x, y))
             {
-                translate_hue_coords(x, y);
+                translate_hue_coords(x);
             }
 
-            else if (click_alpha_slider(button, x, y, held))
+            else if (click_alpha_slider(button, x, y))
             {
-                translate_alpha_coords(x, y);
+                translate_alpha_coords(x);
             }
 
             else if (click_sv_map(x, y, held))

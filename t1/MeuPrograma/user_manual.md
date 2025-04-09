@@ -1,6 +1,6 @@
 # BIMP - Manual de Uso
 
-Bem-vindo ao BIMP - o Brizzi Image Manipulation Program. O nome de trata de uma cópia do GIMP, programa análogo do GNU.
+Bem-vindo ao BIMP - o Brizzi Image Manipulation Program. O nome se trata de uma cópia do GIMP, programa análogo do GNU.
 
 ## Compilando
 
@@ -28,7 +28,7 @@ Para continuar seu guia rápido, clique em `Load quick demo`.
 Agora, você já está no editor do BIMP. 
 
 ### Camadas
-Se você carregou a demo, estará vendo a sua direita o seu seletor de camadas. Note que você tem duas camadas, mas pode ter quantas quiser, é só clicar no botão de adicionar camada abaixo. Veja que em cada camada há algumas informações e botões:
+Se você carregou a demo, estará vendo à sua direita o seletor de camadas. Note que você tem duas camadas, mas pode ter quantas quiser, é só clicar no botão de adicionar camada abaixo. Veja que em cada camada há algumas informações e botões:
 
 - Índice
 - Nome
@@ -42,13 +42,13 @@ Ademais, uma camada está selecionada quando há um retângulo em sua borda dand
 Com mais de 3 camadas, use as setas grandes para navegar dentro da lista.
 
 ### Seletor de cores
-Acima do seu gerenciador de camadas, há dois botões: ali você seleciona se quer ver as camadas ou seu seletor de cores. Clique na paleta de cores para abrir o seletor.
+Acima do seu gerenciador de camadas, há dois botões: ali, você seleciona se quer ver as camadas ou seu seletor de cores. Clique no ícone da paleta de cores para abrir o seletor.
 
-Agora, você estará vendo o seletor de cores. Basta mexer os sliders para selecionar a cor desejada. Prefere usar valores RGB? Basta usar os botões de +/- e inserir o valor desejado com precisão.
+Agora, você estará vendo o seletor de cores. Basta mexer os sliders para selecionar a cor desejada. Prefere usar valores RGB? Basta usar os botões de `+`/`-` e inserir o valor desejado com precisão.
 
 
 ### Ferramentas
-À sua esquerda estão as ferramentas. Clique com o botão esquerdo para usar cada uma delas. Clique com o botão direito em algumas ferramentas para ver opções adicionais. Segure o mouse para ver o nome da ferramenta. Ferramentas selecionadas ficam com um destaque em sua borda.
+À sua esquerda, estão as ferramentas. Clique com o botão esquerdo para usar cada uma delas. Clique com o botão direito em algumas ferramentas para ver opções adicionais. Segure o mouse sobre uma ferramenta para ver seu nome. Ferramentas selecionadas ficam com um destaque em sua borda.
 
 Vamos testar? Com uma camada ativa selecionada, clique na ferramenta `Pencil`. Agora, clique na área da imagem e pinte uma região. Que obra de arte! :)
 
@@ -64,4 +64,4 @@ Este manual é uma breve introdução, mas não deixe de explorar tudo que o BIM
 
 
 ---
-BIMP, powered by Canvas2D
+BIMP is powered by Canvas2D.

@@ -33,7 +33,6 @@ Senão, passe um float com a escala desejada.
 */
 void CVpro::image::display_bitmap(float x, float y, float scale)
 {
-    int padding = 0;
     for (int i = 0; i < (int)(height*scale); i++)
     {
         for (int j = 0; j < (int)(width*scale); j++)
@@ -232,7 +231,7 @@ void CVpro::autotext(float x, float y, char align, float spacing, const char *te
     vsnprintf(buffer, 1024, text, args);
 
     int k = 0;
-    for (int i = 0; i < strlen(buffer) + 1; i++)
+    for (int i = 0; i < (int)strlen(buffer) + 1; i++)
     {
         if (buffer[i] == '\n' || buffer[i] == '\0')
         {            
@@ -289,7 +288,7 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     fread(&width, 4, 1, descriptor);
     fread(&height, 4, 1, descriptor);
     fseek(descriptor, 2, SEEK_CUR);
-    int read = fread(&bits, 2, 1, descriptor);
+    fread(&bits, 2, 1, descriptor);
     bytes = bits/8;
 
     // número de bytes em uma linha (data + 4-indexing alignment)

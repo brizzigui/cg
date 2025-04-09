@@ -160,7 +160,7 @@ class Interface
 
         void deselect_all_actions()
         {
-            for (int i = 0; i < actions.size(); i++)
+            for (int i = 0; i < (int)actions.size(); i++)
             {
                 actions[i].selected = false;
             }
@@ -168,7 +168,7 @@ class Interface
 
         void change_selected_action(int index)
         {
-            for (int i = 0; i < actions.size(); i++)
+            for (int i = 0; i < (int)actions.size(); i++)
             {
                 actions[i].selected = false;
             }
@@ -215,7 +215,7 @@ class Interface
 
         void update_state(int state, int button, int x, int y)
         {
-            for (int i = 0; i < actions.size(); i++)
+            for (int i = 0; i < (int)actions.size(); i++)
             {
                 if (validate_click(i, x, y))
                 {
@@ -275,7 +275,7 @@ class Interface
 
         void display_actions()
         {
-            for (int i = 0; i < actions.size(); i++)
+            for (int i = 0; i < (int)actions.size(); i++)
             {
                 draw_action(actions[i], MENU_ANCHOR, MENU_ANCHOR + i*MENU_SPACING);
             }

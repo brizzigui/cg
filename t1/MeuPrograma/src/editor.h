@@ -38,7 +38,7 @@ class Editor
 
         Action* get_selected_action()
         {
-            for (int i = 0; i < interface->actions.size(); i++)
+            for (int i = 0; i < (int)interface->actions.size(); i++)
             {
                 if (interface->actions[i].selected)
                 {
@@ -62,7 +62,7 @@ class Editor
                    (i < l.anchorY + l.image->height);
         }
 
-        void move(int state, int button, int x, int y, bool held)
+        void move(int state, int button, int x, int y)
         {
             if (button == 0 && state == 0)
             {
@@ -163,7 +163,7 @@ class Editor
             }
         }
 
-        void pencil(Action *action, int button, int x, int y, bool held)
+        void pencil(Action *action, int x, int y, bool held)
         {            
             if (held)
             {
@@ -227,7 +227,7 @@ class Editor
             }
         }
 
-        void spray(Action *action, int button, int x, int y, bool held)
+        void spray(Action *action, int x, int y, bool held)
         {
             if (held)
             {
@@ -249,7 +249,7 @@ class Editor
         }
 
 
-        void eraser(Action *action, int button, int x, int y, bool held)
+        void eraser(Action *action, int x, int y, bool held)
         {
             if (held)
             {
@@ -306,7 +306,7 @@ class Editor
             }
         }
 
-        void marker(Action *action, int button, int x, int y, bool held)
+        void marker(Action *action, int x, int y, bool held)
         {
             if (held)
             {
@@ -347,7 +347,7 @@ class Editor
             return start_color;
         }
 
-        void fill(int state, int button, int x, int y, bool held)
+        void fill(int state, int button, int x, int y)
         {
             Layer l = layer_manager->get_active_layer();
             // must have clicked and must be starting at a valid layer pixel
@@ -417,7 +417,7 @@ class Editor
             }   
         }
 
-        void check_resize_and_rotate_clicks(int state, int button, int x, int y, bool held)
+        void check_resize_and_rotate_clicks(int state, int button, int x, int y)
         {            
             Layer l = layer_manager->get_active_layer();
 
@@ -479,9 +479,9 @@ class Editor
             l->cos = cos(l->rotation*PI/180.0);
         }
 
-        void resize_and_rotate(int state, int button, int x, int y, bool held)
+        void resize_and_rotate(int state, int button, int x, int y)
         {
-            check_resize_and_rotate_clicks(state, button, x, y, held);
+            check_resize_and_rotate_clicks(state, button, x, y);
 
             Layer *l = layer_manager->get_active_layer_ptr();
             if (resize_grabbed)
@@ -496,36 +496,36 @@ class Editor
             }
         }
 
-        void process_update(Action *action, int state, int button, int x, int y, bool held)
+        void process_update(Action *action, int state, int button, int x, int y)
         {
             if (strcmp(action->label, "Move") == 0)
             {
-                move(state, button, x, y, held);
+                move(state, button, x, y);
             }
 
             else if (strcmp(action->label, "Pencil") == 0)
             {
-                pencil(action, button, x, y, held);
+                pencil(action, button, x, y);
             }
 
             else if (strcmp(action->label, "Spray") == 0)
             {
-                spray(action, button, x, y, held);
+                spray(action, button, x, y);
             }
 
             else if (strcmp(action->label, "Eraser") == 0)
             {
-                eraser(action, button, x, y, held);
+                eraser(action, button, x, y);
             }
 
             else if (strcmp(action->label, "Marker") == 0)
             {
-                marker(action, button, x, y, held);
+                marker(action, button, x, y);
             }
 
             else if (strcmp(action->label, "Fill") == 0)
             {
-                fill(state, button, x, y, held);
+                fill(state, button, x, y);
             }
 
             else if (strcmp(action->label, "Color Picker") == 0)
@@ -535,7 +535,7 @@ class Editor
             
             else if (strcmp(action->label, "Resize & Rotate") == 0)
             {
-                resize_and_rotate(state, button, x, y, held);
+                resize_and_rotate(state, button, x, y);
             }
             
         }
@@ -592,7 +592,7 @@ class Editor
 
             if (action != NULL && (is_inside_area(x, y) || strcmp(action->label, "Resize & Rotate") == 0) && layer_manager->is_valid())
             {
-                process_update(action, state, button, x-layer_manager->anchorX, y-layer_manager->anchorY, held);
+                process_update(action, state, button, x-layer_manager->anchorX, y-layer_manager->anchorY);
                 mouse_last_x = x-layer_manager->anchorX;
                 mouse_last_y = y-layer_manager->anchorY;
             }
