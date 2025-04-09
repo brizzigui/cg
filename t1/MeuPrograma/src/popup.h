@@ -653,17 +653,17 @@ class Popup
             return tap || simple_held;
         }
 
-        void translate_common_slider(int x)
+        void translate_common_slider(int x, int y)
         {
             x = (x-anchorX-30);
             ((std_selectable_values *)(var))->size = clamp((x/250.0)*100, 1.0, 100.0);
         }
 
-        void update_special_click_configs(int state, int button, int x, int y)
+        void update_special_click_configs(int state, int button, int x, int y, bool held)
         {
             if(check_common_slider(state, button, x, y))
             {
-                translate_common_slider(x);
+                translate_common_slider(x, y);
             }
         }
 
@@ -744,7 +744,7 @@ class Popup
             
         }
 
-        bool adjustment_slider_check(int index, int state, int button, int x, int y)
+        bool adjustment_slider_check(int index, int state, int button, int x, int y, bool held)
         {
             int actual_anchorY = anchorY + 110;
 
@@ -760,7 +760,7 @@ class Popup
             return tap || adjustment_tracker[index].held;
         }
 
-        void translate_adjustment_slider(int index, int x)
+        void translate_adjustment_slider(int index, int x, int y)
         {
             x = (x-anchorX-30);
 
@@ -784,18 +784,18 @@ class Popup
                     y < anchorY + height - 30;
         }
 
-        void update_adjustments_routine(int state, int button, int x, int y)
+        void update_adjustments_routine(int state, int button, int x, int y, bool held)
         {
             if (!layer_manager->is_valid())
             {
                 return;
             }
             
-            for (int i = 0; i < (int)adjustment_tracker.size(); i++)
+            for (int i = 0; i < adjustment_tracker.size(); i++)
             {
-                if (adjustment_slider_check(i, state, button, x, y))
+                if (adjustment_slider_check(i, state, button, x, y, held))
                 {
-                    translate_adjustment_slider(i, x);
+                    translate_adjustment_slider(i, x, y);
                 }
             } 
 
@@ -838,7 +838,7 @@ class Popup
         void update_helds(bool held)
         {
             simple_held &= held;
-            for (int i = 0; i < (int)adjustment_tracker.size(); i++)
+            for (int i = 0; i < adjustment_tracker.size(); i++)
             {
                 adjustment_tracker[i].held &= held;
             }
@@ -864,7 +864,7 @@ class Popup
                     break;
 
                 case POPUP_ROUTINE_ADJUSTMENTS:
-                    update_adjustments_routine(state, button, x, y);
+                    update_adjustments_routine(state, button, x, y, held);
                     break;
 
                 case POPUP_ROUTINE_EFFECTS:
@@ -873,12 +873,12 @@ class Popup
 
                 case POPUP_ROUTINE_SPRAY_SETTINGS:
                 case POPUP_ROUTINE_MARKER_SETTINGS:
-                    update_special_click_configs(state, button, x, y);
+                    update_special_click_configs(state, button, x, y, held);
                     break;
 
                 case POPUP_ROUTINE_ERASER_SETTINGS:
                 case POPUP_ROUTINE_PENCIL_SETTINGS:
-                    update_special_click_configs(state, button, x, y);
+                    update_special_click_configs(state, button, x, y, held);
                     update_type_special_click_configs(state, button, x, y);
                     break;
                 

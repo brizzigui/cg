@@ -195,7 +195,9 @@ class Layer_Manager
             {
                 return std::make_pair(round((display_x-l.anchorX)/l.scale+l.anchorX), round((display_y-l.anchorY)/l.scale+l.anchorY));
             }
-                        
+            
+            float angle = l.rotation * PI / 180.0;
+            
             int center_x = l.anchorX + (l.image->width*l.scale)/2.0;
             int center_y = l.anchorY + (l.image->height*l.scale)/2.0;
 
@@ -338,7 +340,7 @@ class Layer_Manager
 
         void switch_order(int l_origin, int l_target)
         {
-            if (l_target >= (int)layers.size() || l_target < 0)
+            if (l_target >= layers.size() || l_target < 0)
             {
                 return;
             }
@@ -397,7 +399,7 @@ class Layer_Manager
             uint32_t n_layers;
             fread(&n_layers, sizeof(uint32_t), 1, input);
             
-            for (int i = 0; i < (int)n_layers; i++)
+            for (int i = 0; i < n_layers; i++)
             {
                 Layer l;
 
@@ -447,7 +449,7 @@ class Layer_Manager
             uint32_t n_layers = layers.size();
             fwrite(&n_layers, sizeof(uint32_t), 1, output);
 
-            for (int i = 0; i < (int)n_layers; i++)
+            for (int i = 0; i < n_layers; i++)
             {
                 fwrite(&layers[i].image->height, sizeof(int), 1, output);
                 fwrite(&layers[i].image->width, sizeof(int), 1, output);
