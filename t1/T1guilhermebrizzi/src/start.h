@@ -39,9 +39,9 @@ class Start
             this->screen_width = screen_width;
             this->screen_height = screen_height;
 
-            logo = CVpro::load_bitmap("./MeuPrograma/images/logo.bmp");
-            project_to_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/project_to_layer.bmp");
-            back_arrow = CVpro::load_bitmap("./MeuPrograma/images/back_arrow.bmp");
+            logo = CVpro::load_bitmap("./T1guilhermebrizzi/images/logo.bmp");
+            project_to_layer_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/project_to_layer.bmp");
+            back_arrow = CVpro::load_bitmap("./T1guilhermebrizzi/images/back_arrow.bmp");
 
             is_open = true;
             opening_project = false;
@@ -49,7 +49,7 @@ class Start
 
             this->layer_manager = layer_manager;
             strcpy(keyboard_buffer, "");
-            strcpy(demo_path, "./MeuPrograma/projects/demo.bimp");
+            strcpy(demo_path, "./T1guilhermebrizzi/projects/demo.bimp");
         };
 
         void close()
@@ -73,7 +73,7 @@ class Start
             project_to_layer_icon->display_bitmap_anchored(anchorX, anchorY, 2.0, 'c', 't');
 
             CVpro::color(255, 255, 255);
-            CVpro::autotext(anchorX, anchorY+150, 'c', 15, "Type a BIMP project file name:\n(root dir: ./MeuPrograma/projects/)");
+            CVpro::autotext(anchorX, anchorY+150, 'c', 15, "Type a BIMP project file name:\n(root dir: ./T1guilhermebrizzi/projects/)");
 
             CVpro::color(0, 0, 0);
             CV::rectFill(anchorX-150, anchorY+200, anchorX+150, anchorY+230);
@@ -170,7 +170,7 @@ class Start
             if (clicked_open_project(x, y))
             {
                 char path[256];
-                sprintf(path, "./MeuPrograma/projects/%s.bimp", keyboard_buffer);
+                sprintf(path, "./T1guilhermebrizzi/projects/%s.bimp", keyboard_buffer);
                 if(layer_manager->restore_project(path))
                 {
                     close();

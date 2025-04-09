@@ -70,50 +70,50 @@ class Interface
         {
             std_selectable_values *values;
 
-            CVpro::image *move_icon = CVpro::load_bitmap("./MeuPrograma/images/move.bmp");
+            CVpro::image *move_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/move.bmp");
             register_action("Move", move_icon, true, NULL);
 
             values = new std_selectable_values(5, 0);
-            CVpro::image *pencil_icon = CVpro::load_bitmap("./MeuPrograma/images/pencil.bmp");
+            CVpro::image *pencil_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/pencil.bmp");
             register_action("Pencil", pencil_icon, true, values);
 
             values = new std_selectable_values(10, 0);
-            CVpro::image *spray_icon = CVpro::load_bitmap("./MeuPrograma/images/spray.bmp");
+            CVpro::image *spray_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/spray.bmp");
             register_action("Spray", spray_icon, true, values);
 
             values = new std_selectable_values(10, 0);
-            CVpro::image *marker_icon = CVpro::load_bitmap("./MeuPrograma/images/marker.bmp");
+            CVpro::image *marker_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/marker.bmp");
             register_action("Marker", marker_icon, true, values);
 
-            CVpro::image *fill_icon = CVpro::load_bitmap("./MeuPrograma/images/fill.bmp");
+            CVpro::image *fill_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/fill.bmp");
             register_action("Fill", fill_icon, true, NULL);
 
             values = new std_selectable_values(10, 0);
-            CVpro::image *eraser_icon = CVpro::load_bitmap("./MeuPrograma/images/eraser.bmp");
+            CVpro::image *eraser_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/eraser.bmp");
             register_action("Eraser", eraser_icon, true, values);
 
-            CVpro::image *picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker.bmp");
+            CVpro::image *picker_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/picker.bmp");
             register_action("Color Picker", picker_icon, true, NULL);
             
-            CVpro::image *resize_icon = CVpro::load_bitmap("./MeuPrograma/images/resize.bmp");
+            CVpro::image *resize_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/resize.bmp");
             register_action("Resize & Rotate", resize_icon, true, NULL);
             
-            CVpro::image *effects_icon = CVpro::load_bitmap("./MeuPrograma/images/effects.bmp");
+            CVpro::image *effects_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/effects.bmp");
             register_action("Effects", effects_icon, false, NULL);
 
-            CVpro::image *adjustments_icon = CVpro::load_bitmap("./MeuPrograma/images/adjustments.bmp");
+            CVpro::image *adjustments_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/adjustments.bmp");
             register_action("Adjustments", adjustments_icon, false, NULL);
 
-            CVpro::image *horizontal_flip = CVpro::load_bitmap("./MeuPrograma/images/horizontal_flip.bmp");
+            CVpro::image *horizontal_flip = CVpro::load_bitmap("./T1guilhermebrizzi/images/horizontal_flip.bmp");
             register_action("Horizontal Flip", horizontal_flip, false, NULL);
 
-            CVpro::image *vertical_flip = CVpro::load_bitmap("./MeuPrograma/images/vertical_flip.bmp");
+            CVpro::image *vertical_flip = CVpro::load_bitmap("./T1guilhermebrizzi/images/vertical_flip.bmp");
             register_action("Vertical Flip", vertical_flip, false, NULL);
 
-            CVpro::image *save_icon = CVpro::load_bitmap("./MeuPrograma/images/save.bmp");
+            CVpro::image *save_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/save.bmp");
             register_action("Save", save_icon, false, NULL);
 
-            CVpro::image *export_icon = CVpro::load_bitmap("./MeuPrograma/images/export.bmp");
+            CVpro::image *export_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/export.bmp");
             register_action("Export", export_icon, false, NULL);            
         }
 

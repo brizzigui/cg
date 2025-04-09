@@ -80,12 +80,12 @@ class Popup
             anchorY = screen_height/2.0-height/2.0;
             strcpy(keyboard_buffer, "");
 
-            this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
-            this->blank_to_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/blank_to_layer.bmp");
-            this->file_to_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/file_to_layer.bmp");
-            this->layer_to_file_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_to_file.bmp");
-            this->layer_to_img_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_to_img.bmp");
-            this->x_icon = CVpro::load_bitmap("./MeuPrograma/images/x.bmp");
+            this->new_layer_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/new_layer.bmp");
+            this->blank_to_layer_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/blank_to_layer.bmp");
+            this->file_to_layer_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/file_to_layer.bmp");
+            this->layer_to_file_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/layer_to_file.bmp");
+            this->layer_to_img_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/layer_to_img.bmp");
+            this->x_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/x.bmp");
         }
 
         void give_root_access(Layer_Manager *layer_manager)
@@ -185,7 +185,7 @@ class Popup
             file_to_layer_icon->display_bitmap_anchored(anchorX + 3.5*width/5.0, anchorY + 125, 1.0, 'c', 't');
 
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX + 3.5*width/5.0, anchorY + 200, 'c', 15, "Import from file.\nType file name:\n(root dir: ./MeuPrograma/images/)");
+            CVpro::autotext(anchorX + 3.5*width/5.0, anchorY + 200, 'c', 15, "Import from file.\nType file name:\n(root dir: ./T1guilhermebrizzi/images/)");
 
             if (invalid_file_add_layer_routine)
             {
@@ -359,7 +359,7 @@ class Popup
             layer_to_file_icon->display_bitmap_anchored(anchorX + width/2.0, anchorY + 110, 1.0, 'c', 't');
 
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX + width/2.0, anchorY + 180, 'c', 15, "Type a file name:\n(root dir: ./MeuPrograma/projects/)");
+            CVpro::autotext(anchorX + width/2.0, anchorY + 180, 'c', 15, "Type a file name:\n(root dir: ./T1guilhermebrizzi/projects/)");
             
             CV::color(0, 0, 0);
             CV::rectFill(anchorX + width/2.0 - 150, anchorY + 220, anchorX + width/2.0 + 150, anchorY + 250);
@@ -391,7 +391,7 @@ class Popup
             layer_to_img_icon->display_bitmap_anchored(anchorX + width/2.0, anchorY + 110, 1.0, 'c', 't');
 
             CV::color(1, 1, 1);
-            CVpro::autotext(anchorX + width/2.0, anchorY + 180, 'c', 15, "Type a file name:\n(root dir: ./MeuPrograma/exports/)");
+            CVpro::autotext(anchorX + width/2.0, anchorY + 180, 'c', 15, "Type a file name:\n(root dir: ./T1guilhermebrizzi/exports/)");
             
             CV::color(0, 0, 0);
             CV::rectFill(anchorX + width/2.0 - 150, anchorY + 220, anchorX + width/2.0 + 150, anchorY + 250);
@@ -575,7 +575,7 @@ class Popup
                 y < anchorY + 300 + new_layer_icon->height
             )
             {
-                char tmp[256] = "./MeuPrograma/images/";
+                char tmp[256] = "./T1guilhermebrizzi/images/";
                 strcat(tmp, keyboard_buffer);
 
                 FILE *ptr = fopen(tmp, "r");
@@ -607,7 +607,7 @@ class Popup
             if (check_common_accept_button(state, button, x, y))
             {
                 char path[256];
-                sprintf(path, "./MeuPrograma/projects/%s.bimp", keyboard_buffer);
+                sprintf(path, "./T1guilhermebrizzi/projects/%s.bimp", keyboard_buffer);
                 if(layer_manager->save_project(path))
                 {
                     close();
@@ -625,7 +625,7 @@ class Popup
             if (check_common_accept_button(state, button, x, y))
             {
                 char path[256];
-                sprintf(path, "./MeuPrograma/exports/%s.bmp", keyboard_buffer);
+                sprintf(path, "./T1guilhermebrizzi/exports/%s.bmp", keyboard_buffer);
                 if(layer_manager->export_image(path))
                 {
                     close();

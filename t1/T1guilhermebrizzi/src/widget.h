@@ -73,18 +73,18 @@ class Widget
             this->editor = editor;
             this->popup = popup;
 
-            this->color_picker_icon = CVpro::load_bitmap("./MeuPrograma/images/picker_icon.bmp");
-            this->layer_selector_icon = CVpro::load_bitmap("./MeuPrograma/images/layer_selector.bmp");
-            this->up_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/up_arrow.bmp");
-            this->down_arrow_icon = CVpro::load_bitmap("./MeuPrograma/images/down_arrow.bmp");
-            this->new_layer_icon = CVpro::load_bitmap("./MeuPrograma/images/new_layer.bmp");
-            this->trash_icon = CVpro::load_bitmap("./MeuPrograma/images/trash.bmp");
-            this->open_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/open_eye.bmp");
-            this->closed_eye_icon = CVpro::load_bitmap("./MeuPrograma/images/closed_eye.bmp");
-            this->z_index_up_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_up.bmp");
-            this->z_index_down_icon = CVpro::load_bitmap("./MeuPrograma/images/z-index_down.bmp");
-            this->plus_icon = CVpro::load_bitmap("./MeuPrograma/images/plus.bmp");
-            this->minus_icon = CVpro::load_bitmap("./MeuPrograma/images/minus.bmp");
+            this->color_picker_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/picker_icon.bmp");
+            this->layer_selector_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/layer_selector.bmp");
+            this->up_arrow_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/up_arrow.bmp");
+            this->down_arrow_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/down_arrow.bmp");
+            this->new_layer_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/new_layer.bmp");
+            this->trash_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/trash.bmp");
+            this->open_eye_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/open_eye.bmp");
+            this->closed_eye_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/closed_eye.bmp");
+            this->z_index_up_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/z-index_up.bmp");
+            this->z_index_down_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/z-index_down.bmp");
+            this->plus_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/plus.bmp");
+            this->minus_icon = CVpro::load_bitmap("./T1guilhermebrizzi/images/minus.bmp");
 
             this->sv_map = generate_sv_map_base();
             regenerate_sv_map();

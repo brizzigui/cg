@@ -506,11 +506,15 @@ class Layer_Manager
 
                     for (int l = 0; l < (int)layers.size(); l++)
                     {
+                        std::pair<int, int> actual_coords = translate_scale_rotation(layers[l], j, i);
+                        int actual_i = actual_coords.second;
+                        int actual_j = actual_coords.first;
+
                         // actual layers
-                        if(layers[l].visible && is_valid_pixel(layers[l], i, j))
+                        if(layers[l].visible && is_valid_pixel(layers[l], actual_i, actual_j))
                         {
                             float r, g, b, a;
-                            int base_index = (i-layers[l].anchorY) * layers[l].image->width * 4 + (j-layers[l].anchorX) * 4;
+                            int base_index = (actual_i-layers[l].anchorY) * layers[l].image->width * 4 + (actual_j-layers[l].anchorX) * 4;
 
                             r = layers[l].image->matrix[base_index + 2]/255.0;
                             g = layers[l].image->matrix[base_index + 1]/255.0;
