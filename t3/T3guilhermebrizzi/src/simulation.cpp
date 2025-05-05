@@ -1,5 +1,6 @@
 #include "simulation.h"
 #include "special_events.h"
+#include "enemy.h"
 #include <iostream>
 
 Simulation::Simulation(int screen_width, int screen_height)
@@ -28,8 +29,80 @@ void Simulation::handle_system_event(Event *e)
     
 }
 
+void Simulation::repopulate()
+{
+    if (rand()%100 == 0)
+    {
+        add_entity(new Enemy(rand()%screen_width, rand()%screen_height, Vector2(0, 1), 0, 1));
+    }
+}
+
+bool Simulation::check_collision(Entity *a, Entity *b)
+{
+    // will need to do it pixel based but with bounding box approximation
+    // its the only way
+    // kill all the Footprints
+    // entity holds Bounding_Box
+    // Entity::display is responsible for updating Bounding_Box with accuracy
+    // check if bounding box overlaps here
+    // for overlap, check pixels
+    // if do, check collision
+    // return true if collide
+    // keep going if not
+
+    // updating bounding box shouldnt be hard.
+    // get max_x, max_y, min_x, min_y
+    // bam! bounding box
+
+    // i think this is finally a viable solution
+
+    if (a->box.min_x > b->box.max_x || a->box.max_x < b->box.min_x || a->box.min_y > b->box.max_y || a->box.max_y < b->box.min_y)
+    {
+        return false;
+    }
+    
+    Bounding_Box overlap = Bounding_Box(
+                                        std::max(a->box.min_x, b->box.min_x),
+                                        std::max(a->box.min_y, b->box.min_y),
+                                        std::min(a->box.max_x, b->box.max_x),
+                                        std::min(a->box.max_y, b->box.max_y)
+                                    );
+    
+    for (int i = overlap.min_y; i < overlap.max_y; i++)
+    {
+        for (int j = overlap.min_x; j < overlap.max_x; j++)
+        {
+            int base_index = i * Footprint::width + j;
+            if (a->footprint.matrix[base_index] && b->footprint.matrix[base_index])
+            {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+void Simulation::collide()
+{
+    for (int outer = 0; outer < (int)entities.size(); outer++)
+    {
+        for (int inner = outer + 1; inner < (int)entities.size(); inner++)
+        {
+            if (check_collision(entities[outer].get(), entities[inner].get()))
+            {
+                std::cout << "collided entities with index " << outer << ", " << inner << std::endl;
+                //entities[outer].get()->collide();
+                //entities[inner].get()->collide();
+            }
+        }
+    }
+}
+
 void Simulation::update()
 {
+    collide();
+
     for (auto &entity : entities)
     {
         entity->tick();
@@ -46,6 +119,8 @@ void Simulation::update()
             handle_system_event(event.get());
         }
     }
+
+    repopulate();
 
     events.clear();
 }

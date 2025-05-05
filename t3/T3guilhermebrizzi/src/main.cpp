@@ -20,6 +20,7 @@
 #include "special_events.h"
 #include "simulation.h"
 #include "tank.h"
+#include "footprint.h"
 
 Controller *controller = NULL;
 Simulation *simulation = NULL;
@@ -59,6 +60,9 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
 int main(void)
 {
    srand(time(NULL));
+   Footprint::width = screenWidth;
+   Footprint::height = screenHeight;
+
    controller = new Controller(60, true);
    simulation = new Simulation(screenWidth, screenHeight);
    simulation->add_entity(new Tank(200, 100, Vector2(PI/4), 1));

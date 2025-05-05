@@ -4,14 +4,14 @@
 
 Gunshot::Gunshot(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 {
+    texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/gunshot.bmp");
     this->direction = direction;
     this->speed = speed;
 }
 
 void Gunshot::draw()
 {
-    CVpro::color(255, 255, 255);
-    CV::circleFill(x, y, 5, 15);
+    box = texture->display_bitmap(x, y, 1.0, footprint);
 }
 
 void Gunshot::tick()

@@ -17,6 +17,9 @@ class Simulation
         std::vector<std::unique_ptr<Event>> events;
 
         void handle_system_event(Event *e);
+        void repopulate();
+        void collide();
+        bool check_collision(Entity *a, Entity *b);
 
     public:
         Simulation(int screen_width, int screen_height);

@@ -6,12 +6,14 @@
     vire PRO agora!
 */
 
-// CVpro version 1.1 - t3 - last edited 02/05/2025
+// CVpro GAMING version 2.0 - t3
 
 #ifndef CANVAS_PRO_H
 #define CANVAS_PRO_H
 
 #include "gl_canvas2d.h"
+#include "footprint.h"
+#include "bounding_box.h"
 #include <stdarg.h>
 
 typedef unsigned char subpixel;
@@ -32,7 +34,9 @@ namespace CVpro {
 
             image(int width, int height, subpixel *matrix);
             void display_bitmap(float x, float y, float scale);
-            void display_bitmap_anchored(float x, float y, float scale, char anchorX, char anchorY);
+            Bounding_Box display_bitmap(float x, float y, float scale, Footprint fp);
+            void display_bitmap(float x, float y, float scale, float angle);
+            Bounding_Box display_bitmap(float x, float y, float scale, float angle, Footprint fp);
             void destroy_bitmap();
             void flip_bitmap(char axis);
     };

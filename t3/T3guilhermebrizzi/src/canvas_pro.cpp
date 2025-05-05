@@ -5,6 +5,7 @@
 #include <cstdint>
 
 #include "canvas_pro.h"
+#include "bounding_box.h"
 
 CVpro::image::image(int width, int height, subpixel *matrix)
 {
@@ -25,6 +26,7 @@ int get_stride(int width, int bytes)
 
     return stride;
 }
+
 
 /*
 Mostra na tela um CVpro::image, a partir das coordenadas x, y.
@@ -48,37 +50,84 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
 Mostra na tela um CVpro::image, a partir das coordenadas x, y.
 Para manter tamanho original, passe 'scale' como 1.
 Senão, passe um float com a escala desejada.
-
-Tipo de âncora:
-    - anchorX usa literais 'L', 'R' e 'C' para esquerda, direita e centro.
-    - anchorY usa literais 'T', 'B' e 'C' para cima, baixo e centro.
-
-Ancora posição conforme alinhamento em x e y.
 */
-void CVpro::image::display_bitmap_anchored(float x, float y, float scale, char anchorX, char anchorY)
+Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, Footprint fp)
 {
-    if (anchorX == 'R' || anchorX == 'r')
+    Bounding_Box box;
+    for (int i = 0; i < (int)(height*scale); i++)
     {
-        x = x-width*scale;
+        for (int j = 0; j < (int)(width*scale); j++)
+        {
+            int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
+            CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
+            CV::point(x+j, y+i);
+            if(matrix[base_index + 3] > 0)
+            {
+                fp.mark_pixel(x+j, y+i);
+                box.update(x+j, y+i);
+            }
+        }
     }
-
-    else if (anchorX == 'C' || anchorX == 'c')
-    {
-        x = x-(width*scale)/2;
-    }
-
-    if (anchorY == 'B' || anchorY == 'b')
-    {
-        y = y-height*scale;
-    }
-
-    else if (anchorY == 'C' || anchorY == 'c')
-    {
-        y = y-(height*scale)/2;
-    }
-    
-    display_bitmap(x, y, scale);
+    return box;
 }
+
+
+void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
+{
+    int max_dim = height + width;
+    
+    for (int y_dst = - max_dim * scale; y_dst < max_dim * scale; y_dst++) 
+    {
+        for (int x_dst = - max_dim * scale; x_dst < max_dim * scale; x_dst++) 
+        {
+            float x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst) / scale;
+            float y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst) / scale;
+    
+            int i = (int)y_src + height/2.0;
+            int j = (int)x_src + width/2.0;
+    
+            if (i >= 0 && i < height && j >= 0 && j < width) 
+            {
+                int base_index = i * width * 4 + j * 4;
+                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
+                CV::point(x + x_dst, y + y_dst);
+            }
+        }
+    }
+}
+
+Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, float angle, Footprint fp)
+{
+    Bounding_Box box;
+
+    int max_dim = height + width;
+    
+    for (int y_dst = - max_dim * scale; y_dst < max_dim * scale; y_dst++) 
+    {
+        for (int x_dst = - max_dim * scale; x_dst < max_dim * scale; x_dst++) 
+        {
+            float x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst) / scale;
+            float y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst) / scale;
+    
+            int i = (int)y_src + height/2.0;
+            int j = (int)x_src + width/2.0;
+    
+            if (i >= 0 && i < height && j >= 0 && j < width) 
+            {
+                int base_index = i * width * 4 + j * 4;
+                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
+                CV::point(x + x_dst, y + y_dst);
+                if(matrix[base_index + 3] > 0)
+                {
+                    fp.mark_pixel(x + x_dst, y + y_dst);
+                    box.update(x+j, y+i);
+                }
+            }
+        }
+    }
+    return box;
+}
+
 
 /*
 Libera memória da imagem.
