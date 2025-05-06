@@ -19,7 +19,7 @@ Enemy::Enemy(float x, float y, Vector2 direction, float speed, int type) : Entit
 
 void Enemy::draw()
 {
-    box = texture->display_bitmap(x, y, 1.0, footprint);
+    box = texture->display_bitmap(x, y, footprint);
 }
 
 void Enemy::tick()

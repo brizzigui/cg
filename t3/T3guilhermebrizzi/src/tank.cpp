@@ -19,6 +19,7 @@ Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 // (custom rotation pivot)
 void Tank::draw_base(float angle)   
 {   
+    footprint.clear();
     box = Bounding_Box();
     float height = texture->height;
     float width = texture->width;
@@ -42,7 +43,7 @@ void Tank::draw_base(float angle)
                 CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
                 if (matrix[base_index + 3] > 0)
                 {
-                    CV::point(x + x_dst, y + y_dst);
+                    CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
                     footprint.mark_pixel(x + x_dst, y + y_dst);
                     box.update(x + x_dst, y + y_dst);
                 }

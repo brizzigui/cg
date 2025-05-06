@@ -41,7 +41,7 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
         {
             int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
             CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-            CV::point(x+j, y+i);
+            CV::rectFill(x+j, y+i, x+j+1, y+i+1);
         }
     }
 }
@@ -54,20 +54,43 @@ Senão, passe um float com a escala desejada.
 Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, Footprint fp)
 {
     Bounding_Box box;
+    fp.clear();
     for (int i = 0; i < (int)(height*scale); i++)
     {
         for (int j = 0; j < (int)(width*scale); j++)
         {
             int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
             CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-            CV::point(x+j, y+i);
             if(matrix[base_index + 3] > 0)
             {
+                CV::rectFill(x+j, y+i, x+j+1, y+i+1);
                 fp.mark_pixel(x+j, y+i);
                 box.update(x+j, y+i);
             }
         }
     }
+    return box;
+}
+
+Bounding_Box CVpro::image::display_bitmap(float x, float y, Footprint fp)
+{
+    Bounding_Box box;
+    fp.clear();
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int base_index = i * width * 4 + j * 4;
+            if(matrix[base_index + 3] > 0)
+            {
+                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
+                CV::rectFill(x+j, y+i, x+j+1, y+i+1);
+                fp.mark_pixel(x+j, y+i);
+                box.update(x+j, y+i);
+            }
+        }
+    }
+    
     return box;
 }
 
@@ -90,7 +113,7 @@ void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
             {
                 int base_index = i * width * 4 + j * 4;
                 CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-                CV::point(x + x_dst, y + y_dst);
+                CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
             }
         }
     }
@@ -99,6 +122,7 @@ void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
 Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, float angle, Footprint fp)
 {
     Bounding_Box box;
+    fp.clear();
 
     int max_dim = height + width;
     
@@ -116,9 +140,9 @@ Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, float a
             {
                 int base_index = i * width * 4 + j * 4;
                 CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-                CV::point(x + x_dst, y + y_dst);
                 if(matrix[base_index + 3] > 0)
                 {
+                    CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
                     fp.mark_pixel(x + x_dst, y + y_dst);
                     box.update(x+j, y+i);
                 }

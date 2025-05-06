@@ -21,6 +21,7 @@
 #include "simulation.h"
 #include "tank.h"
 #include "footprint.h"
+#include "track.h"
 
 Controller *controller = NULL;
 Simulation *simulation = NULL;
@@ -57,6 +58,21 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    simulation->add_event(new Event_Mouse(button, state, wheel, direction, x, y, held));
 }
 
+std::pair<std::vector<Vector2>, std::vector<Vector2>> generate_default_track_points()
+{
+   std::vector<Vector2> outer = {
+      Vector2(100, 100), Vector2(500, 70), Vector2(900, 100),
+      Vector2(900, 500), Vector2(500, 530), Vector2(100, 500),
+      Vector2(100, 100)
+   };
+
+   std::vector<Vector2> inner = {
+      Vector2(100, 100), Vector2(100, 100)
+   };
+
+   return std::make_pair(inner, outer);
+}
+
 int main(void)
 {
    srand(time(NULL));
@@ -65,6 +81,9 @@ int main(void)
 
    controller = new Controller(60, true);
    simulation = new Simulation(screenWidth, screenHeight);
+   
+   auto points = generate_default_track_points();
+   simulation->add_entity(new Track(0, 0, points.first, points.second));
    simulation->add_entity(new Tank(200, 100, Vector2(PI/4), 1));
 
    /*---------------------------------------------------------------------------------*/

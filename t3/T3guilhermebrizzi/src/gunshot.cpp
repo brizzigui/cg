@@ -11,7 +11,7 @@ Gunshot::Gunshot(float x, float y, Vector2 direction, float speed) : Entity(x, y
 
 void Gunshot::draw()
 {
-    box = texture->display_bitmap(x, y, 1.0, footprint);
+    box = texture->display_bitmap(x, y, footprint);
 }
 
 void Gunshot::tick()

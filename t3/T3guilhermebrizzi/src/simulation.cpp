@@ -1,6 +1,7 @@
 #include "simulation.h"
 #include "special_events.h"
 #include "enemy.h"
+#include "clamp.h"
 #include <iostream>
 
 Simulation::Simulation(int screen_width, int screen_height)
