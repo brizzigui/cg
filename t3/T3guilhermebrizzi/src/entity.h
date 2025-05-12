@@ -11,18 +11,24 @@
 class Entity
 {
     public:
+        static int id_counter;
+
+        int id;
+        int god_id = -1;
+
         float x;
         float y;
 
         Bounding_Box box;
         Footprint footprint;
         CVpro::image *texture;
+        bool change = false;
 
         Entity(float x, float y);
         virtual void draw();
         virtual void tick();
         virtual void input(Event *e);
-        //virtual void collide();
+        virtual void collide(Entity *e);
 
         std::vector<std::unique_ptr<Event>>* events_ptr;
 };

@@ -2,6 +2,10 @@
 // GTA 2D - Trabalho 3 de Computação Gráfica
 // Guilherme Brizzi
 // Jogo arcade de tiro e combate
+// 
+// Algumas imagens são contribuições de Kenney Vleugels (www.kenney.nl)
+// pela licensa CC0
+// 
 // *********************************************************************/
 
 #include <GL/glut.h>
@@ -58,19 +62,29 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
    simulation->add_event(new Event_Mouse(button, state, wheel, direction, x, y, held));
 }
 
-std::pair<std::vector<Vector2>, std::vector<Vector2>> generate_default_track_points()
+std::vector<std::vector<Vector2>> generate_default_track_points()
 {
-   std::vector<Vector2> outer = {
-      Vector2(100, 100), Vector2(500, 70), Vector2(900, 100),
-      Vector2(900, 500), Vector2(500, 530), Vector2(100, 500),
-      Vector2(100, 100)
+   std::vector<std::vector<Vector2>> trackCurves = {
+      // Outer Top
+      { Vector2(200, 200), Vector2(400, 100), Vector2(880, 100), Vector2(1080, 200) },
+      // Outer Right
+      { Vector2(1080, 200), Vector2(1180, 300), Vector2(1180, 420), Vector2(1080, 520) },
+      // Outer Bottom
+      { Vector2(1080, 520), Vector2(880, 620), Vector2(400, 620), Vector2(200, 520) },
+      // Outer Left
+      { Vector2(200, 520), Vector2(100, 420), Vector2(100, 300), Vector2(200, 200) },
+
+      // Inner Top
+      { Vector2(400, 300), Vector2(500, 250), Vector2(780, 250), Vector2(880, 300) },
+      // Inner Right
+      { Vector2(880, 300), Vector2(930, 350), Vector2(930, 370), Vector2(880, 420) },
+      // Inner Bottom
+      { Vector2(880, 420), Vector2(780, 470), Vector2(500, 470), Vector2(400, 420) },
+      // Inner Left
+      { Vector2(400, 420), Vector2(350, 370), Vector2(350, 350), Vector2(400, 300) }
    };
 
-   std::vector<Vector2> inner = {
-      Vector2(100, 100), Vector2(100, 100)
-   };
-
-   return std::make_pair(inner, outer);
+   return trackCurves;
 }
 
 int main(void)
@@ -83,8 +97,8 @@ int main(void)
    simulation = new Simulation(screenWidth, screenHeight);
    
    auto points = generate_default_track_points();
-   simulation->add_entity(new Track(0, 0, points.first, points.second));
-   simulation->add_entity(new Tank(200, 100, Vector2(PI/4), 1));
+   simulation->add_entity(new Track(0, 0, points));
+   simulation->add_entity(new Tank(300, 300, Vector2(PI/4), 1));
 
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "GTA 2D");

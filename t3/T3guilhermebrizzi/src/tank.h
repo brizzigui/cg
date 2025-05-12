@@ -14,13 +14,17 @@ class Tank : public Entity
 
         int tick_lock_rotation = 0;
         int tick_lock_gun = 0;
+        int tick_lock_health = 0;
 
         int rotation_cooldown = 0;
         int gun_cooldown = 60;
+        int health_cooldown = 60;
 
         Vector2 gun_direction;
         float gun_pointing_to_x = 0;
         float gun_pointing_to_y = 0;
+
+        int health = 100;
 
         void handle_mouse_input(Event_Mouse *e);
         void handle_keyboard_input(Event_Key_Down *e);
@@ -37,7 +41,7 @@ class Tank : public Entity
         virtual void draw();
         virtual void tick();
         virtual void input(Event *e);
-    
+        virtual void collide(Entity *e);    
 };
 
 #endif

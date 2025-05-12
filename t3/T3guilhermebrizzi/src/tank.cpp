@@ -5,7 +5,7 @@
 
 Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 {
-    texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/base_tank.bmp");
+    texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/tanks/tankRed_outline.bmp");
 
     this->x = x;
     this->y = y;
@@ -85,6 +85,8 @@ void Tank::tick()
 
     unlock_actions();
     recalc_gun_angle();
+
+    change = true;
 }
 
 void Tank::recalc_gun_angle()
@@ -111,7 +113,7 @@ void Tank::handle_mouse_input(Event_Mouse *e)
         // clicked left button - shoot!
         events_ptr->push_back(std::unique_ptr<Event>(
             new Event_Create_Entity(
-                new Gunshot(gun_center.x, gun_center.y, gun_direction, GUNSHOT_DEFAULT_SPEED)
+                new Gunshot(gun_center.x, gun_center.y, gun_direction, GUNSHOT_DEFAULT_SPEED, id)
             )
         ));
         tick_lock_gun = gun_cooldown;
@@ -140,6 +142,7 @@ void Tank::unlock_actions()
 {
     tick_lock_rotation = (tick_lock_rotation-1 < 0) ? 0 : tick_lock_rotation-1;
     tick_lock_gun = (tick_lock_gun-1 < 0) ? 0 : tick_lock_gun-1;
+    tick_lock_health = (tick_lock_health-1 < 0) ? 0 : tick_lock_health-1;
 }
 
 void Tank::input(Event *e)
@@ -153,4 +156,28 @@ void Tank::input(Event *e)
     {
         handle_keyboard_input((Event_Key_Down *)e);
     }
+}
+
+void Tank::collide(Entity *e)
+{
+    // touched own bullet
+    if (e->god_id == id)
+    {
+        return;
+    }
+
+    // went against barrier
+    if (e->id == 0)
+    {
+        x -= direction.x * speed;
+        y -= direction.y * speed;
+    }
+    
+    // change for an any damage
+    if (tick_lock_health == 0)
+    {
+        tick_lock_health = health_cooldown;
+        health -= 10;
+        // add actual damage calculation sometime
+    }    
 }

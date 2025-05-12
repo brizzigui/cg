@@ -17,10 +17,9 @@ class Track : public Entity
 
     public:
         // the track's control points
-        std::vector<Vector2> inner_control;
-        std::vector<Vector2> outer_control;
+        std::vector<std::vector<Vector2>> control;
 
-        Track(float x, float y, std::vector<Vector2> std_inner, std::vector<Vector2> std_outer);
+        Track(float x, float y, std::vector<std::vector<Vector2>> points);
         void regenerate();
         virtual void draw();
 };

@@ -18,6 +18,8 @@ class Enemy : public Entity
         Enemy(float x, float y, Vector2 direction, float speed, int type);
         virtual void draw();
         virtual void tick();
+        virtual void collide(Entity *e);
+
 };
 
 

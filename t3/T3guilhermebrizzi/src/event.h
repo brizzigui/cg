@@ -5,6 +5,7 @@
 #define EVENT_KEY_UP 1
 #define EVENT_MOUSE 2
 #define EVENT_CREATE_ENTITY 3
+#define EVENT_SUICIDE 4
 
 class Event
 {

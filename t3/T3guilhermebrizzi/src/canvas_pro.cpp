@@ -54,7 +54,6 @@ Senão, passe um float com a escala desejada.
 Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, Footprint fp)
 {
     Bounding_Box box;
-    fp.clear();
     for (int i = 0; i < (int)(height*scale); i++)
     {
         for (int j = 0; j < (int)(width*scale); j++)
@@ -75,7 +74,6 @@ Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, Footpri
 Bounding_Box CVpro::image::display_bitmap(float x, float y, Footprint fp)
 {
     Bounding_Box box;
-    fp.clear();
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -122,7 +120,6 @@ void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
 Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, float angle, Footprint fp)
 {
     Bounding_Box box;
-    fp.clear();
 
     int max_dim = height + width;
     
@@ -368,8 +365,13 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     int stride = get_stride(width, bytes);
     int padding = stride - width * bytes;
 
-    subpixel *matrix = (subpixel *)malloc(sizeof(subpixel) * width * height * (bytes+1));
-    fseek(descriptor, 54, SEEK_SET); // pula o restante dos headers
+    subpixel *matrix = (subpixel *)malloc(sizeof(subpixel) * width * height * 4);
+
+    // lê offset para o início dos dados de pixel
+    uint32_t dataOffset;
+    fseek(descriptor, 10, SEEK_SET);        // vai ao campo bfOffBits
+    fread(&dataOffset, 4, 1, descriptor);
+    fseek(descriptor, dataOffset, SEEK_SET);        // pula o restante dos headers
 
     for (int line = 0; line < height; line++)
     {

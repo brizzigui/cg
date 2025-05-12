@@ -20,6 +20,7 @@ class Simulation
         void repopulate();
         void collide();
         bool check_collision(Entity *a, Entity *b);
+        void remove_entity(int id);
 
     public:
         Simulation(int screen_width, int screen_height);

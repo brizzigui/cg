@@ -22,12 +22,14 @@ void Simulation::handle_system_event(Event *e)
 {
     if (e->type == EVENT_CREATE_ENTITY)
     {
-        std::cout << "got a system event of type request entity creation" << std::endl;
-        std::cout << "will add to vector entity with address " << ((Event_Create_Entity *)(e))->entity << std::endl;
         Entity *entity = ((Event_Create_Entity *)(e))->entity;
-        entities.push_back(std::unique_ptr<Entity>(entity));
+        add_entity(entity);
     }
-    
+
+    else if (e->type == EVENT_SUICIDE)
+    {
+        remove_entity(((Event_Suicide *)(e))->id);
+    }   
 }
 
 void Simulation::repopulate()
@@ -92,9 +94,8 @@ void Simulation::collide()
         {
             if (check_collision(entities[outer].get(), entities[inner].get()))
             {
-                std::cout << "collided entities with index " << outer << ", " << inner << std::endl;
-                //entities[outer].get()->collide();
-                //entities[inner].get()->collide();
+                entities[outer].get()->collide(entities[inner].get());
+                entities[inner].get()->collide(entities[outer].get());
             }
         }
     }
@@ -120,7 +121,7 @@ void Simulation::update()
             handle_system_event(event.get());
         }
     }
-
+   
     repopulate();
 
     events.clear();
@@ -135,4 +136,16 @@ void Simulation::add_entity(Entity *e)
 void Simulation::add_event(Event *e)
 {
     events.push_back(std::unique_ptr<Event>(e));
+}
+
+void Simulation::remove_entity(int id)
+{
+    for (int i = 0; i < (int)entities.size(); i++)
+    {
+        if (entities[i]->id == id)
+        {
+            entities.erase(entities.begin() + i);
+            break;
+        }   
+    }
 }

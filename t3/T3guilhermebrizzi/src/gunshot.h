@@ -12,9 +12,10 @@ class Gunshot : public Entity
         Vector2 direction;
         float speed;
     public:
-        Gunshot(float x, float y, Vector2 direction, float speed);
+        Gunshot(float x, float y, Vector2 direction, float speed, int creator);
         virtual void draw();
         virtual void tick();
+        virtual void collide(Entity *e);
 
 };
 

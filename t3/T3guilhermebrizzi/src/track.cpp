@@ -71,20 +71,25 @@ void Track::clear_texture()
 void Track::regenerate()
 {
     clear_texture();
-    imprint(outer_control);
-    imprint(inner_control);
+    for (int i = 0; i < (int)control.size(); i++)
+    {
+        imprint(control[i]);
+    }   
 }
 
 void Track::draw()
 {
+    if (change)
+    {
+        footprint.clear();
+    }
+    
     box = texture->display_bitmap(x, y, footprint);
 }
 
-Track::Track(float x, float y, std::vector<Vector2> std_inner, std::vector<Vector2> std_outer) : Entity(x, y)
+Track::Track(float x, float y, std::vector<std::vector<Vector2>> points) : Entity(x, y)
 {
+    control = points;
     texture = generate_blank_bmp();
-    this->inner_control = std_inner;
-    this->outer_control = std_outer;
-
     regenerate();
 }
