@@ -16,6 +16,18 @@ Entity::Entity(float x, float y)
     footprint = Footprint();
 }
 
+Entity::~Entity()
+{
+    if (texture != NULL)
+    {
+        free(texture);
+    }
+    if (footprint.matrix != NULL)
+    {
+        free(footprint.matrix);
+    }
+}
+
 void Entity::draw()
 {
     // empty for base class

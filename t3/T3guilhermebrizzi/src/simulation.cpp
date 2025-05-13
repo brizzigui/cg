@@ -122,7 +122,7 @@ void Simulation::update()
         }
     }
    
-    repopulate();
+    // repopulate();
 
     events.clear();
 }

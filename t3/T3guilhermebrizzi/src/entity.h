@@ -25,6 +25,7 @@ class Entity
         bool change = false;
 
         Entity(float x, float y);
+        ~Entity();
         virtual void draw();
         virtual void tick();
         virtual void input(Event *e);

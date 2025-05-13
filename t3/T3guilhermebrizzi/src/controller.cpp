@@ -55,7 +55,7 @@ void Controller::end()
     auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
     int sleep_time = frame_duration - elapsed_time;
 
-    // std::cout << sleep_time << std::endl;
+    std::cout << sleep_time << std::endl;
 
     if (sleep_time > 0)
     {

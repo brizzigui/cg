@@ -14,6 +14,12 @@ class Track : public Entity
         CVpro::image *generate_blank_bmp();
         void clear_texture();
         void paint(Vector2 v, float radius);
+        void prettyfy();
+        bool is_border_pixel(int base_index);
+        void draw_background();
+        void flood_fill(std::vector<uint8_t> &mask, int start_x, int start_y, int label);
+
+        CVpro::image *background;
 
     public:
         // the track's control points
