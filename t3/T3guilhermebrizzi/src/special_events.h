@@ -13,3 +13,16 @@ class Event_Suicide : public Event
         int id;
         Event_Suicide(int id);
 };
+
+class Event_Point : public Event
+{
+    public:
+        int points;
+        Event_Point(int points);
+};
+
+class Event_Game_Over : public Event
+{
+    public:
+        Event_Game_Over();
+};

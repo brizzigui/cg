@@ -1,10 +1,5 @@
 #include "track.h"
 
-#define TRACK_BORDER_COLOR_R 255
-#define TRACK_BORDER_COLOR_G 255
-#define TRACK_BORDER_COLOR_B 255
-#define TRACK_BORDER_COLOR_A 255
-
 Vector2 Track::simplify(std::vector<Vector2> points, float v)
 {
     int len = points.size();

@@ -18,13 +18,13 @@ void Gunshot::draw()
         footprint.clear();
     }
     
-    box = texture->display_bitmap(x, y, footprint);
+    box = texture->display_bitmap(x, y, direction.get_angle() + PI/2.0, footprint);
 }
 
 void Gunshot::tick()
 {
-    x += direction.x * speed;
-    y += direction.y * speed;
+    x += direction.x * speed * 2;
+    y += direction.y * speed * 2;
 
     change = true;
 }

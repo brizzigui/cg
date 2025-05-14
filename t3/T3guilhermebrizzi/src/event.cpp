@@ -29,7 +29,10 @@ Event_Key_Up::Event_Key_Up(int key)
 
 bool Event::is_system_event()
 {
-    if (type == EVENT_CREATE_ENTITY || type == EVENT_SUICIDE)
+    if (type == EVENT_CREATE_ENTITY ||
+        type == EVENT_SUICIDE ||
+        type == EVENT_POINT ||
+        type == EVENT_GAME_OVER)
     {
         return true;
     }   

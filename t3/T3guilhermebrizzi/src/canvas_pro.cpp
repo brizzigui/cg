@@ -46,31 +46,6 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
     }
 }
 
-/*
-Mostra na tela um CVpro::image, a partir das coordenadas x, y.
-Para manter tamanho original, passe 'scale' como 1.
-Senão, passe um float com a escala desejada.
-*/
-Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, Footprint fp)
-{
-    Bounding_Box box;
-    for (int i = 0; i < (int)(height*scale); i++)
-    {
-        for (int j = 0; j < (int)(width*scale); j++)
-        {
-            int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
-            CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-            if(matrix[base_index + 3] > 0)
-            {
-                CV::rectFill(x+j, y+i, x+j+1, y+i+1);
-                fp.mark_pixel(x+j, y+i);
-                box.update(x+j, y+i);
-            }
-        }
-    }
-    return box;
-}
-
 Bounding_Box CVpro::image::display_bitmap(float x, float y, Footprint fp)
 {
     Bounding_Box box;
@@ -117,18 +92,18 @@ void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
     }
 }
 
-Bounding_Box CVpro::image::display_bitmap(float x, float y, float scale, float angle, Footprint fp)
+Bounding_Box CVpro::image::display_bitmap(float x, float y, float angle, Footprint fp)
 {
     Bounding_Box box;
 
     int max_dim = height + width;
     
-    for (int y_dst = - max_dim * scale; y_dst < max_dim * scale; y_dst++) 
+    for (int y_dst = - max_dim; y_dst < max_dim; y_dst++) 
     {
-        for (int x_dst = - max_dim * scale; x_dst < max_dim * scale; x_dst++) 
+        for (int x_dst = - max_dim; x_dst < max_dim; x_dst++) 
         {
-            float x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst) / scale;
-            float y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst) / scale;
+            float x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst);
+            float y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst);
     
             int i = (int)y_src + height/2.0;
             int j = (int)x_src + width/2.0;

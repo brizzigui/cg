@@ -35,9 +35,9 @@ namespace CVpro {
             image(int width, int height, subpixel *matrix);
             Bounding_Box display_bitmap(float x, float y, Footprint fp);
             void display_bitmap(float x, float y, float scale);
-            Bounding_Box display_bitmap(float x, float y, float scale, Footprint fp);
+            // Bounding_Box display_bitmap(float x, float y, float scale, Footprint fp);
             void display_bitmap(float x, float y, float scale, float angle);
-            Bounding_Box display_bitmap(float x, float y, float scale, float angle, Footprint fp);
+            Bounding_Box display_bitmap(float x, float y, float angle, Footprint fp);
             void destroy_bitmap();
             void flip_bitmap(char axis);
     };

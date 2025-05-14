@@ -33,7 +33,8 @@ class Tank : public Entity
         void unlock_actions();
         void draw_base(float angle);
         void draw_gun(float angle);
-        Vector2 get_gun_center(float angle);
+        void draw_health_bar();
+        void check_game_over();
 
 
     public:

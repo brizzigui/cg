@@ -13,14 +13,23 @@ class Simulation
         int screen_width;
         int screen_height;
 
+        int points = 0;
+        int level = 1;
+
+        bool levelup = true;
+
         std::vector<std::unique_ptr<Entity>> entities;
         std::vector<std::unique_ptr<Event>> events;
 
+        void draw_points();    
         void handle_system_event(Event *e);
         void repopulate();
         void collide();
         bool check_collision(Entity *a, Entity *b);
         void remove_entity(int id);
+        bool inside_track(Vector2 pos, CVpro::image *src);
+        void generate_lv1_wave();
+
 
     public:
         Simulation(int screen_width, int screen_height);

@@ -6,6 +6,8 @@
 #define EVENT_MOUSE 2
 #define EVENT_CREATE_ENTITY 3
 #define EVENT_SUICIDE 4
+#define EVENT_POINT 5
+#define EVENT_GAME_OVER 6
 
 class Event
 {
