@@ -9,6 +9,12 @@ Simulation::Simulation(int screen_width, int screen_height)
 {
     this->screen_width = screen_width;
     this->screen_height = screen_height;
+
+    numbers_bmps.push_back(NULL);
+    numbers_bmps.push_back(CVpro::load_bitmap("./T3guilhermebrizzi/assets/numbers/1.bmp"));
+    numbers_bmps.push_back(CVpro::load_bitmap("./T3guilhermebrizzi/assets/numbers/2.bmp"));
+    numbers_bmps.push_back(CVpro::load_bitmap("./T3guilhermebrizzi/assets/numbers/3.bmp"));
+    wasted_bmp = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/wasted.bmp");
 }
 
 void Simulation::draw_points()
@@ -20,7 +26,33 @@ void Simulation::draw_points()
     CVpro::text_align(screen_width/2.0, 30, 'c', "%d pts", points);
 }
 
-void Simulation::display()
+void Simulation::display_starting_countdown()
+{
+    int index = starting_loading_ticks/60 + 1;
+    float scale = (starting_loading_ticks%60)/60.0;
+    numbers_bmps[index]->display_bitmap(screen_width/2 - numbers_bmps[index]->width*scale*0.5,
+                                        screen_height/2 - numbers_bmps[index]->height*scale*0.5,
+                                        scale);
+}
+
+void Simulation::display_game_over()
+{
+    CVpro::color(0, 0, 0);
+    float vx[4] = {(float)0, (float)screen_width, (float)screen_width, (float)0};
+    float vy[4] = {(float)(screen_height/3 - wasted_bmp->height/2 - 100), (float)(screen_height/3 - wasted_bmp->height/2 - 50),
+                    (float)(screen_height/3 + wasted_bmp->height/2 + 300), (float)(screen_height/3 + wasted_bmp->height/2 + 250)};
+    CV::polygonFill(vx, vy, 4); 
+    wasted_bmp->display_bitmap(screen_width/2 - wasted_bmp->width/2, screen_height/3 - wasted_bmp->height/2, 1.0);
+
+    CVpro::color(149, 30, 37);
+    CVpro::text_align(screen_width/2.0, screen_height/2.0, 'c', "You got %d points!", points);
+    CV::rectFill(screen_width/2.0 - 75, screen_height/2.0 + 50, screen_width/2.0 + 75, screen_height/2.0 + 100);
+    CVpro::color(255, 255, 255);
+    CVpro::text_align(screen_width/2.0, screen_height/2.0 + 80, 'c', "Continue");
+    CV::rect(screen_width/2.0 - 75, screen_height/2.0 + 50, screen_width/2.0 + 75, screen_height/2.0 + 100);
+}
+
+void Simulation::display_game()
 {
     for (auto &e : entities)
     {
@@ -28,6 +60,24 @@ void Simulation::display()
     }
 
     draw_points();
+}
+
+void Simulation::display()
+{
+    display_game();
+
+    if (halted)
+    {
+        if (starting)
+        {
+            display_starting_countdown();
+        }
+
+        if (game_over)
+        {
+            display_game_over();
+        }
+    }
 }
 
 void Simulation::handle_system_event(Event *e)
@@ -46,9 +96,12 @@ void Simulation::handle_system_event(Event *e)
 
         case EVENT_POINT:
             points += ((Event_Point *)(e))->points;
+            break;
 
         case EVENT_GAME_OVER:
-            std::cout << "todo: game over" << std::endl;
+            halted = true;
+            game_over = true;
+            break;
         
         default:
             break;
@@ -154,33 +207,54 @@ void Simulation::collide()
     }
 }
 
+void Simulation::tick_starting()
+{
+    starting_loading_ticks--;
+    if (starting_loading_ticks < 0)
+    {
+        starting = false;
+        halted = false;
+    }
+}
+
 void Simulation::update()
 {
-    collide();
-
-    for (auto &entity : entities)
+    if (halted)
     {
-        entity->tick();
+        if (starting)
+        {
+            tick_starting();
+        }
+    }
+    
+    else
+    {
+        collide();
+
+        for (auto &entity : entities)
+        {
+            entity->tick();
+            for (auto &event : events)
+            {
+                entity->input(event.get());
+            }
+        }
+
         for (auto &event : events)
         {
-            entity->input(event.get());
+            if (event->is_system_event())
+            {
+                handle_system_event(event.get());
+            }
         }
-    }
-
-    for (auto &event : events)
-    {
-        if (event->is_system_event())
+    
+        if (levelup)
         {
-            handle_system_event(event.get());
+            repopulate();
+            levelup = false;
         }
     }
-   
-    if (levelup)
-    {
-        repopulate();
-        levelup = false;
-    }
-
+    
     events.clear();
 }
 

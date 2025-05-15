@@ -40,8 +40,11 @@ void CVpro::image::display_bitmap(float x, float y, float scale)
         for (int j = 0; j < (int)(width*scale); j++)
         {
             int base_index = (int)(i/scale) * width * 4 + (int)(j/scale) * 4;
-            CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-            CV::rectFill(x+j, y+i, x+j+1, y+i+1);
+            if (matrix[base_index + 3] > 0)
+            {
+                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], 255);
+                CV::rectFill(x+j, y+i, x+j+1, y+i+1);
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ class Tank : public Entity
         void recalc_gun_angle();
         void unlock_actions();
         void draw_base(float angle);
-        void draw_gun(float angle);
+        void draw_gun();
         void draw_health_bar();
         void check_game_over();
 

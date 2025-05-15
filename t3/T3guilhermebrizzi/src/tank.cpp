@@ -52,7 +52,7 @@ void Tank::draw_base(float angle)
     }
 }
 
-void Tank::draw_gun(float angle)
+void Tank::draw_gun()
 {
     CVpro::color(255, 255, 255);
     CV::line(x, y, x+gun_direction.x*20, y+gun_direction.y*20);
@@ -74,7 +74,7 @@ void Tank::draw()
 {
     float angle = direction.get_angle();
     draw_base(angle);
-    draw_gun(angle);
+    draw_gun();
     draw_health_bar();
 }
 
