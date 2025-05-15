@@ -6,6 +6,7 @@
 Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 {
     texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/tanks/tankRed_outline.bmp");
+    barrel = CVpro::load_bitmap("./T3guilhermebrizzi/assets/barrels/barrelRed_outline.bmp");
 
     this->x = x;
     this->y = y;
@@ -20,43 +21,13 @@ Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 void Tank::draw_base(float angle)   
 {   
     footprint.clear();
-    box = Bounding_Box();
-    float height = texture->height;
-    float width = texture->width;
-    subpixel *matrix = texture->matrix;
-
-    int max_dim = height + width;
-    
-    for (int y_dst = - max_dim; y_dst < max_dim; y_dst++) 
-    {
-        for (int x_dst = - max_dim; x_dst < max_dim; x_dst++) 
-        {
-            float x_src = cos(-angle) * x_dst - sin(-angle) * y_dst;
-            float y_src = sin(-angle) * x_dst + cos(-angle) * y_dst;
-    
-            int i = (int)y_src + height/2.0;
-            int j = (int)x_src + width/2.0;
-    
-            if (i >= 0 && i < height && j >= 0 && j < width) 
-            {
-                int base_index = i * width * 4 + j * 4;
-                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-                if (matrix[base_index + 3] > 0)
-                {
-                    CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
-                    footprint.mark_pixel(x + x_dst, y + y_dst);
-                    box.update(x + x_dst, y + y_dst);
-                }
-            }
-        }
-    }
+    box = texture->display_bitmap(x, y, angle, footprint);
 }
 
-void Tank::draw_gun()
+void Tank::draw_gun(float angle)
 {
     CVpro::color(255, 255, 255);
-    CV::line(x, y, x+gun_direction.x*20, y+gun_direction.y*20);
-    // TODO: IF GUN IS CHANGED, NEED TO CHANGE ITS FOOTPRINT
+    barrel->display_bitmap(x, y, angle+PI/2.0);
 }
 
 void Tank::draw_health_bar()
@@ -69,12 +40,12 @@ void Tank::draw_health_bar()
     CV::rectFill(x-30, box.max_y+10, x-30+health_len, box.max_y+20);
 }
 
-// @CustomDraw
 void Tank::draw()
 {
     float angle = direction.get_angle();
     draw_base(angle);
-    draw_gun();
+    float gun_angle = gun_direction.get_angle();
+    draw_gun(gun_angle);
     draw_health_bar();
 }
 
@@ -114,16 +85,23 @@ void Tank::recalc_gun_angle(Event_Mouse *e)
     recalc_gun_angle();
 }
 
+Vector2 Tank::get_barrel_tip()
+{
+    return Vector2(x + gun_direction.x*barrel->height/2.0,
+                   y + gun_direction.y*barrel->height/2.0);    
+}
+
 void Tank::handle_mouse_input(Event_Mouse *e)
 {
     recalc_gun_angle(e);
 
     if (tick_lock_gun == 0 && e->state == 0 && e->button == 0)
     {
+        Vector2 start = get_barrel_tip();
         // clicked left button - shoot!
         events_ptr->push_back(std::unique_ptr<Event>(
             new Event_Create_Entity(
-                new Gunshot(x, y, gun_direction, GUNSHOT_DEFAULT_SPEED, id)
+                new Gunshot(start.x, start.y, gun_direction, GUNSHOT_DEFAULT_SPEED, id)
             )
         ));
         tick_lock_gun = gun_cooldown;

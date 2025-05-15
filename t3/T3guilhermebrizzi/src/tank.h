@@ -9,6 +9,8 @@
 class Tank : public Entity
 {
     private:
+        CVpro::image *barrel;
+
         Vector2 direction;
         float speed;
 
@@ -32,10 +34,10 @@ class Tank : public Entity
         void recalc_gun_angle();
         void unlock_actions();
         void draw_base(float angle);
-        void draw_gun();
+        void draw_gun(float angle);
         void draw_health_bar();
         void check_game_over();
-
+        Vector2 get_barrel_tip();
 
     public:
         Tank(float x, float y, Vector2 direction, float speed);

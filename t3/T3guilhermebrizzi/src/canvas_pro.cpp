@@ -33,7 +33,7 @@ Mostra na tela um CVpro::image, a partir das coordenadas x, y.
 Para manter tamanho original, passe 'scale' como 1.
 Senão, passe um float com a escala desejada.
 */
-void CVpro::image::display_bitmap(float x, float y, float scale)
+void CVpro::image::display_bitmap_scaled(float x, float y, float scale)
 {
     for (int i = 0; i < (int)(height*scale); i++)
     {
@@ -71,25 +71,29 @@ Bounding_Box CVpro::image::display_bitmap(float x, float y, Footprint fp)
 }
 
 
-void CVpro::image::display_bitmap(float x, float y, float scale, float angle)
+void CVpro::image::display_bitmap(float x, float y, float angle)
 {
     int max_dim = height + width;
     
-    for (int y_dst = - max_dim * scale; y_dst < max_dim * scale; y_dst++) 
+    for (int y_dst = - max_dim; y_dst < max_dim; y_dst++) 
     {
-        for (int x_dst = - max_dim * scale; x_dst < max_dim * scale; x_dst++) 
+        for (int x_dst = - max_dim; x_dst < max_dim; x_dst++) 
         {
-            float x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst) / scale;
-            float y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst) / scale;
+            int x_src = (cos(-angle) * x_dst - sin(-angle) * y_dst);
+            int y_src = (sin(-angle) * x_dst + cos(-angle) * y_dst);
     
-            int i = (int)y_src + height/2.0;
-            int j = (int)x_src + width/2.0;
+            int i = y_src + height/2.0;
+            int j = x_src + width/2.0;
     
             if (i >= 0 && i < height && j >= 0 && j < width) 
             {
                 int base_index = i * width * 4 + j * 4;
-                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], matrix[base_index + 3]);
-                CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
+
+                if (matrix[base_index + 3] > 0)
+                {
+                    CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], 255);
+                    CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
+                }
             }
         }
     }
@@ -119,7 +123,7 @@ Bounding_Box CVpro::image::display_bitmap(float x, float y, float angle, Footpri
                 {
                     CV::rectFill(x + x_dst, y + y_dst, x + x_dst + 1, y + y_dst + 1);
                     fp.mark_pixel(x + x_dst, y + y_dst);
-                    box.update(x+j, y+i);
+                    box.update(x+x_dst, y+y_dst);
                 }
             }
         }

@@ -30,7 +30,7 @@ void Simulation::display_starting_countdown()
 {
     int index = starting_loading_ticks/60 + 1;
     float scale = (starting_loading_ticks%60)/60.0;
-    numbers_bmps[index]->display_bitmap(screen_width/2 - numbers_bmps[index]->width*scale*0.5,
+    numbers_bmps[index]->display_bitmap_scaled(screen_width/2 - numbers_bmps[index]->width*scale*0.5,
                                         screen_height/2 - numbers_bmps[index]->height*scale*0.5,
                                         scale);
 }
@@ -42,7 +42,7 @@ void Simulation::display_game_over()
     float vy[4] = {(float)(screen_height/3 - wasted_bmp->height/2 - 100), (float)(screen_height/3 - wasted_bmp->height/2 - 50),
                     (float)(screen_height/3 + wasted_bmp->height/2 + 300), (float)(screen_height/3 + wasted_bmp->height/2 + 250)};
     CV::polygonFill(vx, vy, 4); 
-    wasted_bmp->display_bitmap(screen_width/2 - wasted_bmp->width/2, screen_height/3 - wasted_bmp->height/2, 1.0);
+    wasted_bmp->display_bitmap_scaled(screen_width/2 - wasted_bmp->width/2, screen_height/3 - wasted_bmp->height/2, 1.0);
 
     CVpro::color(149, 30, 37);
     CVpro::text_align(screen_width/2.0, screen_height/2.0, 'c', "You got %d points!", points);
