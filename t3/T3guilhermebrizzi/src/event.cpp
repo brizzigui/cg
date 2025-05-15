@@ -27,6 +27,12 @@ Event_Key_Up::Event_Key_Up(int key)
     this->key = key;
 }
 
+Event_Internal_Pos_Share::Event_Internal_Pos_Share(Vector2 pos)
+{
+    this->type = EVENT_INTERNAL_POS_SHARE;
+    this->pos = pos;
+}
+
 bool Event::is_system_event()
 {
     if (type == EVENT_CREATE_ENTITY ||

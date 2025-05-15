@@ -8,6 +8,9 @@
 #define EVENT_SUICIDE 4
 #define EVENT_POINT 5
 #define EVENT_GAME_OVER 6
+#define EVENT_INTERNAL_POS_SHARE 7
+
+#include "Vector2.h"
 
 class Event
 {
@@ -38,6 +41,13 @@ class Event_Mouse : public Event
         int button, state, wheel, direction, x, y; 
         bool held;
         Event_Mouse(int button, int state, int wheel, int direction, int x, int y, bool held);
+};
+
+class Event_Internal_Pos_Share : public Event
+{
+    public:
+        Vector2 pos;
+        Event_Internal_Pos_Share(Vector2 pos);
 };
 
 // other events are defined in special_events.h

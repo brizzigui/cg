@@ -126,12 +126,11 @@ bool Simulation::inside_track(Vector2 pos, CVpro::image *src)
     return false;
 }
 
-void Simulation::generate_lv1_wave()
+void Simulation::respawn(int level, int amount)
 {
     // loads background source texture for comparison
     CVpro::image *alphalt_src_texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/environment/asphalt.bmp");
 
-    int amount = 10;
     int valid = 0;
 
     while (valid < amount)
@@ -140,7 +139,7 @@ void Simulation::generate_lv1_wave()
         if (inside_track(pos, alphalt_src_texture))
         {
             valid++;
-            add_entity(new Enemy(pos.x, pos.y, Vector2(0, 0), 0, 1));
+            add_entity(new Enemy(pos.x, pos.y, Vector2(0, 0), 0, level));
         }
     }
 
@@ -152,13 +151,28 @@ void Simulation::repopulate()
     switch (level)
     {
         case 1:
-            generate_lv1_wave();
+            respawn(1, 10);
+            break;
+
+        case 2:
+            respawn(2, 15);
+            break;
+
+        case 3:
+            respawn(3, 5);
+            break;
+
+        case 4:
+            respawn(4, 10);
+            break;
+
+        case 5:
+            respawn(3, 5);
             break;
     
         default:
             break;
     }
-
 }
 
 bool Simulation::check_collision(Entity *a, Entity *b)
@@ -217,6 +231,13 @@ void Simulation::tick_starting()
     }
 }
 
+void Simulation::generate_internal_position_share_event()
+{
+    add_event(new Event_Internal_Pos_Share(
+        Vector2(entities[1].get()->x, entities[1].get()->y)
+    ));
+}
+
 void Simulation::update()
 {
     if (halted)
@@ -230,6 +251,7 @@ void Simulation::update()
     else
     {
         collide();
+        generate_internal_position_share_event();
 
         for (auto &entity : entities)
         {
@@ -248,14 +270,27 @@ void Simulation::update()
             }
         }
     
-        if (levelup)
+        if (levelup())
         {
             repopulate();
-            levelup = false;
+            level++;
         }
     }
     
     events.clear();
+}
+
+bool Simulation::levelup()
+{
+    for (int i = 0; i < (int)entities.size(); i++)
+    {
+        if (dynamic_cast<Enemy *>(entities[i].get()) != NULL)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void Simulation::add_entity(Entity *e)

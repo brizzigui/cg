@@ -18,7 +18,6 @@ class Simulation
         int level = 1;
 
         // simlation state control
-        bool levelup = true;
         bool halted = true;
         bool game_over = false;
         bool starting = true;
@@ -45,11 +44,9 @@ class Simulation
         void display_game();
         void display_starting_countdown();
         void display_game_over();
-
-        // enemy waves generators for each level
-        // many functions because each levelk is custom
-        void generate_lv1_wave();
-
+        bool levelup();
+        void respawn(int level, int amount);
+        void generate_internal_position_share_event();
 
     public:
         Simulation(int screen_width, int screen_height);
