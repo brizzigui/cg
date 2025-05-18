@@ -15,7 +15,7 @@ class Simulation
 
         // game stats
         int points = 0;
-        int level = 5;
+        int level = 1;
 
         // simlation state control
         bool halted = true;

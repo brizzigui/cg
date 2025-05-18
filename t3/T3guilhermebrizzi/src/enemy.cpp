@@ -2,6 +2,7 @@
 #include "gunshot.h"
 #include "special_events.h"
 #include "Vector2.h"
+#include "explosion.h"
 
 CVpro::image *Enemy::get_texture(int type)
 {
@@ -180,6 +181,9 @@ void Enemy::handle_type1_collision()
 {
     events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
     events_ptr->push_back(std::unique_ptr<Event>(new Event_Point(10)));
+    events_ptr->push_back(std::unique_ptr<Event>(
+        new Event_Create_Entity(new Explosion(x, y, 60))
+    ));
 }
 
 void Enemy::handle_type2_collision()
@@ -191,6 +195,9 @@ void Enemy::handle_type2_collision()
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Point(20)));
+        events_ptr->push_back(std::unique_ptr<Event>(
+            new Event_Create_Entity(new Explosion(x, y, 60))
+        ));
     }
 }
 
@@ -203,6 +210,9 @@ void Enemy::handle_type3_collision()
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Point(30)));
+        events_ptr->push_back(std::unique_ptr<Event>(
+            new Event_Create_Entity(new Explosion(x, y, 60))
+        ));
     }
 }
 
@@ -215,6 +225,9 @@ void Enemy::handle_type4_collision()
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Point(40)));
+        events_ptr->push_back(std::unique_ptr<Event>(
+            new Event_Create_Entity(new Explosion(x, y, 60))
+        ));
     }
 }
 
@@ -267,7 +280,7 @@ void Enemy::collide(Entity *e)
         }
     }
 
-    else if (e->god_id != id && dynamic_cast<Enemy *>(e) != NULL)
+    else if (e->god_id != id && dynamic_cast<Enemy *>(e) == NULL)
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
     }

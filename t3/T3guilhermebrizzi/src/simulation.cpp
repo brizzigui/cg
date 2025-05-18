@@ -178,7 +178,11 @@ void Simulation::repopulate()
 bool Simulation::check_collision(Entity *a, Entity *b)
 {
     // based on pixel collision
-
+    if (!(a->collidable && b->collidable))
+    {
+        return false;
+    }
+    
     if (a->box.min_x > b->box.max_x || a->box.max_x < b->box.min_x || a->box.min_y > b->box.max_y || a->box.max_y < b->box.min_y)
     {
         return false;

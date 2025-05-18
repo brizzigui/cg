@@ -21,8 +21,9 @@ class Entity
 
         Bounding_Box box;
         Footprint footprint;
-        CVpro::image *texture;
+        CVpro::image *texture = NULL;
         bool change = false;
+        bool collidable = true;
 
         Entity(float x, float y);
         ~Entity();
