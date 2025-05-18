@@ -8,15 +8,14 @@ CVpro::image *Enemy::get_texture(int type)
 {
     switch (type)
     {
-        // remember to change the file names to the correspondent texture
         case 1:
             return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
         case 2:
-            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
+            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level2.bmp");
         case 3:
-            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
+            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level3.bmp");
         case 4:
-            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
+            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level4.bmp");
         case 5:
             return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level5.bmp");
     }
