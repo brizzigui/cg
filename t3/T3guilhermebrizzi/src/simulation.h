@@ -32,8 +32,11 @@ class Simulation
         // image assets not tied to entities
         std::vector<CVpro::image *> numbers_bmps;
         CVpro::image *wasted_bmp;
+        CVpro::image *black_star;
+        CVpro::image *red_star;
 
         void draw_points();    
+        void draw_level();
         void handle_system_event(Event *e);
         void repopulate();
         void collide();

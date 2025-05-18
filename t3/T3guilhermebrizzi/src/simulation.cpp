@@ -15,6 +15,8 @@ Simulation::Simulation(int screen_width, int screen_height)
     numbers_bmps.push_back(CVpro::load_bitmap("./T3guilhermebrizzi/assets/numbers/2.bmp"));
     numbers_bmps.push_back(CVpro::load_bitmap("./T3guilhermebrizzi/assets/numbers/3.bmp"));
     wasted_bmp = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/wasted.bmp");
+    black_star = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/black_star.bmp");
+    red_star = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/red_star.bmp");
 }
 
 void Simulation::draw_points()
@@ -52,6 +54,27 @@ void Simulation::display_game_over()
     CV::rect(screen_width/2.0 - 75, screen_height/2.0 + 50, screen_width/2.0 + 75, screen_height/2.0 + 100);
 }
 
+void Simulation::draw_level()
+{
+    int anchorX = screen_width - 180;
+    int anchorY = 10;
+    int padding = 5;
+
+    for (int i = 0; i < 5; i++)
+    {
+        if (i < level-1)
+        {
+            red_star->display_bitmap(anchorX + i*red_star->width + i*padding, anchorY);   
+        }
+        else
+        {
+            black_star->display_bitmap(anchorX + i*red_star->width + i*padding, anchorY);   
+        }
+    }
+
+    CVpro::text(anchorX, anchorY+red_star->height + 15, "Level: %d", level-1);
+}
+
 void Simulation::display_game()
 {
     for (auto &e : entities)
@@ -60,6 +83,7 @@ void Simulation::display_game()
     }
 
     draw_points();
+    draw_level();
 }
 
 void Simulation::display()
