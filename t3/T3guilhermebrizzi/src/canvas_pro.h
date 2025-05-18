@@ -33,6 +33,7 @@ namespace CVpro {
             subpixel *matrix;
 
             image(int width, int height, subpixel *matrix);
+            void display_bitmap(float x, float y);
             Bounding_Box display_bitmap(float x, float y, Footprint fp);
             void display_bitmap_scaled(float x, float y, float scale);
             void display_bitmap(float x, float y, float angle);

@@ -166,6 +166,8 @@ void Tank::collide(Entity *e)
     {
         tick_lock_health = health_cooldown;
         health -= 5;
+        if (e->id == 0)
+            health -= 5;
         health = (health < 0) ? 0 : health;
         // add actual damage calculation sometime
     }    

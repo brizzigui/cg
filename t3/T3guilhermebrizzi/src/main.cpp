@@ -26,40 +26,69 @@
 #include "tank.h"
 #include "footprint.h"
 #include "track.h"
+#include "interface.h"
 
 Controller *controller = NULL;
 Simulation *simulation = NULL;
+Interface *interface = NULL;
+
+std::vector<std::vector<Vector2>> points;
 
 int screenWidth = 1280, screenHeight = 720;
 bool held = false;
+bool simulating = false;
 
 void render()
 {
    controller->start();
 
    CV::clear(0.1, 0.1, 0.1);
-   simulation->update();
-   simulation->display();
+   if (simulating)
+   {
+      simulating = simulation->update();
+      simulation->display();
+   }
+   
+   else
+   {
+      interface->display();
+   }
 
    controller->end();
 }
 
 void keyboard(int key)
 {
-   //printf("\nTecla: %d" , key);
-   simulation->add_event(new Event_Key_Down(key));
+   if (simulating)
+   {
+      simulation->add_event(new Event_Key_Down(key));
+   }
 }
 
 void keyboardUp(int key)
 {
-   // printf("\nLiberou: %d" , key);
-   simulation->add_event(new Event_Key_Up(key));
+   if (simulating)
+   {
+      simulation->add_event(new Event_Key_Up(key));
+   }
 }
 
 void mouse(int button, int state, int wheel, int direction, int x, int y)
 {
    held = ((held && state != 1) || state == 0) ? true : false;
-   simulation->add_event(new Event_Mouse(button, state, wheel, direction, x, y, held));
+   if (simulating)
+   {
+      simulation->add_event(new Event_Mouse(button, state, wheel, direction, x, y, held));
+   }
+   else
+   {
+      simulating = interface->update(button, state, x, y, held);
+      if (simulating)
+      {
+         simulation->add_entity(new Track(0, 0, points));
+         simulation->add_entity(new Tank(300, 300, Vector2(PI/4), 1));
+      }
+   }
 }
 
 std::vector<std::vector<Vector2>> generate_default_track_points()
@@ -95,11 +124,9 @@ int main(void)
 
    controller = new Controller(60, true);
    simulation = new Simulation(screenWidth, screenHeight);
+   points = generate_default_track_points();
+   interface = new Interface(screenWidth, screenHeight, &points);
    
-   auto points = generate_default_track_points();
-   simulation->add_entity(new Track(0, 0, points));
-   simulation->add_entity(new Tank(300, 300, Vector2(PI/4), 1));
-
    /*---------------------------------------------------------------------------------*/
    CV::init(&screenWidth, &screenHeight, "GTA 2D");
    CV::run();

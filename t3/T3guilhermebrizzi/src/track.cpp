@@ -148,7 +148,7 @@ void Track::regenerate()
     }
 
     prettyfy();
-    background->flip_bitmap('V');
+    // background->flip_bitmap('V');
 }
 
 

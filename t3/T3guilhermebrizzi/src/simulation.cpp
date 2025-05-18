@@ -151,23 +151,23 @@ void Simulation::repopulate()
     switch (level)
     {
         case 1:
-            respawn(1, 10);
+            respawn(level, 10);
             break;
 
         case 2:
-            respawn(2, 15);
+            respawn(level, 15);
             break;
 
         case 3:
-            respawn(3, 5);
+            respawn(level, 5);
             break;
 
         case 4:
-            respawn(4, 10);
+            respawn(level, 10);
             break;
 
         case 5:
-            respawn(3, 5);
+            respawn(level, 5);
             break;
     
         default:
@@ -238,7 +238,7 @@ void Simulation::generate_internal_position_share_event()
     ));
 }
 
-void Simulation::update()
+bool Simulation::update()
 {
     if (halted)
     {
@@ -278,6 +278,7 @@ void Simulation::update()
     }
     
     events.clear();
+    return true;
 }
 
 bool Simulation::levelup()

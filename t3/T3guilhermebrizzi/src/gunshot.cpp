@@ -16,6 +16,7 @@ void Gunshot::draw()
     if (change)
     {
         footprint.clear();
+        change = false;
     }
     
     box = texture->display_bitmap(x, y, direction.get_angle() + PI/2.0, footprint);
@@ -31,7 +32,7 @@ void Gunshot::tick()
 
 void Gunshot::collide(Entity *e)
 {
-    if (e->id == god_id)
+    if (e->id == god_id || e->god_id == god_id)
     {
         return;
     }

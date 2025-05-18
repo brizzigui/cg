@@ -17,7 +17,7 @@ CVpro::image *Enemy::get_texture(int type)
         case 4:
             return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
         case 5:
-            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level1.bmp");
+            return CVpro::load_bitmap("./T3guilhermebrizzi/assets/enemies/level5.bmp");
     }
     return NULL;
 }
@@ -71,6 +71,7 @@ void Enemy::draw()
     if (change)
     {
         footprint.clear();
+        change = false;
     }
     
     box = texture->display_bitmap(x, y, footprint);
@@ -87,6 +88,7 @@ void Enemy::handle_type1_tick()
 
 void Enemy::handle_type2_tick()
 {
+    change = true;
     x += rand()%5 * ((rand()%3)-1);
     y += rand()%5 * ((rand()%3)-1); 
 }
@@ -117,6 +119,7 @@ void Enemy::handle_type3_tick()
 
 void Enemy::handle_type4_tick()
 {
+    change = true;
     x += rand()%5 * ((rand()%3)-1);
     y += rand()%5 * ((rand()%3)-1); 
     shoot_back(60, GUNSHOT_DEFAULT_SPEED);
@@ -124,7 +127,24 @@ void Enemy::handle_type4_tick()
 
 void Enemy::handle_type5_tick()
 {
-    return;
+    gun_cooldown--;
+    gun_cooldown = (gun_cooldown < 0) ? 0 : gun_cooldown;
+
+    if (gun_cooldown == 0)
+    {
+        for (float angle = 0; angle < 2*PI; angle += PI/4.0)
+        {
+            Vector2 gunshot_direction = Vector2(cos(angle), sin(angle));
+            events_ptr->push_back(std::unique_ptr<Event>(
+                    new Event_Create_Entity(
+                        new Gunshot(x+texture->width/2, y+texture->height/2, gunshot_direction, GUNSHOT_DEFAULT_SPEED, id)
+                    )
+                ));
+        }
+        
+        gun_cooldown = 60;
+    }
+
 }
 
 void Enemy::tick()
@@ -235,7 +255,11 @@ void Enemy::collide(Entity *e)
                 break;
 
             case 5:
-                handle_type5_collision();
+                if (e->god_id == 1)
+                {
+                    handle_type5_collision();  
+                }
+            
                 break;
 
             default:
@@ -243,7 +267,7 @@ void Enemy::collide(Entity *e)
         }
     }
 
-    else if (e->god_id != id)
+    else if (e->god_id != id && dynamic_cast<Enemy *>(e) != NULL)
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
     }

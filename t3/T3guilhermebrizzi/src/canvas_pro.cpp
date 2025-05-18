@@ -49,6 +49,22 @@ void CVpro::image::display_bitmap_scaled(float x, float y, float scale)
     }
 }
 
+void CVpro::image::display_bitmap(float x, float y)
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int base_index = i * width * 4 + j * 4;
+            if (matrix[base_index + 3] > 0)
+            {
+                CVpro::color(matrix[base_index + 2], matrix[base_index + 1], matrix[base_index], 255);
+                CV::rectFill(x+j, y+i, x+j+1, y+i+1);
+            }
+        }
+    }
+}
+
 Bounding_Box CVpro::image::display_bitmap(float x, float y, Footprint fp)
 {
     Bounding_Box box;
@@ -376,5 +392,7 @@ CVpro::image *CVpro::load_bitmap(const char *path)
         fseek(descriptor, padding, SEEK_CUR);
     }
 
+    fclose(descriptor);
+    
     return new CVpro::image(width, height, matrix);
 }

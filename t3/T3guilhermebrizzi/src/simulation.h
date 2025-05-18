@@ -15,7 +15,7 @@ class Simulation
 
         // game stats
         int points = 0;
-        int level = 1;
+        int level = 5;
 
         // simlation state control
         bool halted = true;
@@ -50,7 +50,7 @@ class Simulation
 
     public:
         Simulation(int screen_width, int screen_height);
-        void update();
+        bool update();
         void display();
         void add_entity(Entity *e);
         void add_event(Event *e);
