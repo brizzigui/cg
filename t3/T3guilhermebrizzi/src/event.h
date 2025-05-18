@@ -9,6 +9,7 @@
 #define EVENT_POINT 5
 #define EVENT_GAME_OVER 6
 #define EVENT_INTERNAL_POS_SHARE 7
+#define EVENT_HEALTH 8
 
 #include "Vector2.h"
 

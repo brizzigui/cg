@@ -52,6 +52,8 @@ class Simulation
         void generate_internal_position_share_event();
         bool cleanup();
         bool clicked_continue();
+        void spawn_powerups();
+        void handle_health_powerup(Event *e);
 
     public:
         Simulation(int screen_width, int screen_height);

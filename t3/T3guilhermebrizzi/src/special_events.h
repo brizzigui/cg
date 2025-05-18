@@ -21,6 +21,13 @@ class Event_Point : public Event
         Event_Point(int points);
 };
 
+class Event_Health : public Event
+{
+    public:
+        int health;
+        Event_Health(int health);
+};
+
 class Event_Game_Over : public Event
 {
     public:

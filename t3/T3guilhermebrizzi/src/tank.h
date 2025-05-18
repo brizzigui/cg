@@ -26,8 +26,6 @@ class Tank : public Entity
         float gun_pointing_to_x = 0;
         float gun_pointing_to_y = 0;
 
-        int health = 100;
-
         void handle_mouse_input(Event_Mouse *e);
         void handle_keyboard_input(Event_Key_Down *e);
         void recalc_gun_angle(Event_Mouse *e);
@@ -44,7 +42,8 @@ class Tank : public Entity
         virtual void draw();
         virtual void tick();
         virtual void input(Event *e);
-        virtual void collide(Entity *e);    
+        virtual void collide(Entity *e);  
+        int health = 100;
 };
 
 #endif

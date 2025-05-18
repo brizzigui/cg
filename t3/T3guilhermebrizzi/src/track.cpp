@@ -21,7 +21,7 @@ Vector2 Track::simplify(std::vector<Vector2> points, float v)
     return cur[0];
 }
 
-void Track::paint(Vector2 v, float radius)
+void Track::paint(Vector2 v, float radius, CVpro::image *target, Color c)
 {
     for (int offset_y = -radius; offset_y < radius; offset_y++)
     {
@@ -32,13 +32,13 @@ void Track::paint(Vector2 v, float radius)
                 int actual_x = v.x + offset_x;
                 int actual_y = v.y + offset_y;
 
-                if (actual_x >= 0 && actual_x < texture->width && actual_y >= 0 && actual_y < texture->height)
+                if (actual_x >= 0 && actual_x < target->width && actual_y >= 0 && actual_y < target->height)
                 {
-                    int base_index = actual_y * texture->width * 4 + actual_x * 4;
-                    texture->matrix[base_index + 2] = (unsigned char)TRACK_BORDER_COLOR_R;
-                    texture->matrix[base_index + 1] = (unsigned char)TRACK_BORDER_COLOR_G;
-                    texture->matrix[base_index    ] = (unsigned char)TRACK_BORDER_COLOR_B;
-                    texture->matrix[base_index + 3] = (unsigned char)TRACK_BORDER_COLOR_A;
+                    int base_index = actual_y * target->width * 4 + actual_x * 4;
+                    target->matrix[base_index + 2] = (unsigned char)c.r;
+                    target->matrix[base_index + 1] = (unsigned char)c.g;
+                    target->matrix[base_index    ] = (unsigned char)c.b;
+                    target->matrix[base_index + 3] = (unsigned char)c.a;
                 }
             }
         }
@@ -50,7 +50,7 @@ void Track::imprint(std::vector<Vector2> points)
     for (float v = 0; v < 1.0; v += 0.001)
     {
         Vector2 current = simplify(points, v);
-        paint(current, 2.5);
+        paint(current, 2.5, texture, Color());
     }
 }
 
@@ -124,19 +124,45 @@ void Track::prettyfy()
         for (int j = 0; j < texture->width; j++)
         {
             int base_index = i * texture->width * 4 + j * 4;
-            uint8_t region = mask[i * texture->width + j];
+            if(background->matrix[base_index + 3] == 0)
+            {
+                uint8_t region = mask[i * texture->width + j];
 
-            const CVpro::image *src = (region == 2) ? asphalt : grass;
-            int src_index = (i % src->height) * src->width * 4 + (j % src->width) * 4;
+                const CVpro::image *src = (region == 2) ? asphalt : grass;
+                int src_index = (i % src->height) * src->width * 4 + (j % src->width) * 4;
 
-            background->matrix[base_index + 2] = src->matrix[src_index + 2];
-            background->matrix[base_index + 1] = src->matrix[src_index + 1];
-            background->matrix[base_index    ] = src->matrix[src_index    ];
-            background->matrix[base_index + 3] = (unsigned char)255;
+                background->matrix[base_index + 2] = src->matrix[src_index + 2];
+                background->matrix[base_index + 1] = src->matrix[src_index + 1];
+                background->matrix[base_index    ] = src->matrix[src_index    ];
+                background->matrix[base_index + 3] = (unsigned char)255;
+            }
         }
     }
 }
 
+void Track::imprint_with_detail(std::vector<Vector2> outer, std::vector<Vector2> inner)
+{
+    bool dash = false;
+    for (float v = 0; v < 1.0; v += 0.001)
+    {
+        Vector2 outer_value = simplify(outer, v);
+        Vector2 inner_value = simplify(inner, v);
+
+        paint(outer_value, 2.5, texture, Color());
+        paint(inner_value, 2.5, texture, Color());
+        if ((dash && ((int)(v*1000))%20 == 0) || (!dash && ((int)(v*1000))%100 == 0))
+        {
+            dash = !dash;
+        }
+        
+        if (dash)
+        {
+            paint(
+                Vector2((outer_value.x+inner_value.x)/2.0, (outer_value.y+inner_value.y)/2.0),
+                5, background, Color(168, 152, 0, 255));
+        }
+    }
+}
 
 void Track::regenerate(bool barebones)
 {
@@ -144,13 +170,19 @@ void Track::regenerate(bool barebones)
 
     for (int i = 0; i < (int)control.size(); i++)
     {
-        imprint(control[i]);
+        if(!barebones)
+        {
+            imprint_with_detail(control[i], control[i+4]);
+            if (i == 3) break;
+        }
+        else
+        {
+            imprint(control[i]);
+        }
     }
 
     if (!barebones)
-    {
         prettyfy();
-    }
 }
 
 

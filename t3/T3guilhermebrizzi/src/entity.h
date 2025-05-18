@@ -25,6 +25,11 @@ class Entity
         bool change = false;
         bool collidable = true;
 
+        // thin means it only interacts with user and user generated entities,
+        // not with npc generated entities
+        // powerups are thin
+        bool thin = false;
+
         Entity(float x, float y);
         ~Entity();
         virtual void draw();

@@ -38,7 +38,8 @@ bool Event::is_system_event()
     if (type == EVENT_CREATE_ENTITY ||
         type == EVENT_SUICIDE ||
         type == EVENT_POINT ||
-        type == EVENT_GAME_OVER)
+        type == EVENT_GAME_OVER ||
+        type == EVENT_HEALTH)
     {
         return true;
     }   

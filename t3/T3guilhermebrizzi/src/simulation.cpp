@@ -3,6 +3,8 @@
 #include "enemy.h"
 #include "track.h"
 #include "clamp.h"
+#include "tank.h"
+#include "health_pwrup.h"
 #include <iostream>
 
 Simulation::Simulation(int screen_width, int screen_height)
@@ -104,6 +106,13 @@ void Simulation::display()
     }
 }
 
+void Simulation::handle_health_powerup(Event *e)
+{
+    int additive = ((Event_Health *)(e))->health;
+    int health = ((Tank *)entities[1].get())->health;
+    ((Tank *)entities[1].get())->health = (health + additive > 100) ? 100 : health + additive;
+}
+
 void Simulation::handle_system_event(Event *e)
 {
     Entity *entity = NULL;
@@ -125,6 +134,10 @@ void Simulation::handle_system_event(Event *e)
         case EVENT_GAME_OVER:
             halted = true;
             game_over = true;
+            break;
+
+        case EVENT_HEALTH:
+            handle_health_powerup(e);
             break;
         
         default:
@@ -170,6 +183,27 @@ void Simulation::respawn(int level, int amount)
     free(alphalt_src_texture);
 }
 
+void Simulation::spawn_powerups()
+{
+    // loads background source texture for comparison
+    CVpro::image *alphalt_src_texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/environment/asphalt.bmp");
+
+    int amount = 3;
+    int valid = 0;
+
+    while (valid < amount)
+    {
+        Vector2 pos = Vector2(rand()%screen_width, rand()%screen_height);
+        if (inside_track(pos, alphalt_src_texture))
+        {
+            valid++;
+            add_entity(new Health_Powerup(pos.x, pos.y));
+        }
+    }
+
+    free(alphalt_src_texture);
+}
+
 void Simulation::repopulate()
 {
     switch (level)
@@ -197,6 +231,8 @@ void Simulation::repopulate()
         default:
             break;
     }
+    
+    spawn_powerups();
 }
 
 bool Simulation::check_collision(Entity *a, Entity *b)
@@ -352,6 +388,7 @@ bool Simulation::update()
         {
             repopulate();
             level++;
+            level = (level > 5) ? 5 : level;
         }
     }
     

@@ -2,6 +2,7 @@
 #include "canvas_pro.h"
 #include "event.h"
 #include "special_events.h"
+#include "health_pwrup.h"
 
 Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 {
@@ -159,9 +160,18 @@ void Tank::collide(Entity *e)
         x -= direction.x * speed;
         y -= direction.y * speed;
     }
+
+    if (e->thin)
+    {
+        if (dynamic_cast<Health_Powerup *>(e) != NULL)
+        {
+            health += 25;
+            health = (health > 100) ? 100 : health;
+        }
+    }
     
     // change for an any damage
-    if (tick_lock_health == 0)
+    else if (tick_lock_health == 0)
     {
         tick_lock_health = health_cooldown;
         health -= 5;
@@ -169,5 +179,8 @@ void Tank::collide(Entity *e)
             health -= 5;
         health = (health < 0) ? 0 : health;
         // add actual damage calculation sometime
-    }    
+    }
+
+
+    
 }

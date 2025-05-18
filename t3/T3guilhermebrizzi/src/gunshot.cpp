@@ -1,5 +1,6 @@
 #include "gunshot.h"
 #include "special_events.h"
+#include "health_pwrup.h"
 
 #define GUNSHOT_SPEED 5
 
@@ -32,9 +33,21 @@ void Gunshot::tick()
 
 void Gunshot::collide(Entity *e)
 {
-    if (e->id == god_id || e->god_id == god_id)
+    if (e->id == god_id || e->god_id == god_id || (e->thin && god_id != 1))
     {
         return;
+    }
+
+    if (e->thin && god_id == 1)
+    {
+        if (dynamic_cast<Health_Powerup *>(e) != NULL)
+        {
+            events_ptr->push_back(
+                std::unique_ptr<Event>(
+                    new Event_Health(25)
+                )
+            );
+        }
     }
 
     events_ptr->push_back(
