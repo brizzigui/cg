@@ -138,7 +138,7 @@ void Track::prettyfy()
 }
 
 
-void Track::regenerate()
+void Track::regenerate(bool barebones)
 {
     clear_texture();
 
@@ -147,8 +147,10 @@ void Track::regenerate()
         imprint(control[i]);
     }
 
-    prettyfy();
-    // background->flip_bitmap('V');
+    if (!barebones)
+    {
+        prettyfy();
+    }
 }
 
 
@@ -222,6 +224,11 @@ void Track::draw_background()
     // Now the background is drawn; subsequent 3rd-party rendering can proceed on top
 }
 
+void Track::draw_barebones()
+{
+    texture->display_bitmap(x, y);
+}
+
 void Track::draw()
 {
     if (change)
@@ -238,5 +245,5 @@ Track::Track(float x, float y, std::vector<std::vector<Vector2>> points) : Entit
     control = points;
     texture = generate_blank_bmp();
     background = generate_blank_bmp();
-    regenerate();
+    regenerate(false);
 }

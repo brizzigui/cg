@@ -12,8 +12,7 @@ Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
     this->y = y;
     this->direction = direction;
     this->speed = speed;
-
-    recalc_gun_angle();
+    gun_direction = direction;
 }
 
 // im not using CVpro::image::display_bitmap because of an adjustment specific to the tank's behavior

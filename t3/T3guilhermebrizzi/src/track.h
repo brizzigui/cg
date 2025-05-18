@@ -30,8 +30,9 @@ class Track : public Entity
         CVpro::image *background;
 
         Track(float x, float y, std::vector<std::vector<Vector2>> points);
-        void regenerate();
+        void regenerate(bool barebones);
         virtual void draw();
+        void draw_barebones();
 };
 
 

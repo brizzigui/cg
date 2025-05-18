@@ -283,6 +283,9 @@ void Enemy::collide(Entity *e)
     else if (e->god_id != id && dynamic_cast<Enemy *>(e) == NULL)
     {
         events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
+        events_ptr->push_back(std::unique_ptr<Event>(
+            new Event_Create_Entity(new Explosion(x, y, 60))
+        ));
     }
 
 }

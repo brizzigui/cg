@@ -266,6 +266,52 @@ void Simulation::generate_internal_position_share_event()
     ));
 }
 
+bool Simulation::clicked_continue()
+{
+    for (auto &event : events)
+    {
+        if (event.get()->type == EVENT_MOUSE)
+        {
+            auto mouse_event = (Event_Mouse *)event.get();
+            return mouse_event->button == 0 && mouse_event->state == 0 &&
+                    mouse_event->x > screen_width/2.0 - 75 &&
+                    mouse_event->y > screen_height/2.0 + 50 &&
+                    mouse_event->x < screen_width/2.0 + 75 &&
+                    mouse_event->y < screen_height/2.0 + 100;
+        }
+    }
+
+    return false;
+}
+
+void Simulation::restart()
+{
+    Entity::id_counter = 0;
+}
+
+// cleans up class after gameover
+// if simulation still ongoing, returns true
+// else, returns false
+bool Simulation::cleanup()
+{
+    if (clicked_continue())
+    {
+        points = 0;
+        level = 1;
+        halted = true;
+        game_over = false;
+        starting = true;
+        starting_loading_ticks = 3 * 60;
+        entities.clear();
+        events.clear();
+
+        return false;
+    }
+    
+    events.clear();
+    return true;
+}
+
 bool Simulation::update()
 {
     if (halted)
@@ -273,6 +319,10 @@ bool Simulation::update()
         if (starting)
         {
             tick_starting();
+        }
+        else if (game_over)
+        {
+            return cleanup();   
         }
     }
     

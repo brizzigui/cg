@@ -50,6 +50,8 @@ class Simulation
         bool levelup();
         void respawn(int level, int amount);
         void generate_internal_position_share_event();
+        bool cleanup();
+        bool clicked_continue();
 
     public:
         Simulation(int screen_width, int screen_height);
@@ -57,6 +59,7 @@ class Simulation
         void display();
         void add_entity(Entity *e);
         void add_event(Event *e);
+        void restart();
 };
 
 

@@ -46,7 +46,8 @@ void render()
    if (simulating)
    {
       simulating = simulation->update();
-      simulation->display();
+      if (simulating)
+         simulation->display();
    }
    
    else
@@ -85,8 +86,12 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
       simulating = interface->update(button, state, x, y, held);
       if (simulating)
       {
+         simulation->restart();
          simulation->add_entity(new Track(0, 0, points));
-         simulation->add_entity(new Tank(300, 300, Vector2(PI/4), 1));
+         simulation->add_entity(new Tank(
+            (points[0][0].x+points[4][0].x)/2.0,
+            (points[0][0].y+points[4][0].y)/2.0,
+            Vector2(PI/4), 1));
       }
    }
 }

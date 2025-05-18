@@ -8,6 +8,7 @@ Interface::Interface(int screen_width, int screen_height, std::vector<std::vecto
     this->screen_height = screen_height;
     this->points = points;
     this->title_logo = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/logo.bmp");
+    this->track_preview = new Track(0, 0, *points);
 }
 
 void Interface::display()
@@ -49,6 +50,7 @@ void Interface::display_editor()
     CV::rect(screen_width/2.0 - 100,  screen_height - 75, screen_width/2.0 + 100, screen_height - 25);
     CVpro::text_align(screen_width/2.0, screen_height - 45, 'c', "Apply and return");
     CVpro::autotext(screen_width/2.0, 15, 'c', 15, "WARNING: drastic changes to track may break game.\nEdit at own risk.");
+    track_preview->draw_barebones();
 }
 
 void Interface::display_splashscreen()
@@ -93,7 +95,7 @@ bool Interface::exit_clicked(int x, int y)
             x < screen_width/2.0 + 100 && y < screen_height - 25;
 }
 
-void Interface::update_editor(int button, int state, int x, int y, bool held)
+void Interface::update_editor(int button, int state, int x, int y)
 {
     if (button == 0 && state == 0)
     {
@@ -174,7 +176,9 @@ bool Interface::update(int button, int state, int x, int y, bool held)
     if (editing)
     {
         holding_point &= held;
-        update_editor(button, state, x, y, held);
+        update_editor(button, state, x, y);
+        track_preview->control = *points;
+        track_preview->regenerate(true);
     }
 
     else
