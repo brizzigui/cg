@@ -2,7 +2,6 @@
 #include "special_events.h"
 #include "enemy.h"
 #include "track.h"
-#include "clamp.h"
 #include "tank.h"
 #include "health_pwrup.h"
 #include <iostream>

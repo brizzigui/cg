@@ -1,0 +1,210 @@
+# depslib dependency file v1.0
+1746463086 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\bounding_box.cpp
+	"bounding_box.h"
+	<limits>
+
+1746462958 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\bounding_box.h
+
+1747531354 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\canvas_pro.cpp
+	<string.h>
+	<stdarg.h>
+	<iostream>
+	<vector>
+	<cstdint>
+	"canvas_pro.h"
+	"bounding_box.h"
+
+1747531381 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\canvas_pro.h
+	"gl_canvas2d.h"
+	"footprint.h"
+	"bounding_box.h"
+	<stdarg.h>
+
+1742344541 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\gl_canvas2d.h
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<string.h>
+	<GL/glut.h>
+	<GL/freeglut_ext.h>
+	"Vector2.h"
+
+1742344250 d:\faculdade\2025.1\cg\sync\t3\include\gl\glut.h
+	"freeglut_std.h"
+
+1742344250 d:\faculdade\2025.1\cg\sync\t3\include\gl\freeglut_std.h
+	<windows.h>
+	<EGL/egl.h>
+	<GLES/gl.h>
+	<GLES2/gl2.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<stdlib.h>
+
+1742344250 d:\faculdade\2025.1\cg\sync\t3\include\gl\freeglut_ext.h
+	<stdarg.h>
+
+1746283692 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\vector2.h
+	<iostream>
+	<cmath>
+
+1746486755 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\footprint.h
+
+1747270530 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\controller.cpp
+	"controller.h"
+	<chrono>
+	<iostream>
+	<Windows.h>
+	"canvas_pro.h"
+
+1746214610 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\controller.h
+	<chrono>
+
+1747595366 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\enemy.cpp
+	"enemy.h"
+	"gunshot.h"
+	"special_events.h"
+	"Vector2.h"
+	"explosion.h"
+
+1747406095 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\enemy.h
+	"entity.h"
+	"Vector2.h"
+	"canvas_pro.h"
+
+1747590357 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\entity.h
+	<vector>
+	<memory>
+	"event.h"
+	"footprint.h"
+	"bounding_box.h"
+	"canvas_pro.h"
+
+1747590827 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\event.h
+	"Vector2.h"
+
+1747008835 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\gunshot.h
+	"canvas_pro.h"
+	"entity.h"
+
+1747590793 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\special_events.h
+	"entity.h"
+
+1747537750 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\explosion.h
+	"entity.h"
+	<vector>
+	"canvas_pro.h"
+
+1747055964 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\entity.cpp
+	"entity.h"
+	"canvas_pro.h"
+	"event.h"
+	"footprint.h"
+
+1747590830 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\event.cpp
+	"event.h"
+	"entity.h"
+
+1747538344 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\explosion.cpp
+	"explosion.h"
+	"special_events.h"
+
+1746492225 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\footprint.cpp
+	"footprint.h"
+	"canvas_pro.h"
+	<stdlib.h>
+	<iostream>
+
+1742612655 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\gl_canvas2d.cpp
+	"gl_canvas2d.h"
+	<GL/glut.h>
+
+1747591710 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\gunshot.cpp
+	"gunshot.h"
+	"special_events.h"
+	"health_pwrup.h"
+
+1747590440 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\health_pwrup.h
+	"entity.h"
+
+1747590466 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\health_pwrup.cpp
+	"health_pwrup.h"
+	"special_events.h"
+
+1747589434 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\interface.cpp
+	"interface.h"
+	<vector>
+	"Vector2.h"
+
+1747589441 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\interface.h
+	<vector>
+	"canvas_pro.h"
+	"Vector2.h"
+	"track.h"
+
+1747593727 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\track.h
+	"entity.h"
+	<vector>
+	"Vector2.h"
+	"canvas_pro.h"
+
+1747595944 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\main.cpp
+	<GL/glut.h>
+	<GL/freeglut_ext.h>
+	<math.h>
+	<stdio.h>
+	<stdlib.h>
+	<thread>
+	"gl_canvas2d.h"
+	"canvas_pro.h"
+	"keyboard.h"
+	"controller.h"
+	"event.h"
+	"special_events.h"
+	"simulation.h"
+	"tank.h"
+	"footprint.h"
+	"track.h"
+	"interface.h"
+
+1743787965 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\keyboard.h
+	<iostream>
+	<string.h>
+
+1747591523 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\simulation.h
+	<memory>
+	<vector>
+	"entity.h"
+	"event.h"
+
+1747591027 d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\tank.h
+	"canvas_pro.h"
+	"entity.h"
+	"gunshot.h"
+	"Vector2.h"
+
+1747659432 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\simulation.cpp
+	"simulation.h"
+	"special_events.h"
+	"enemy.h"
+	"track.h"
+	"tank.h"
+	"health_pwrup.h"
+	<iostream>
+
+1747590775 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\special_events.cpp
+	"special_events.h"
+
+1747596110 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\tank.cpp
+	"tank.h"
+	"canvas_pro.h"
+	"event.h"
+	"special_events.h"
+	"health_pwrup.h"
+
+1747659618 source:d:\faculdade\2025.1\cg\sync\t3\t3guilhermebrizzi\src\track.cpp
+	"track.h"
+	<queue>
+

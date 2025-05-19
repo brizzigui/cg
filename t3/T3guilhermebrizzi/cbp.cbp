@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Canvas 2D" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="../__bin/Debug/canvas2d" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../" />
+				<Option object_output="../__obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="../__bin/Release/canvas2d" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../" />
+				<Option object_output="../__obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2 -Wall" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-O3" />
+			<Add option="-Wall" />
+			<Add option="-std=c++11" />
+			<Add option="-fexceptions" />
+			<Add directory="../include" />
+		</Compiler>
+		<Linker>
+			<Add library="../lib/libfreeglut32.a" />
+			<Add library="../lib/libopengl32.a" />
+			<Add library="../lib/libglu32.a" />
+		</Linker>
+		<Unit filename="src/Vector2.h" />
+		<Unit filename="src/bounding_box.cpp" />
+		<Unit filename="src/bounding_box.h" />
+		<Unit filename="src/canvas_pro.cpp" />
+		<Unit filename="src/canvas_pro.h" />
+		<Unit filename="src/controller.cpp" />
+		<Unit filename="src/controller.h" />
+		<Unit filename="src/enemy.cpp" />
+		<Unit filename="src/enemy.h" />
+		<Unit filename="src/entity.cpp" />
+		<Unit filename="src/entity.h" />
+		<Unit filename="src/event.cpp" />
+		<Unit filename="src/event.h" />
+		<Unit filename="src/explosion.cpp" />
+		<Unit filename="src/explosion.h" />
+		<Unit filename="src/footprint.cpp" />
+		<Unit filename="src/footprint.h" />
+		<Unit filename="src/gl_canvas2d.cpp" />
+		<Unit filename="src/gl_canvas2d.h" />
+		<Unit filename="src/gunshot.cpp" />
+		<Unit filename="src/gunshot.h" />
+		<Unit filename="src/health_pwrup.cpp" />
+		<Unit filename="src/health_pwrup.h" />
+		<Unit filename="src/interface.cpp" />
+		<Unit filename="src/interface.h" />
+		<Unit filename="src/keyboard.h" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/simulation.cpp" />
+		<Unit filename="src/simulation.h" />
+		<Unit filename="src/special_events.cpp" />
+		<Unit filename="src/special_events.h" />
+		<Unit filename="src/tank.cpp" />
+		<Unit filename="src/tank.h" />
+		<Unit filename="src/track.cpp" />
+		<Unit filename="src/track.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

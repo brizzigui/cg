@@ -91,7 +91,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
          simulation->add_entity(new Tank(
             (points[0][0].x+points[4][0].x)/2.0,
             (points[0][0].y+points[4][0].y)/2.0,
-            Vector2(PI/4), 1));
+            Vector2(1, 0), 1));
       }
    }
 }

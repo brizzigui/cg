@@ -89,7 +89,11 @@ void Track::flood_fill(std::vector<uint8_t> &mask, int start_x, int start_y, int
 
     while (!q.empty())
     {
-        auto [x, y] = q.front();
+        int x, y;
+        auto v = q.front();
+        x = v.first;
+        y = v.second;
+        
         q.pop();
 
         int index = y * texture->width + x;
