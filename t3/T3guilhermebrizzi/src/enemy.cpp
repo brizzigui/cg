@@ -4,6 +4,7 @@
 #include "Vector2.h"
 #include "explosion.h"
 
+// returns the texture image for the enemy based on its type
 CVpro::image *Enemy::get_texture(int type)
 {
     switch (type)
@@ -22,6 +23,7 @@ CVpro::image *Enemy::get_texture(int type)
     return NULL;
 }
 
+// sets special behavior for certain enemy types (like gun cooldown)
 void Enemy::set_special_behavior()
 {
     switch (type)
@@ -40,6 +42,7 @@ void Enemy::set_special_behavior()
     }
 }
 
+// constructor for Enemy, initializes position, direction, speed, type, and texture
 Enemy::Enemy(float x, float y, Vector2 direction, float speed, int type) : Entity(x, y)
 {
     this->x = x;
@@ -52,6 +55,7 @@ Enemy::Enemy(float x, float y, Vector2 direction, float speed, int type) : Entit
     this->texture = get_texture(type);
 }
 
+// draws the health bar above the enemy if health is less than 100
 void Enemy::draw_health_bar()
 {
     if(health < 100)
@@ -66,6 +70,7 @@ void Enemy::draw_health_bar()
     }
 }
 
+// draws the enemy and its health bar if needed
 void Enemy::draw()
 {
     if (change)
@@ -81,11 +86,13 @@ void Enemy::draw()
     }
 }
 
+// handles tick logic for type 1 enemy (does nothing)
 void Enemy::handle_type1_tick()
 {
     return;
 }
 
+// handles tick logic for type 2 enemy (random movement)
 void Enemy::handle_type2_tick()
 {
     change = true;
@@ -93,6 +100,7 @@ void Enemy::handle_type2_tick()
     y += rand()%5 * ((rand()%3)-1); 
 }
 
+// shoots a bullet back at the tank if gun cooldown is zero
 void Enemy::shoot_back(int quantum, int speed)
 {
     gun_cooldown--;
@@ -112,11 +120,13 @@ void Enemy::shoot_back(int quantum, int speed)
     }
 }
 
+// handles tick logic for type 3 enemy (shoots back at tank)
 void Enemy::handle_type3_tick()
 {
     shoot_back(120, GUNSHOT_DEFAULT_SPEED/2);
 }
 
+// handles tick logic for type 4 enemy (random movement and shoots back)
 void Enemy::handle_type4_tick()
 {
     change = true;
@@ -125,6 +135,7 @@ void Enemy::handle_type4_tick()
     shoot_back(60, GUNSHOT_DEFAULT_SPEED);
 }
 
+// handles tick logic for type 5 enemy (shoots bullets in all directions)
 void Enemy::handle_type5_tick()
 {
     gun_cooldown--;
@@ -147,6 +158,7 @@ void Enemy::handle_type5_tick()
 
 }
 
+// updates the enemy each tick based on its type
 void Enemy::tick()
 {
     switch (type)
@@ -176,6 +188,7 @@ void Enemy::tick()
     }
 }
 
+// handles collision logic for type 1 enemy (suicide and points)
 void Enemy::handle_type1_collision()
 {
     events_ptr->push_back(std::unique_ptr<Event>(new Event_Suicide(id)));
@@ -185,6 +198,7 @@ void Enemy::handle_type1_collision()
     ));
 }
 
+// handles collision logic for type 2 enemy (reduce health, suicide if dead)
 void Enemy::handle_type2_collision()
 {
     health = health - 50;
@@ -200,6 +214,7 @@ void Enemy::handle_type2_collision()
     }
 }
 
+// handles collision logic for type 3 enemy (random health loss, suicide if dead)
 void Enemy::handle_type3_collision()
 {
     health = health - rand()%30 - 20;
@@ -215,6 +230,7 @@ void Enemy::handle_type3_collision()
     }
 }
 
+// handles collision logic for type 4 enemy (random health loss, suicide if dead)
 void Enemy::handle_type4_collision()
 {
     health = health - rand()%10 - 10;
@@ -230,6 +246,7 @@ void Enemy::handle_type4_collision()
     }
 }
 
+// handles collision logic for type 5 enemy (reduce health, respawn if dead)
 void Enemy::handle_type5_collision()
 {
     health = health - 5;
@@ -242,6 +259,7 @@ void Enemy::handle_type5_collision()
     }
 }
 
+// handles collision with other entities, triggers appropriate behavior based on type
 void Enemy::collide(Entity *e)
 {
     // if something created by the tank (eg. a bullet)
@@ -289,6 +307,7 @@ void Enemy::collide(Entity *e)
 
 }
 
+// processes input events for the enemy (updates tank position if needed)
 void Enemy::input(Event *e)
 {
     if (e->type == EVENT_INTERNAL_POS_SHARE)

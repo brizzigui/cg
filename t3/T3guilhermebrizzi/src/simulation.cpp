@@ -6,6 +6,7 @@
 #include "health_pwrup.h"
 #include <iostream>
 
+// initializes the simulation with screen size and loads bitmaps
 Simulation::Simulation(int screen_width, int screen_height)
 {
     this->screen_width = screen_width;
@@ -20,6 +21,7 @@ Simulation::Simulation(int screen_width, int screen_height)
     red_star = CVpro::load_bitmap("./T3guilhermebrizzi/assets/ui/red_star.bmp");
 }
 
+// draws the points box and current points on the screen
 void Simulation::draw_points()
 {
     CVpro::color(255, 255, 255);
@@ -29,6 +31,7 @@ void Simulation::draw_points()
     CVpro::text_align(screen_width/2.0, 30, 'c', "%d pts", points);
 }
 
+// shows the countdown at the start of the game
 void Simulation::display_starting_countdown()
 {
     int index = starting_loading_ticks/60 + 1;
@@ -38,6 +41,7 @@ void Simulation::display_starting_countdown()
                                         scale);
 }
 
+// displays the game over screen and continue button
 void Simulation::display_game_over()
 {
     CVpro::color(0, 0, 0);
@@ -55,6 +59,7 @@ void Simulation::display_game_over()
     CV::rect(screen_width/2.0 - 75, screen_height/2.0 + 50, screen_width/2.0 + 75, screen_height/2.0 + 100);
 }
 
+// draws the level stars and level number
 void Simulation::draw_level()
 {
     int anchorX = screen_width - 180;
@@ -76,6 +81,7 @@ void Simulation::draw_level()
     CVpro::text(anchorX, anchorY+red_star->height + 15, "Level: %d", level-1);
 }
 
+// draws all entities, points, and level
 void Simulation::display_game()
 {
     for (auto &e : entities)
@@ -87,6 +93,7 @@ void Simulation::display_game()
     draw_level();
 }
 
+// main display function, shows game or overlays depending on state
 void Simulation::display()
 {
     display_game();
@@ -105,6 +112,7 @@ void Simulation::display()
     }
 }
 
+// handles health powerup event, increases tank health
 void Simulation::handle_health_powerup(Event *e)
 {
     int additive = ((Event_Health *)(e))->health;
@@ -112,6 +120,7 @@ void Simulation::handle_health_powerup(Event *e)
     ((Tank *)entities[1].get())->health = (health + additive > 100) ? 100 : health + additive;
 }
 
+// handles system events like entity creation, points, game over, etc
 void Simulation::handle_system_event(Event *e)
 {
     Entity *entity = NULL;
@@ -144,6 +153,7 @@ void Simulation::handle_system_event(Event *e)
     }
 }
 
+// checks if a position is inside the track using a source texture
 bool Simulation::inside_track(Vector2 pos, CVpro::image *src)
 {
     CVpro::image *img = ((Track *)(entities[0].get()))->background;
@@ -162,6 +172,7 @@ bool Simulation::inside_track(Vector2 pos, CVpro::image *src)
     return false;
 }
 
+// spawns enemy entities at valid positions on the track
 void Simulation::respawn(int level, int amount)
 {
     // loads background source texture for comparison
@@ -182,6 +193,7 @@ void Simulation::respawn(int level, int amount)
     free(alphalt_src_texture);
 }
 
+// spawns health powerups at valid positions on the track
 void Simulation::spawn_powerups()
 {
     // loads background source texture for comparison
@@ -203,6 +215,7 @@ void Simulation::spawn_powerups()
     free(alphalt_src_texture);
 }
 
+// fills the map with enemies and powerups based on the level
 void Simulation::repopulate()
 {
     switch (level)
@@ -234,6 +247,7 @@ void Simulation::repopulate()
     spawn_powerups();
 }
 
+// checks if two entities are colliding using pixel collision
 bool Simulation::check_collision(Entity *a, Entity *b)
 {
     // based on pixel collision
@@ -269,6 +283,7 @@ bool Simulation::check_collision(Entity *a, Entity *b)
     return false;
 }
 
+// checks collision for all pairs of entities and calls their collide methods
 void Simulation::collide()
 {
     for (int outer = 0; outer < (int)entities.size(); outer++)
@@ -284,6 +299,7 @@ void Simulation::collide()
     }
 }
 
+// decreases the starting countdown and unhalts when done
 void Simulation::tick_starting()
 {
     starting_loading_ticks--;
@@ -294,6 +310,7 @@ void Simulation::tick_starting()
     }
 }
 
+// generates an internal event to share the tank's position with enemy entities that use it
 void Simulation::generate_internal_position_share_event()
 {
     add_event(new Event_Internal_Pos_Share(
@@ -301,6 +318,7 @@ void Simulation::generate_internal_position_share_event()
     ));
 }
 
+// checks if the continue button was clicked after game over
 bool Simulation::clicked_continue()
 {
     for (auto &event : events)
@@ -319,6 +337,7 @@ bool Simulation::clicked_continue()
     return false;
 }
 
+// resets entity id counter (used on restart)
 void Simulation::restart()
 {
     Entity::id_counter = 0;
@@ -347,6 +366,7 @@ bool Simulation::cleanup()
     return true;
 }
 
+// main update function, handles game logic and state transitions
 bool Simulation::update()
 {
     if (halted)
@@ -395,6 +415,7 @@ bool Simulation::update()
     return true;
 }
 
+// checks if all enemies are gone to determine level up
 bool Simulation::levelup()
 {
     for (int i = 0; i < (int)entities.size(); i++)
@@ -408,17 +429,20 @@ bool Simulation::levelup()
     return true;
 }
 
+// adds an entity to the simulation
 void Simulation::add_entity(Entity *e)
 {
     e->events_ptr = &events;
     entities.push_back(std::unique_ptr<Entity>(e));
 }
 
+// adds an event to the simulation
 void Simulation::add_event(Event *e)
 {
     events.push_back(std::unique_ptr<Event>(e));
 }
 
+// removes an entity by id
 void Simulation::remove_entity(int id)
 {
     for (int i = 0; i < (int)entities.size(); i++)

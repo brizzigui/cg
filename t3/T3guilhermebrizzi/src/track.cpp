@@ -1,5 +1,6 @@
 #include "track.h"
 
+// returns a single point by recursively interpolating a list of points using parameter v
 Vector2 Track::simplify(std::vector<Vector2> points, float v)
 {
     int len = points.size();
@@ -21,6 +22,7 @@ Vector2 Track::simplify(std::vector<Vector2> points, float v)
     return cur[0];
 }
 
+// draws a filled circle at position v with given radius and color on the target image
 void Track::paint(Vector2 v, float radius, CVpro::image *target, Color c)
 {
     for (int offset_y = -radius; offset_y < radius; offset_y++)
@@ -45,6 +47,7 @@ void Track::paint(Vector2 v, float radius, CVpro::image *target, Color c)
     }
 }
 
+// draws a smooth curve through the given points onto the texture
 void Track::imprint(std::vector<Vector2> points)
 {
     for (float v = 0; v < 1.0; v += 0.001)
@@ -54,6 +57,7 @@ void Track::imprint(std::vector<Vector2> points)
     }
 }
 
+// creates and returns a blank image with the size of the footprint
 CVpro::image *Track::generate_blank_bmp()
 {
     int bytes = 4; // (rgb + alpha = 4)
@@ -63,12 +67,14 @@ CVpro::image *Track::generate_blank_bmp()
     return img;
 }
 
+// clears the texture and background images by setting all pixels to zero
 void Track::clear_texture()
 {
     memset(texture->matrix, 0, sizeof(subpixel) * texture->width * texture->height * 4);
     memset(background->matrix, 0, sizeof(subpixel) * background->width * background->height * 4);
 }
 
+// checks if the pixel at base_index in the texture is a border pixel
 bool Track::is_border_pixel(int base_index)
 {
     return texture->matrix[base_index + 2] == (unsigned char)TRACK_BORDER_COLOR_R &&
@@ -79,6 +85,7 @@ bool Track::is_border_pixel(int base_index)
 
 #include <queue>
 
+// fills a region in the mask starting from (start_x, start_y) with the given label, avoiding borders
 void Track::flood_fill(std::vector<uint8_t> &mask, int start_x, int start_y, int label)
 {
     if (start_x < 0 || start_y < 0 || start_x >= texture->width || start_y >= texture->height)
@@ -111,6 +118,7 @@ void Track::flood_fill(std::vector<uint8_t> &mask, int start_x, int start_y, int
     }
 }
 
+// fills the background with grass and asphalt textures based on regions
 void Track::prettyfy()
 {
     CVpro::image *grass = CVpro::load_bitmap("./T3guilhermebrizzi/assets/environment/grass.bmp");
@@ -144,6 +152,7 @@ void Track::prettyfy()
     }
 }
 
+// draws the outer and inner track borders and a dashed center line with detail
 void Track::imprint_with_detail(std::vector<Vector2> outer, std::vector<Vector2> inner)
 {
     bool dash = false;
@@ -168,6 +177,7 @@ void Track::imprint_with_detail(std::vector<Vector2> outer, std::vector<Vector2>
     }
 }
 
+// regenerates the track textures, optionally in barebones mode
 void Track::regenerate(bool barebones)
 {
     clear_texture();
@@ -198,6 +208,7 @@ void Track::regenerate(bool barebones)
 #define GL_CLAMP_TO_EDGE 0x812F
 #endif
 
+// draws the background image as a fullscreen textured quad using OpenGL
 void Track::draw_background()
 {
     // Assume background->matrix is a pointer to BGRA pixel data (1280x720)
@@ -260,11 +271,13 @@ void Track::draw_background()
     // Now the background is drawn; subsequent 3rd-party rendering can proceed on top
 }
 
+// draws the texture image in barebones mode
 void Track::draw_barebones()
 {
     texture->display_bitmap(x, y);
 }
 
+// draws the track, updating the footprint if changed, and overlays the background
 void Track::draw()
 {
     if (change)
@@ -276,6 +289,7 @@ void Track::draw()
     box = texture->display_bitmap(x, y, footprint);
 }
 
+// constructor for Track, initializes control points and images, and generates the track
 Track::Track(float x, float y, std::vector<std::vector<Vector2>> points) : Entity(x, y)
 {
     control = points;

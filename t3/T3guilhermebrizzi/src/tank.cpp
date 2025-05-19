@@ -4,6 +4,7 @@
 #include "special_events.h"
 #include "health_pwrup.h"
 
+// constructor for Tank, initializes position, direction, speed, and loads images
 Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
 {
     texture = CVpro::load_bitmap("./T3guilhermebrizzi/assets/tanks/tankRed_outline.bmp");
@@ -16,20 +17,21 @@ Tank::Tank(float x, float y, Vector2 direction, float speed) : Entity(x, y)
     gun_direction = direction;
 }
 
-// im not using CVpro::image::display_bitmap because of an adjustment specific to the tank's behavior
-// (custom rotation pivot)
+// draws the tank base with a given angle and updates the footprint
 void Tank::draw_base(float angle)   
 {   
     footprint.clear();
     box = texture->display_bitmap(x, y, angle, footprint);
 }
 
+// draws the tank's gun (barrel) with a given angle
 void Tank::draw_gun(float angle)
 {
     CVpro::color(255, 255, 255);
     barrel->display_bitmap(x, y, angle+PI/2.0);
 }
 
+// draws the health bar above the tank
 void Tank::draw_health_bar()
 {
     CVpro::color(184, 2, 2);
@@ -40,6 +42,7 @@ void Tank::draw_health_bar()
     CV::rectFill(x-30, box.max_y+10, x-30+health_len, box.max_y+20);
 }
 
+// draws the tank, its gun, and health bar
 void Tank::draw()
 {
     float angle = direction.get_angle();
@@ -49,6 +52,7 @@ void Tank::draw()
     draw_health_bar();
 }
 
+// checks if the tank's health is zero and triggers game over event
 void Tank::check_game_over()
 {
     if (health == 0)
@@ -59,6 +63,7 @@ void Tank::check_game_over()
     }
 }
 
+// updates the tank's position and state each tick
 void Tank::tick()
 {
     x += direction.x * speed;
@@ -72,12 +77,14 @@ void Tank::tick()
     check_game_over();
 }
 
+// recalculates the gun's direction based on where it should point
 void Tank::recalc_gun_angle()
 {
     gun_direction = Vector2(gun_pointing_to_x-x, gun_pointing_to_y-y);
     gun_direction.normalize();
 }
 
+// recalculates the gun's direction using mouse event coordinates
 void Tank::recalc_gun_angle(Event_Mouse *e)
 {
     gun_pointing_to_x = e->x;
@@ -85,12 +92,14 @@ void Tank::recalc_gun_angle(Event_Mouse *e)
     recalc_gun_angle();
 }
 
+// returns the position of the tip of the barrel
 Vector2 Tank::get_barrel_tip()
 {
     return Vector2(x + gun_direction.x*barrel->height/2.0,
                    y + gun_direction.y*barrel->height/2.0);    
 }
 
+// handles mouse input for aiming and shooting
 void Tank::handle_mouse_input(Event_Mouse *e)
 {
     recalc_gun_angle(e);
@@ -108,6 +117,7 @@ void Tank::handle_mouse_input(Event_Mouse *e)
     }    
 }
 
+// handles keyboard input for rotating the tank
 void Tank::handle_keyboard_input(Event_Key_Down *e)
 {
     if (tick_lock_rotation == 0 && (e->key == 100 || e->key == 97))
@@ -126,6 +136,7 @@ void Tank::handle_keyboard_input(Event_Key_Down *e)
     }
 }
 
+// unlocks tank actions by updating cooldown timers
 void Tank::unlock_actions()
 {
     tick_lock_rotation = (tick_lock_rotation-1 < 0) ? 0 : tick_lock_rotation-1;
@@ -133,6 +144,7 @@ void Tank::unlock_actions()
     tick_lock_health = (tick_lock_health-1 < 0) ? 0 : tick_lock_health-1;
 }
 
+// processes input events for the tank
 void Tank::input(Event *e)
 {
     if (e->type == EVENT_MOUSE)
@@ -146,6 +158,7 @@ void Tank::input(Event *e)
     }
 }
 
+// handles collision with other entities
 void Tank::collide(Entity *e)
 {
     // touched own bullet
