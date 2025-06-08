@@ -15,8 +15,13 @@ class Editor
         int mode;
         int control_point_held;
 
+        int definition = 16;
+        float step = 1.0/definition;
+
         std::vector<Vector2> *points;
         std::vector<Vector2> control_points;
+        std::vector<Vector2> internal_points;
+
 
         bool held;
         void screen_adjust_position();

@@ -62,7 +62,7 @@ void Editor::draw_control()
 void Editor::draw_bezier()
 {
     CVpro::color(164, 81, 25);
-    for (auto p : *points)
+    for (auto p : internal_points)
     {
         CV::circleFill(p.x, p.y, 3, 10);
     }
@@ -197,16 +197,22 @@ Vector2 Editor::simplify(float v)
 void Editor::regenerate_curve()
 {
     points->clear();
+    internal_points.clear();
 
     if (control_points.size() < 2)
     {
         return;
     }
     
-    for (float v = 0; v < 1.0; v+=0.001)
+    for (float v = 0; v < 1.0; v+=step)
     {
         points->push_back(simplify(v));
     }
+
+    for (float v = 0; v < 1.0; v += 0.001)
+    {
+        internal_points.push_back(simplify(v));
+    }   
 }
 
 bool Editor::update(int button, int state, int x, int y, bool held)
