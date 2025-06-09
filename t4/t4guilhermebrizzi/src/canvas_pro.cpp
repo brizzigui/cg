@@ -135,3 +135,33 @@ void CVpro::color(int r, int g, int b, int a)
 {
     CV::color(r/255.0, g/255.0, b/255.0, a/255.0);
 }
+
+CVpro::image::image(int width, int height)
+{
+    this->width = width;
+    this->height = height;
+    matrix = (subpixel *)calloc(width * height * bytes * sizeof(subpixel), 1);
+}
+
+CVpro::image::~image()
+{
+    free(matrix);
+}
+
+void CVpro::image::display()
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int index = i * width * bytes + j * bytes;
+            CVpro::color(matrix[index + 2], matrix[index + 1], matrix[index], 255);
+            CV::rectFill(j, i, j+1, i+1);
+        }
+    }
+}
+
+void CVpro::image::clear()
+{
+    memset(matrix, 0, width * height * bytes * sizeof(subpixel));
+}

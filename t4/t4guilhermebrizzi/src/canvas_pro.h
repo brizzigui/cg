@@ -14,7 +14,22 @@
 #include "gl_canvas2d.h"
 #include <stdarg.h>
 
+typedef unsigned char subpixel;
+
 namespace CVpro {
+    class image
+    {
+        
+        public:
+            subpixel *matrix;
+            int width, height, bytes = 4;
+            image(int width, int height);
+            ~image();
+
+            void display();
+            void clear();
+    };
+    
     void text(float x, float y, const char *text, ...);
     void text_align(float x, float y, char align, const char *text, ...);
     void autotext(float x, float y, char align, float spacing, const char *text, ...);
