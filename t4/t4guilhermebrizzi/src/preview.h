@@ -5,6 +5,13 @@
 #include "Vector2.h"
 #include "Vector3.h"
 #include "canvas_pro.h"
+#include "color.h"
+
+#define WIREFRAME_MODE 0
+#define VERTEX_LIGHTING_MODE 1
+#define PIXEL_LIGHTING_MODE 2
+
+#define DEFAULT_COLOR Color(241, 120, 38, 255)
 
 struct Triangle
 {
@@ -20,6 +27,8 @@ struct Triangle
 class Preview
 {
     private:
+        int mode = PIXEL_LIGHTING_MODE;
+
         CVpro::image *result = NULL;
 
         std::vector<Vector2> *R2_points;
@@ -33,6 +42,11 @@ class Preview
         float dist = 3000.0;
         float scale = 0.5;
 
+        int slices = 16;
+
+        std::vector<float> zbuffer;
+        Color paint_color = DEFAULT_COLOR;
+
         Vector3 project(Vector3 point, float d);
         std::vector<std::vector<Vector3>> rotate_bezier();
         void triangularize();
@@ -40,6 +54,11 @@ class Preview
         void paint_result();
         void line_to_bmp(int x0, int y0, int x1, int y1);
         void set_pixel(int x, int y);
+        void triangle_to_wireframe();
+        void triangle_to_vertex_lighting();
+        void triangle_to_pixel_lighting();
+        Color compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 light_dir);
+        void draw_background();
         
     public:
         Preview(std::vector<Vector2> *points, float screen_height, float screen_width);

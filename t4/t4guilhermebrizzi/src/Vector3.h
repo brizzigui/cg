@@ -77,6 +77,20 @@ public:
         y = n_y;
     }
 
+    float dot(Vector3 v)
+    {
+        return this->x * v.x + this->y * y + this->z * z;
+    }
+
+    Vector3 cross(Vector3 v)
+    {
+        return Vector3(
+            this->y * v.z - this->z * v.y,
+            this->z * v.x - this->x * v.z,
+            this->x * v.y - this->y * v.x
+        );
+    }
+
     Vector3 operator - (const Vector3& v)
     {
         Vector3 aux( x - v.x, y - v.y, z - v.z);

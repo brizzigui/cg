@@ -29,7 +29,7 @@ void render()
 
 void keyboard(int key)
 {
-
+   preview->update();
 }
 
 void keyboardUp(int key)
@@ -56,7 +56,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
       preview->recreate();
    }
 
-   preview->update();
+   // preview->update();
 }
 
 int main(void)
