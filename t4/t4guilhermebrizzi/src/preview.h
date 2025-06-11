@@ -45,6 +45,7 @@ class Preview
 
         int slices = 32;
         bool grow_y = false;
+        bool perspective = true;
 
         std::vector<float> zbuffer;
         Color paint_color = DEFAULT_COLOR;

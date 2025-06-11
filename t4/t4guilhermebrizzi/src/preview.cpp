@@ -21,6 +21,7 @@ Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/increase_faces.bmp"));
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/decrease_faces.bmp"));
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/grow_y.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/perspective.bmp"));
 }
 
 Preview::~Preview()
@@ -29,9 +30,19 @@ Preview::~Preview()
 
 Vector3 Preview::project(Vector3 point, float d)
 {
-    return Vector3(
-        point.x * d / point.z, point.y * d / point.z, 0.0
-    );
+    if (perspective)
+    {
+        return Vector3(
+            point.x * d / point.z, point.y * d / point.z, 0.0
+        );
+    }
+
+    else
+    {
+        return Vector3(
+            point.x, point.y, 0.0
+        );
+    }
 }
 
 void Preview::draw_background()
@@ -343,13 +354,12 @@ void Preview::draw_buttons()
                             button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);    
         }
 
-        if (i == 4 && grow_y)
+        if ((i == 4 && grow_y) ||(i == 5 && perspective))
         {
             CVpro::color(241, 120, 38);
             CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
                 button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size); 
         }
-        
     }
 }
 
@@ -422,6 +432,11 @@ void Preview::handle_ui_input(int button, int state, int x, int y)
 
         case 4:
             grow_y = !grow_y;
+            recreate();
+            break;
+
+        case 5:
+            perspective = !perspective;
             recreate();
             break;
     
