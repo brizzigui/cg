@@ -210,7 +210,7 @@ CVpro::image *CVpro::load_bitmap(const char *path)
     fread(&width, 4, 1, descriptor);
     fread(&height, 4, 1, descriptor);
     fseek(descriptor, 2, SEEK_CUR);
-    int read = fread(&bits, 2, 1, descriptor);
+    fread(&bits, 2, 1, descriptor);
     bytes = bits/8;
 
     auto image = new CVpro::image(width, height);

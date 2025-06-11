@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "gl_canvas2d.h"
 #include "canvas_pro.h"
+#include "clamp.h"
 
 Editor::Editor(std::vector<Vector2> *points, float screen_height, float screen_width)
 {
@@ -22,6 +23,9 @@ Editor::Editor(std::vector<Vector2> *points, float screen_height, float screen_w
     this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/move.bmp"));
     this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/add.bmp"));
     this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/delete.bmp"));
+
+    this->options.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/increase_points.bmp"));
+    this->options.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/decrease_points.bmp"));
 }
 
 Editor::~Editor()
@@ -81,17 +85,23 @@ void Editor::draw_bezier()
 
 void Editor::draw_interface()
 {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < (int)icons.size(); i++)
     {
         icons[i]->display(button_anchorX, button_anchorY + 1.33*i*button_size);
 
         if (i == mode)
         {
-            CVpro::color(200, 200, 200);
+            CVpro::color(255, 255, 255);
             CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
                             button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);    
         }
     }
+
+    for (int i = 0; i < (int)options.size(); i++)
+    {
+        options[i]->display(button_anchorX, height - button_anchorY - 1.33*((int)options.size()-i-1)*button_size - button_size);
+    }
+    
 }
 
 void Editor::screen_adjust_position_middle()
@@ -102,28 +112,56 @@ void Editor::screen_adjust_position_middle()
 void Editor::draw()
 {
     screen_adjust_position();
-    draw_background();
+        draw_background();
     screen_adjust_position_middle();
-    draw_control();
-    draw_bezier();
+        draw_control();
+        draw_bezier();
     screen_adjust_position();
-    draw_interface();
+        draw_interface();
     screen_deadjust_position();
 }
 
-bool Editor::interface_interaction(int button, int state, int x, int y)
+void Editor::set_definition(int definition)
 {
-    for (int i = 0; i < 3; i++)
+    this->definition = definition;
+    this->definition = clamp(definition, 4, 128);
+    step = 1.0 / this->definition;
+}
+
+int Editor::interface_interaction(int button, int state, int x, int y)
+{
+    for (int i = 0; i < (int)icons.size(); i++)
     {
         if (button == 0 && state == 0 &&
             x > button_anchorX && y > button_anchorY + 1.33*i*button_size &&
             x < button_anchorX + button_size && y < button_anchorY + 1.33*i*button_size + button_size)
         {
             mode = i;   
-            return true;
+            return 0;
         }
     }
-    return false;
+
+    for (int i = 0; i < (int)options.size(); i++)
+    {
+        if (button == 0 && state == 0 &&
+            x > button_anchorX && y > height - button_anchorY - 1.33*((int)options.size()-i-1)*button_size - button_size &&
+            x < button_anchorX + button_size && y < height - button_anchorY - 1.33*((int)options.size()-i-1)*button_size)
+        {
+            if (i == 0)
+            {
+                set_definition(definition*2);
+            }
+
+            if (i == 1)
+            {
+                set_definition(definition/2);
+            }
+        
+            return -1;
+        }
+    }
+    
+    return 1;
 }
 
 bool Editor::move(int button, int state, int x, int y, bool held)
@@ -240,7 +278,8 @@ bool Editor::update(int button, int state, int x, int y, bool held)
         control_point_held = -1;
     }
 
-    if (!interface_interaction(button, state, x, y))
+    int action = interface_interaction(button, state, x, y);
+    if (action == 1)
     {
         x = x - width / 2.0;
         y = y - height / 2.0;
@@ -258,7 +297,7 @@ bool Editor::update(int button, int state, int x, int y, bool held)
             default:
                 break;
         }
-    }
+    }    
 
-    return false;
+    return (action == -1);
 }

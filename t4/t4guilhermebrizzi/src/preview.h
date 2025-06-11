@@ -43,10 +43,14 @@ class Preview
         float dist = 3000.0;
         float scale = 1.0;
 
-        int slices = 16;
+        int slices = 32;
+        bool grow_y = false;
 
         std::vector<float> zbuffer;
         Color paint_color = DEFAULT_COLOR;
+
+        std::vector<CVpro::image *> icons;
+        float button_anchorX, button_anchorY, button_size;
 
         Vector3 project(Vector3 point, float d);
         std::vector<std::vector<Vector3>> rotate_bezier();
@@ -63,7 +67,9 @@ class Preview
         void rotate(float roll, float pitch, float yaw);
         Vector3 obtain_rotation(int x, int y);
         void draw_buttons();
-        void check_buttons();
+        int check_buttons(int button, int state, int x, int y);
+        void handle_model_manipulation(int button, int state, int x, int y);
+        void handle_ui_input(int button, int state, int x, int y);
         
     public:
         Preview(std::vector<Vector2> *points, float screen_height, float screen_width);

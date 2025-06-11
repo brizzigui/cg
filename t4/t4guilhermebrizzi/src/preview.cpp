@@ -10,7 +10,17 @@ Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen
     this->anchorX = screen_width/2 + padding;
     this->anchorY = padding;
 
+    this->button_size = 40;
+    this->button_anchorX = width - button_size - button_size/3;
+    this->button_anchorY = button_size/3;
+
     this->R2_points = points;
+
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/wireframe.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/fill.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/increase_faces.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/decrease_faces.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/grow_y.bmp"));
 }
 
 Preview::~Preview()
@@ -36,13 +46,20 @@ void Preview::draw()
 {
     CV::translate(anchorX, anchorY);
     draw_background();
-    result->display();   
+    result->display();
+    draw_buttons();   
     CV::translate(0, 0);
 }
 
 std::vector<std::vector<Vector3>> Preview::rotate_bezier()
 {
     float step = 2*PI / slices;
+
+    float y_growth = 0;
+    if (grow_y)
+    {
+        y_growth = (height/2.0)/slices;
+    }
 
     std::vector<Vector2> cur_R2_points = (*R2_points);
     std::vector<std::vector<Vector3>> tmp;
@@ -53,7 +70,7 @@ std::vector<std::vector<Vector3>> Preview::rotate_bezier()
 
         for (int j = 0; j < slices; j++)
         {
-            Vector3 p = Vector3(cur_R2_points[i].x*scale, cur_R2_points[i].y, 0.0);
+            Vector3 p = Vector3(cur_R2_points[i].x*scale, cur_R2_points[i].y + y_growth * j, 0.0);
             float angle = step * j;
             p.rotate_y(angle);
             tmp[i].push_back(p);
@@ -68,9 +85,9 @@ void Preview::set_pixel(int x, int y)
     if (x >= 0 && x < width && y >= 0 && y < height)
     {
         int i = (y * result->width + x) * result->bytes;
-        result->matrix[i + 0] = 255; 
-        result->matrix[i + 1] = 0;   
-        result->matrix[i + 2] = 0;   
+        result->matrix[i + 2] = 241; 
+        result->matrix[i + 1] = 120;   
+        result->matrix[i + 0] = 38;   
         result->matrix[i + 3] = 255; 
     }
 }
@@ -118,7 +135,10 @@ void Preview::triangularize()
     
     for (int i = 0; i < (int)vertices.size()-1; i++)
     {
-        for (int j = 0; j < slices; j++)
+        // -grow_y avoids the joining of non adjacent points
+        // when growing y
+
+        for (int j = 0; j < slices - (int)grow_y; j++)
         {
             int next_j = (j + 1) % slices;
             
@@ -285,8 +305,6 @@ void Preview::recreate()
     R3_triangles.clear();
     result->clear();
 
-    slices = (mode == 0) ? 16 : 64;
-
     triangularize();
     flatten();
 }
@@ -295,8 +313,6 @@ void Preview::recreate(float roll, float pitch, float yaw)
 {   
     R2_projections.clear();
     result->clear();
-
-    slices = (mode == 0) ? 16 : 64;
 
     rotate(roll, pitch, yaw);
     flatten();
@@ -311,31 +327,107 @@ Vector3 Preview::obtain_rotation(int x, int y)
     // Sensitivity factor for rotation (tweak as needed)
     float sensitivity = 0.01f;
 
-    // Map dx to yaw (y-axis), dy to pitch (x-axis), roll is 0 for mouse drag
-    float roll = 0.0f;
-    float pitch = dy * sensitivity;
-    float yaw = dx * sensitivity;
-
-    return Vector3(roll, pitch, yaw);
+    return Vector3(dy * sensitivity, dx * sensitivity, 0.0f);
 }
 
 void Preview::draw_buttons()
 {
-    // mode wireframe
-    // mode fill
+    for (int i = 0; i < (int)icons.size(); i++)
+    {
+        icons[i]->display(button_anchorX, button_anchorY + 1.33*i*button_size);
 
-    // increase faces
-    // decrease faces
+        if (i == mode)
+        {
+            CVpro::color(255, 255, 255);
+            CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
+                            button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);    
+        }
 
-    // increase points
-    // decrease points
-
-    // grow y
+        if (i == 4 && grow_y)
+        {
+            CVpro::color(241, 120, 38);
+            CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
+                button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size); 
+        }
+        
+    }
 }
 
-void Preview::check_buttons()
+int Preview::check_buttons(int button, int state, int x, int y)
 {
-    // do the checking
+    for (int i = 0; i < (int)icons.size(); i++)
+    {
+        if (button == 0 && state == 0 &&
+            x > button_anchorX && y > button_anchorY + 1.33*i*button_size &&
+            x < button_anchorX + button_size && y < button_anchorY + 1.33*i*button_size + button_size)
+        {
+            return i;   
+        }
+    }
+
+    return -1;
+}
+
+void Preview::handle_model_manipulation(int button, int state, int x, int y)
+{
+    if (button == 0 && state == 0) 
+    {
+        held = true;
+        grabX = x;
+        grabY = y;
+        return;
+    }
+
+    if (button == 0 && state == 1) 
+    {
+        held = false;
+        return;
+    }
+
+    if (held) 
+    {
+        Vector3 rotation_vector = obtain_rotation(x, y);
+        recreate(-rotation_vector.x, -rotation_vector.y, rotation_vector.z);
+        grabX = x;
+        grabY = y;
+    }
+}
+
+void Preview::handle_ui_input(int button, int state, int x, int y)
+{
+    int clicked = check_buttons(button, state, x, y);
+    switch (clicked)
+    {
+        case 0:
+            mode = WIREFRAME_MODE;
+            recreate(0, 0, 0);
+            break;
+
+        case 1:
+            mode = PIXEL_LIGHTING_MODE;
+            recreate(0, 0, 0);
+            break;
+
+        case 2:
+            slices *= 2;
+            slices = (slices > 128) ? 128 : slices;
+            recreate();
+            break;
+
+        case 3:
+            slices /= 2;
+            slices = (slices < 4) ? 4 : slices;
+            recreate();
+            break;
+
+        case 4:
+            grow_y = !grow_y;
+            recreate();
+            break;
+    
+    default:
+        break;
+    }
 }
 
 void Preview::update(int button, int state, int direction, int x, int y)
@@ -348,26 +440,6 @@ void Preview::update(int button, int state, int direction, int x, int y)
         return;
     }
 
-    // Mouse button pressed
-    if (button == 0 && state == 0) {
-        held = true;
-        grabX = x;
-        grabY = y;
-        return;
-    }
-
-    // Mouse button released
-    if (button == 0 && state == 1) {
-        held = false;
-        return;
-    }
-
-    // Mouse drag (button held)
-    if (held) {
-        Vector3 rotation_vector = obtain_rotation(x, y);
-        recreate(rotation_vector.x, rotation_vector.y, rotation_vector.z);
-        // Update grabX/grabY for next delta
-        grabX = x;
-        grabY = y;
-    }
+    handle_ui_input(button, state, x, y);
+    handle_model_manipulation(button, state, x, y);
 }
