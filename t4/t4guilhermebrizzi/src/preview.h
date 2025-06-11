@@ -46,6 +46,7 @@ class Preview
         int slices = 32;
         bool grow_y = false;
         bool perspective = true;
+        bool show_normal = false;
 
         std::vector<float> zbuffer;
         Color paint_color = DEFAULT_COLOR;
@@ -71,6 +72,8 @@ class Preview
         int check_buttons(int button, int state, int x, int y);
         void handle_model_manipulation(int button, int state, int x, int y);
         void handle_ui_input(int button, int state, int x, int y);
+        void calculate_normals();
+        void draw_info();
         
     public:
         Preview(std::vector<Vector2> *points, float screen_height, float screen_width);

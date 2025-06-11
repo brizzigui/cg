@@ -101,7 +101,9 @@ void Editor::draw_interface()
     {
         options[i]->display(button_anchorX, height - button_anchorY - 1.33*((int)options.size()-i-1)*button_size - button_size);
     }
-    
+
+    CVpro::color(255, 255, 255);
+    CVpro::text(15, height - 15, "Samples: %d", definition);
 }
 
 void Editor::screen_adjust_position_middle()

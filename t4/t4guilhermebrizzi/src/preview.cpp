@@ -22,6 +22,7 @@ Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/decrease_faces.bmp"));
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/grow_y.bmp"));
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/perspective.bmp"));
+    icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/normal.bmp"));
 }
 
 Preview::~Preview()
@@ -58,7 +59,8 @@ void Preview::draw()
     CV::translate(anchorX, anchorY);
     draw_background();
     result->display();
-    draw_buttons();   
+    draw_buttons();
+    draw_info();
     CV::translate(0, 0);
 }
 
@@ -292,6 +294,23 @@ void Preview::rotate(float roll, float pitch, float yaw)
     }   
 }
 
+void Preview::calculate_normals()
+{
+    for (int i = 0; i < (int)R3_triangles.size(); i++)
+    {
+        Vector3 middle = (R3_triangles[i].va + R3_triangles[i].vb + R3_triangles[i].vc) * (1/3.0);
+        middle.z += dist;
+        Vector3 edge1 = R3_triangles[i].vb - R3_triangles[i].va;
+        Vector3 edge2 = R3_triangles[i].vc - R3_triangles[i].va;
+        Vector3 face_normal = edge1.cross(edge2);
+        face_normal.normalize();
+
+        Vector3 p0 = project(middle, dist);
+        Vector3 p1 = project(middle + face_normal*5, dist);
+        line_to_bmp(p0.x, p0.y, p1.x, p1.y);
+    }
+}
+
 void Preview::flatten()
 {
     switch (mode)
@@ -308,6 +327,12 @@ void Preview::flatten()
         default:
             break;
     }
+
+    if (show_normal)
+    {
+        calculate_normals();
+    }
+    
 }
 
 void Preview::recreate()
@@ -331,13 +356,10 @@ void Preview::recreate(float roll, float pitch, float yaw)
 
 Vector3 Preview::obtain_rotation(int x, int y)
 {
-    // Calculate mouse movement delta
     float dx = x - grabX;
     float dy = y - grabY;
 
-    // Sensitivity factor for rotation (tweak as needed)
     float sensitivity = 0.01f;
-
     return Vector3(dy * sensitivity, dx * sensitivity, 0.0f);
 }
 
@@ -354,13 +376,19 @@ void Preview::draw_buttons()
                             button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);    
         }
 
-        if ((i == 4 && grow_y) ||(i == 5 && perspective))
+        if ((i == 4 && grow_y) || (i == 5 && perspective) || (i == 6 && show_normal))
         {
             CVpro::color(241, 120, 38);
             CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
                 button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size); 
         }
     }
+}
+
+void Preview::draw_info()
+{
+    CVpro::color(255, 255, 255);
+    CVpro::text(15, height - 15, "Slices: %d", slices);
 }
 
 int Preview::check_buttons(int button, int state, int x, int y)
@@ -438,6 +466,11 @@ void Preview::handle_ui_input(int button, int state, int x, int y)
         case 5:
             perspective = !perspective;
             recreate();
+            break;
+
+        case 6:
+            show_normal = !show_normal;
+            recreate(0.0, 0.0, 0.0);
             break;
     
     default:
