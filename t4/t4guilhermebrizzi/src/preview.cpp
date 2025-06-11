@@ -1,5 +1,6 @@
 #include "preview.h"
 #include "canvas_pro.h"
+#include "clamp.h"
 
 Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen_width)
 {
@@ -175,9 +176,9 @@ void Preview::triangle_to_wireframe()
     for (int t = 0; t < (int)R3_triangles.size(); t++)
     {
         Triangle cur = R3_triangles[t];
-        cur.va.z += dist;
-        cur.vb.z += dist;
-        cur.vc.z += dist;
+        cur.va.z += object_pos;
+        cur.vb.z += object_pos;
+        cur.vc.z += object_pos;
 
         R2_projections.push_back(Triangle(project(cur.va, dist), project(cur.vb, dist), project(cur.vc, dist)));
     }   
@@ -192,7 +193,7 @@ Color Preview::compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 ligh
 
 void Preview::triangle_to_pixel_lighting()
 {
-    Vector3 light_pos = Vector3(-1000, -1000, 0);
+    Vector3 light_pos = Vector3(0, 0, -1000);
 
     // Clear zbuffer
     zbuffer.assign(width * height, std::numeric_limits<float>::infinity());
@@ -201,9 +202,9 @@ void Preview::triangle_to_pixel_lighting()
     {
         Triangle cur = R3_triangles[t];
 
-        Vector3 va = cur.va; va.z += dist;
-        Vector3 vb = cur.vb; vb.z += dist;
-        Vector3 vc = cur.vc; vc.z += dist;
+        Vector3 va = cur.va; va.z += object_pos;
+        Vector3 vb = cur.vb; vb.z += object_pos;
+        Vector3 vc = cur.vc; vc.z += object_pos;
 
         Vector3 edge1 = vb - va;
         Vector3 edge2 = vc - va;
@@ -299,14 +300,14 @@ void Preview::calculate_normals()
     for (int i = 0; i < (int)R3_triangles.size(); i++)
     {
         Vector3 middle = (R3_triangles[i].va + R3_triangles[i].vb + R3_triangles[i].vc) * (1/3.0);
-        middle.z += dist;
+        middle.z += object_pos;
         Vector3 edge1 = R3_triangles[i].vb - R3_triangles[i].va;
         Vector3 edge2 = R3_triangles[i].vc - R3_triangles[i].va;
         Vector3 face_normal = edge1.cross(edge2);
         face_normal.normalize();
 
         Vector3 p0 = project(middle, dist);
-        Vector3 p1 = project(middle + face_normal*5, dist);
+        Vector3 p1 = project(middle - face_normal*15, dist);
         line_to_bmp(p0.x, p0.y, p1.x, p1.y);
     }
 }
@@ -406,7 +407,7 @@ int Preview::check_buttons(int button, int state, int x, int y)
     return -1;
 }
 
-void Preview::handle_model_manipulation(int button, int state, int x, int y)
+void Preview::handle_model_manipulation(int button, int state, int direction, int x, int y)
 {
     if (button == 0 && state == 0) 
     {
@@ -420,6 +421,18 @@ void Preview::handle_model_manipulation(int button, int state, int x, int y)
     {
         held = false;
         return;
+    }
+
+    if (direction == -1)
+    {
+        dist = (dist - 200 > 0) ? dist - 200 : dist;
+        recreate(0.0, 0.0, 0.0);
+    }
+
+    else if (direction == 1)
+    {
+        dist = dist + 200;
+        recreate(0.0, 0.0, 0.0);
     }
 
     if (held) 
@@ -489,5 +502,5 @@ void Preview::update(int button, int state, int direction, int x, int y)
     }
 
     handle_ui_input(button, state, x, y);
-    handle_model_manipulation(button, state, x, y);
+    handle_model_manipulation(button, state, direction, x, y);
 }

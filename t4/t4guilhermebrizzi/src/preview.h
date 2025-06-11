@@ -41,6 +41,7 @@ class Preview
         float padding;
 
         float dist = 3000.0;
+        float object_pos = dist;
         float scale = 1.0;
 
         int slices = 32;
@@ -70,7 +71,7 @@ class Preview
         Vector3 obtain_rotation(int x, int y);
         void draw_buttons();
         int check_buttons(int button, int state, int x, int y);
-        void handle_model_manipulation(int button, int state, int x, int y);
+        void handle_model_manipulation(int button, int state, int direction, int x, int y);
         void handle_ui_input(int button, int state, int x, int y);
         void calculate_normals();
         void draw_info();
