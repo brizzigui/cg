@@ -148,6 +148,19 @@ CVpro::image::~image()
     free(matrix);
 }
 
+void CVpro::image::display(int x, int y)
+{
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            int index = i * width * bytes + j * bytes;
+            CVpro::color(matrix[index + 2], matrix[index + 1], matrix[index], 255);
+            CV::rectFill(x+j, y+i, x+j+1, y+i+1);
+        }
+    }
+}
+
 void CVpro::image::display()
 {
     for (int i = 0; i < height; i++)
@@ -164,4 +177,71 @@ void CVpro::image::display()
 void CVpro::image::clear()
 {
     memset(matrix, 0, width * height * bytes * sizeof(subpixel));
+}
+
+int get_stride(int width, int bytes)
+{
+    int bytes_per_pixel = bytes;  // number of bytes for 8 bit RGB pixels
+    int alignment = 4;  // required byte alignment for BMP image rows
+
+    // number of bytes in a row (round _up_ by alignment)
+    int stride = (width * bytes_per_pixel) + (alignment - 1);
+    stride /= alignment;
+    stride *= alignment;
+
+    return stride;
+}
+
+CVpro::image *CVpro::load_bitmap(const char *path)
+{
+    FILE *descriptor = fopen(path, "rb");
+    
+    if (descriptor == NULL)
+    {
+        printf("Fatal: could not find image file at '%s'. Check path.", path);
+        exit(404);
+    }
+
+    // pega dimensões no header
+    int width, height, bytes;
+    uint16_t bits;
+
+    fseek(descriptor, 18, SEEK_CUR);
+    fread(&width, 4, 1, descriptor);
+    fread(&height, 4, 1, descriptor);
+    fseek(descriptor, 2, SEEK_CUR);
+    int read = fread(&bits, 2, 1, descriptor);
+    bytes = bits/8;
+
+    auto image = new CVpro::image(width, height);
+
+    // número de bytes em uma linha (data + 4-indexing alignment)
+    int stride = get_stride(width, bytes);
+    int padding = stride - width * bytes;
+
+    subpixel *matrix = image->matrix;
+    fseek(descriptor, 54, SEEK_SET); // pula o restante dos headers
+
+    for (int line = 0; line < height; line++)
+    {
+        for (int pixel = 0; pixel < width; pixel++)
+        {
+            if (bytes == 3)
+            {
+                subpixel *address = matrix + (height - line - 1) * width * (bytes + 1) + pixel * (bytes + 1);
+                fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+                *(address + bytes) = (unsigned char)255;
+            }
+
+            else
+            {
+                subpixel *address = matrix + (height - line - 1) * width * bytes + pixel * bytes;
+                fread(address, 1, bytes, descriptor);  // le a matriz de pixels em si, pulando padding
+            }
+        }
+        
+        fseek(descriptor, padding, SEEK_CUR);
+    }
+
+    return image;
 }

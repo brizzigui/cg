@@ -19,7 +19,6 @@ typedef unsigned char subpixel;
 namespace CVpro {
     class image
     {
-        
         public:
             subpixel *matrix;
             int width, height, bytes = 4;
@@ -27,6 +26,7 @@ namespace CVpro {
             ~image();
 
             void display();
+            void display(int x, int y);
             void clear();
     };
     
@@ -35,6 +35,8 @@ namespace CVpro {
     void autotext(float x, float y, char align, float spacing, const char *text, ...);
     void color(int r, int g, int b);
     void color(int r, int g, int b, int a);
+    CVpro::image *load_bitmap(const char *path);
+
 }
 
 #endif

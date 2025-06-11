@@ -11,13 +11,17 @@ Editor::Editor(std::vector<Vector2> *points, float screen_height, float screen_w
     this->height = screen_height - padding*2;
     this->anchorX = padding;
     this->anchorY = padding;
-    this->button_size = 30;
+    this->button_size = 40;
     this->button_anchorX = width - button_size - button_size/3;
     this->button_anchorY = button_size/3;
 
     this->held = false;
     this->mode = 0;
     this->control_point_held = -1;
+
+    this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/move.bmp"));
+    this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/add.bmp"));
+    this->icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/delete.bmp"));
 }
 
 Editor::~Editor()
@@ -77,13 +81,10 @@ void Editor::draw_bezier()
 
 void Editor::draw_interface()
 {
-    // replace with bmps
-
     for (int i = 0; i < 3; i++)
     {
-        CVpro::color(120, 120, 120);
-        CV::rectFill(button_anchorX, button_anchorY + 1.33*i*button_size,
-                        button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);
+        icons[i]->display(button_anchorX, button_anchorY + 1.33*i*button_size);
+
         if (i == mode)
         {
             CVpro::color(200, 200, 200);

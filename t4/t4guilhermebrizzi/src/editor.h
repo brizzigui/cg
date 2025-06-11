@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "Vector2.h"
+#include "canvas_pro.h"
 
 class Editor
 {
@@ -22,6 +23,7 @@ class Editor
         std::vector<Vector2> control_points;
         std::vector<Vector2> internal_points;
 
+        std::vector<CVpro::image *> icons;
 
         bool held;
         void screen_adjust_position();

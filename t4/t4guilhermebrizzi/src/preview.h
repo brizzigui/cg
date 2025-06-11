@@ -62,6 +62,8 @@ class Preview
         void draw_background();
         void rotate(float roll, float pitch, float yaw);
         Vector3 obtain_rotation(int x, int y);
+        void draw_buttons();
+        void check_buttons();
         
     public:
         Preview(std::vector<Vector2> *points, float screen_height, float screen_width);
