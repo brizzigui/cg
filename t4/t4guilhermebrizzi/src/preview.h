@@ -8,8 +8,7 @@
 #include "color.h"
 
 #define WIREFRAME_MODE 0
-#define VERTEX_LIGHTING_MODE 1
-#define PIXEL_LIGHTING_MODE 2
+#define PIXEL_LIGHTING_MODE 1
 
 #define DEFAULT_COLOR Color(241, 120, 38, 255)
 
@@ -36,11 +35,13 @@ class Preview
         std::vector<Triangle> R3_triangles;
 
         float anchorX, anchorY;
+        bool held = false;
+        float grabX, grabY;
         float width, height;
         float padding;
 
         float dist = 3000.0;
-        float scale = 0.5;
+        float scale = 1.0;
 
         int slices = 16;
 
@@ -59,14 +60,17 @@ class Preview
         void triangle_to_pixel_lighting();
         Color compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 light_dir);
         void draw_background();
+        void rotate(float roll, float pitch, float yaw);
+        Vector3 obtain_rotation(int x, int y);
         
     public:
         Preview(std::vector<Vector2> *points, float screen_height, float screen_width);
         ~Preview();
 
         void draw();
-        void update();
+        void update(int button, int state, int direction, int x, int y);
         void recreate();
+        void recreate(float roll, float pitch, float yaw);
 };
 
 #endif

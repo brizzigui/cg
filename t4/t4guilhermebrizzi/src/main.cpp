@@ -24,12 +24,10 @@ void render()
    CV::clear(0, 0, 0);
    editor->draw();
    preview->draw();
-   Sleep(10);
 }
 
 void keyboard(int key)
 {
-   preview->update();
 }
 
 void keyboardUp(int key)
@@ -56,7 +54,7 @@ void mouse(int button, int state, int wheel, int direction, int x, int y)
       preview->recreate();
    }
 
-   // preview->update();
+   preview->update(button, state, direction, x, y);
 }
 
 int main(void)

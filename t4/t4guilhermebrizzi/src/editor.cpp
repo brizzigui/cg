@@ -38,12 +38,19 @@ void Editor::draw_background()
 {
     CVpro::color(30, 30, 30);
     CV::rectFill(0, 0, width, height);
-    CVpro::color(50, 50, 50);
 
     for (int i = 0; i < 10; i++)
     {
+        CVpro::color(50, 50, 50);
+
+        if (i == 5)
+        {
+            CVpro::color(255, 255, 255);
+        }
+
         CV::line(0, i*height/10, width, i*height/10);
         CV::line(i*width/10, 0, i*width/10, height);
+        
     }
 
     CVpro::color(255, 255, 255);
@@ -86,12 +93,19 @@ void Editor::draw_interface()
     }
 }
 
+void Editor::screen_adjust_position_middle()
+{
+    CV::translate(anchorX + width/2.0, anchorY + height/2.0);
+}
+
 void Editor::draw()
 {
     screen_adjust_position();
     draw_background();
+    screen_adjust_position_middle();
     draw_control();
     draw_bezier();
+    screen_adjust_position();
     draw_interface();
     screen_deadjust_position();
 }
@@ -113,7 +127,7 @@ bool Editor::interface_interaction(int button, int state, int x, int y)
 
 bool Editor::move(int button, int state, int x, int y, bool held)
 {
-    if (x < 0 || x > width || y < 0 || y > height)
+    if (x < -width/2.0 || x > width/2.0 || y < -height/2.0 || y > height/2.0)
     {
         return false;
     }
@@ -149,7 +163,7 @@ bool Editor::move(int button, int state, int x, int y, bool held)
 
 bool Editor::add(int button, int state, int x, int y)
 {
-    if (x < 0 || x > width || y < 0 || y > height || button != 0 || state != 0)
+    if (x < -width/2.0 || x > width/2.0 || y < -height/2.0 || y > height/2.0 || button != 0 || state != 0)
     {
         return false;
     }
@@ -227,6 +241,8 @@ bool Editor::update(int button, int state, int x, int y, bool held)
 
     if (!interface_interaction(button, state, x, y))
     {
+        x = x - width / 2.0;
+        y = y - height / 2.0;
         switch (mode)
         {
             case 0:

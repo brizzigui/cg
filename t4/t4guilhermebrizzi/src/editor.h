@@ -35,6 +35,8 @@ class Editor
         bool add(int button, int state, int x, int y);
         bool kill(int button, int state, int x, int y);
         Vector2 simplify(float v);
+        void screen_adjust_position_middle();
+
 
     public:
         Editor(std::vector<Vector2> *points, float screen_height, float screen_width);
