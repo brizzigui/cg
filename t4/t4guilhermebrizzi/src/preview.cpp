@@ -1,7 +1,21 @@
+/**
+ * @file preview.cpp
+ * @brief Implementation of the Preview class for 3D model visualization and manipulation.
+ *
+ * Contains the implementation of the Preview class, which handles rendering, user interaction, and various visualization modes for 3D models using Bezier surfaces. Includes methods for projection, drawing, lighting, and UI handling.
+ */
 #include "preview.h"
 #include "canvas_pro.h"
 #include "clamp.h"
 
+/**
+ * @brief Constructs a Preview object with given points and screen dimensions.
+ * @param points Pointer to a vector of Vector2 points defining the Bezier curve.
+ * @param screen_height Height of the screen.
+ * @param screen_width Width of the screen.
+ *
+ * Initializes rendering parameters, loads UI icons, and sets up the preview area.
+ */
 Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen_width)
 {
     this->padding = 30;
@@ -26,10 +40,21 @@ Preview::Preview(std::vector<Vector2> *points, float screen_height, float screen
     icons.push_back(CVpro::load_bitmap("./t4guilhermebrizzi/assets/normal.bmp"));
 }
 
+/**
+ * @brief Destructor for the Preview class.
+ *
+ * Cleans up resources used by the Preview object.
+ */
 Preview::~Preview()
 {
 }
 
+/**
+ * @brief Projects a 3D point to 2D using either perspective or orthographic projection.
+ * @param point The 3D point to project.
+ * @param d The distance parameter for perspective projection.
+ * @return The projected 2D point as a Vector3 (z = 0).
+ */
 Vector3 Preview::project(Vector3 point, float d)
 {
     if (perspective)
@@ -47,6 +72,11 @@ Vector3 Preview::project(Vector3 point, float d)
     }
 }
 
+/**
+ * @brief Draws the background of the preview area.
+ *
+ * Fills the background and draws the border.
+ */
 void Preview::draw_background()
 {
     CVpro::color(30, 30, 30);
@@ -55,6 +85,9 @@ void Preview::draw_background()
     CV::rect(0, 0, width, height);
 }
 
+/**
+ * @brief Draws the preview, including background, result image, buttons, and info.
+ */
 void Preview::draw()
 {
     CV::translate(anchorX, anchorY);
@@ -65,6 +98,10 @@ void Preview::draw()
     CV::translate(0, 0);
 }
 
+/**
+ * @brief Rotates the Bezier curve points around the Y axis to generate a surface of revolution.
+ * @return A 2D vector of Vector3 points representing the rotated surface.
+ */
 std::vector<std::vector<Vector3>> Preview::rotate_bezier()
 {
     float step = 2*PI / slices;
@@ -94,6 +131,11 @@ std::vector<std::vector<Vector3>> Preview::rotate_bezier()
     return tmp;
 }
 
+/**
+ * @brief Sets a pixel in the result image to a specific color.
+ * @param x X coordinate of the pixel.
+ * @param y Y coordinate of the pixel.
+ */
 void Preview::set_pixel(int x, int y)
 {
     if (x >= 0 && x < width && y >= 0 && y < height)
@@ -106,6 +148,13 @@ void Preview::set_pixel(int x, int y)
     }
 }
 
+/**
+ * @brief Draws a line between two points in the result image using incremental steps.
+ * @param x0 Starting X coordinate.
+ * @param y0 Starting Y coordinate.
+ * @param x1 Ending X coordinate.
+ * @param y1 Ending Y coordinate.
+ */
 void Preview::line_to_bmp(int x0, int y0, int x1, int y1)
 {
     int dx = x1 - x0;
@@ -127,6 +176,9 @@ void Preview::line_to_bmp(int x0, int y0, int x1, int y1)
 }
 
 
+/**
+ * @brief Paints the wireframe result by drawing triangle edges.
+ */
 void Preview::paint_result()
 {
     for (int p = 0; p < (int)R2_projections.size(); p++)
@@ -138,6 +190,11 @@ void Preview::paint_result()
     }
 }
 
+/**
+ * @brief Triangularizes the surface of revolution for rendering.
+ *
+ * Generates triangles from the rotated Bezier surface for further processing.
+ */
 void Preview::triangularize()
 {
     std::vector<std::vector<Vector3>> vertices = rotate_bezier();
@@ -171,6 +228,9 @@ void Preview::triangularize()
     }
 }
 
+/**
+ * @brief Projects 3D triangles to 2D and stores them as wireframe projections.
+ */
 void Preview::triangle_to_wireframe()
 {
     for (int t = 0; t < (int)R3_triangles.size(); t++)
@@ -184,6 +244,13 @@ void Preview::triangle_to_wireframe()
     }   
 }
 
+/**
+ * @brief Computes the lighting color at a vertex based on its normal and light direction.
+ * @param pos Position of the vertex.
+ * @param normal Normal vector at the vertex.
+ * @param light_dir Direction to the light source.
+ * @return The computed color for the vertex.
+ */
 Color Preview::compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 light_dir)
 {
     light_dir.normalize();
@@ -191,6 +258,9 @@ Color Preview::compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 ligh
     return Color((int)(paint_color.r * intensity), (int)(paint_color.g * intensity), (int)(paint_color.b * intensity), 255);
 }
 
+/**
+ * @brief Renders triangles with per-pixel lighting using Phong shading and a z-buffer.
+ */
 void Preview::triangle_to_pixel_lighting()
 {
     Vector3 light_pos = Vector3(0, 0, -1000);
@@ -277,6 +347,12 @@ void Preview::triangle_to_pixel_lighting()
     }
 }
 
+/**
+ * @brief Rotates all triangles in the model by the given roll, pitch, and yaw angles.
+ * @param roll Rotation around the X axis.
+ * @param pitch Rotation around the Y axis.
+ * @param yaw Rotation around the Z axis.
+ */
 void Preview::rotate(float roll, float pitch, float yaw)
 {
     for (int i = 0; i < (int)R3_triangles.size(); i++)
@@ -295,6 +371,9 @@ void Preview::rotate(float roll, float pitch, float yaw)
     }   
 }
 
+/**
+ * @brief Calculates and draws normals for each triangle in the model.
+ */
 void Preview::calculate_normals()
 {
     for (int i = 0; i < (int)R3_triangles.size(); i++)
@@ -312,6 +391,11 @@ void Preview::calculate_normals()
     }
 }
 
+/**
+ * @brief Flattens the 3D model into a 2D representation based on the current mode.
+ *
+ * Handles wireframe, pixel lighting, and normal visualization.
+ */
 void Preview::flatten()
 {
     switch (mode)
@@ -336,6 +420,9 @@ void Preview::flatten()
     
 }
 
+/**
+ * @brief Recreates the model and redraws the preview from scratch.
+ */
 void Preview::recreate()
 {   
     R2_projections.clear();
@@ -346,6 +433,12 @@ void Preview::recreate()
     flatten();
 }
 
+/**
+ * @brief Recreates the model with additional rotation applied.
+ * @param roll Rotation around the X axis.
+ * @param pitch Rotation around the Y axis.
+ * @param yaw Rotation around the Z axis.
+ */
 void Preview::recreate(float roll, float pitch, float yaw)
 {   
     R2_projections.clear();
@@ -355,6 +448,12 @@ void Preview::recreate(float roll, float pitch, float yaw)
     flatten();
 }
 
+/**
+ * @brief Calculates the rotation vector based on mouse movement.
+ * @param x Current X position of the mouse.
+ * @param y Current Y position of the mouse.
+ * @return The rotation vector as a Vector3.
+ */
 Vector3 Preview::obtain_rotation(int x, int y)
 {
     float dx = x - grabX;
@@ -364,6 +463,9 @@ Vector3 Preview::obtain_rotation(int x, int y)
     return Vector3(dy * sensitivity, dx * sensitivity, 0.0f);
 }
 
+/**
+ * @brief Draws the UI buttons for mode and option selection.
+ */
 void Preview::draw_buttons()
 {
     for (int i = 0; i < (int)icons.size(); i++)
@@ -386,12 +488,23 @@ void Preview::draw_buttons()
     }
 }
 
+/**
+ * @brief Draws informational text in the preview area.
+ */
 void Preview::draw_info()
 {
     CVpro::color(255, 255, 255);
     CVpro::text(15, height - 15, "Slices: %d", slices);
 }
 
+/**
+ * @brief Checks if a button was clicked based on mouse input.
+ * @param button Mouse button index.
+ * @param state Mouse button state.
+ * @param x X coordinate of the mouse.
+ * @param y Y coordinate of the mouse.
+ * @return Index of the clicked button, or -1 if none.
+ */
 int Preview::check_buttons(int button, int state, int x, int y)
 {
     for (int i = 0; i < (int)icons.size(); i++)
@@ -407,6 +520,14 @@ int Preview::check_buttons(int button, int state, int x, int y)
     return -1;
 }
 
+/**
+ * @brief Handles model manipulation via mouse input (rotation, zoom).
+ * @param button Mouse button index.
+ * @param state Mouse button state.
+ * @param direction Scroll direction for zoom.
+ * @param x X coordinate of the mouse.
+ * @param y Y coordinate of the mouse.
+ */
 void Preview::handle_model_manipulation(int button, int state, int direction, int x, int y)
 {
     if (button == 0 && state == 0) 
@@ -444,6 +565,13 @@ void Preview::handle_model_manipulation(int button, int state, int direction, in
     }
 }
 
+/**
+ * @brief Handles UI input for button clicks and toggles.
+ * @param button Mouse button index.
+ * @param state Mouse button state.
+ * @param x X coordinate of the mouse.
+ * @param y Y coordinate of the mouse.
+ */
 void Preview::handle_ui_input(int button, int state, int x, int y)
 {
     int clicked = check_buttons(button, state, x, y);
@@ -491,6 +619,14 @@ void Preview::handle_ui_input(int button, int state, int x, int y)
     }
 }
 
+/**
+ * @brief Updates the preview based on user input (mouse, buttons, scroll).
+ * @param button Mouse button index.
+ * @param state Mouse button state.
+ * @param direction Scroll direction for zoom.
+ * @param x X coordinate of the mouse.
+ * @param y Y coordinate of the mouse.
+ */
 void Preview::update(int button, int state, int direction, int x, int y)
 {
     x = x - anchorX;

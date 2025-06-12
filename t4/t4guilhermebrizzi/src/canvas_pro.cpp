@@ -1,3 +1,9 @@
+/**
+ * @file canvas_pro.cpp
+ * @brief Implementation of the CVpro utility namespace for Canvas2D enhancements.
+ *
+ * Contains the implementation of the CVpro namespace, including the image class and utility functions for text, color, and bitmap handling. Designed to simplify and extend Canvas2D usage for graphics projects.
+ */
 #include <string.h>
 #include <stdarg.h>
 #include <iostream>
@@ -6,10 +12,13 @@
 
 #include "canvas_pro.h"
 
-/*
-Recebe coordenadas x e y e texto para formatação no padrão C.
-Não ultrapassar buffer de 256 chars.
-*/
+/**
+ * @brief Draws formatted text at the specified position.
+ * @param x X coordinate.
+ * @param y Y coordinate.
+ * @param text Format string for the text.
+ * @return None.
+ */
 void CVpro::text(float x, float y, const char *text, ...)
 {
     char buffer[256];
@@ -21,14 +30,14 @@ void CVpro::text(float x, float y, const char *text, ...)
     CV::text(x, y, buffer);
 }
 
-/*
-Recebe coordenadas x e y, tipo de alinhamento e texto para formatação no padrão C.
-
-Tipo de alinhamento usa literais 'L', 'R' e 'C' para esquerda, direita e centro.
-
-Ancora posição conforme alinhamento em x e y.
-Não ultrapassar buffer de 256 chars.
-*/
+/**
+ * @brief Draws formatted text with alignment at the specified position.
+ * @param x X coordinate.
+ * @param y Y coordinate.
+ * @param align Alignment character ('l', 'c', 'r').
+ * @param text Format string for the text.
+ * @return None.
+ */
 void CVpro::text_align(float x, float y, char align, const char *text, ...)
 {
     char buffer[256];
@@ -56,9 +65,13 @@ void CVpro::text_align(float x, float y, char align, const char *text, ...)
     CV::text(x-offset, y, buffer);
 }
 
-/*
-Função auxiliar ao autotext usada apenas internamente. Imprime cada linha.
-*/
+/**
+ * @brief Helper function for autotext to print each line with alignment.
+ * @param text The text line to print.
+ * @param x X coordinate.
+ * @param y Y coordinate.
+ * @param align Alignment character.
+ */
 void autotext_process_line(char *text, float x, float y, char align)
 {
     int offset;
@@ -80,16 +93,15 @@ void autotext_process_line(char *text, float x, float y, char align)
     CV::text(x-offset, y, text);
 }
 
-/*
-Recebe múltiplas linhas de texto separado por \n e posiciona automaticamente.
-
-Recebe coordenadas iniciais x e y, tipo de alinhamento e texto para formatação no padrão C.
-
-Tipo de alinhamento usa literais 'L', 'R' e 'C' para esquerda, direita e centro.
-
-Ancora posição conforme alinhamento em x e y.
-Não ultrapassar buffer de 1024 chars.
-*/
+/**
+ * @brief Draws formatted multi-line text with alignment and spacing at the specified position.
+ * @param x X coordinate.
+ * @param y Y coordinate.
+ * @param align Alignment character.
+ * @param spacing Spacing between lines.
+ * @param text Format string for the text.
+ * @return None.
+ */
 void CVpro::autotext(float x, float y, char align, float spacing, const char *text, ...)
 {
     char buffer[1024];
@@ -118,24 +130,34 @@ void CVpro::autotext(float x, float y, char align, float spacing, const char *te
     }
 }
 
-/*
-Recebe cor em rgb de inteiros e passa para o Canvas
-Todos valores entre [0, 255]
-*/
+/**
+ * @brief Sets the current drawing color (RGB).
+ * @param r Red component (0-255).
+ * @param g Green component (0-255).
+ * @param b Blue component (0-255).
+ */
 void CVpro::color(int r, int g, int b)
 {
     CV::color(r/255.0, g/255.0, b/255.0);
 }
 
-/*
-Recebe cor em rgba de inteiros e passa para o Canvas
-Todos valores entre [0, 255]
-*/
+/**
+ * @brief Sets the current drawing color (RGBA).
+ * @param r Red component (0-255).
+ * @param g Green component (0-255).
+ * @param b Blue component (0-255).
+ * @param a Alpha component (0-255).
+ */
 void CVpro::color(int r, int g, int b, int a)
 {
     CV::color(r/255.0, g/255.0, b/255.0, a/255.0);
 }
 
+/**
+ * @brief Constructs an image with the given width and height.
+ * @param width Width of the image.
+ * @param height Height of the image.
+ */
 CVpro::image::image(int width, int height)
 {
     this->width = width;
@@ -143,11 +165,19 @@ CVpro::image::image(int width, int height)
     matrix = (subpixel *)calloc(width * height * bytes * sizeof(subpixel), 1);
 }
 
+/**
+ * @brief Destructor for the image class.
+ */
 CVpro::image::~image()
 {
     free(matrix);
 }
 
+/**
+ * @brief Displays the image at the specified (x, y) position.
+ * @param x X coordinate for the image position.
+ * @param y Y coordinate for the image position.
+ */
 void CVpro::image::display(int x, int y)
 {
     for (int i = 0; i < height; i++)
@@ -161,6 +191,9 @@ void CVpro::image::display(int x, int y)
     }
 }
 
+/**
+ * @brief Displays the image at the default position (0, 0).
+ */
 void CVpro::image::display()
 {
     for (int i = 0; i < height; i++)
@@ -174,11 +207,20 @@ void CVpro::image::display()
     }
 }
 
+/**
+ * @brief Clears the image buffer.
+ */
 void CVpro::image::clear()
 {
     memset(matrix, 0, width * height * bytes * sizeof(subpixel));
 }
 
+/**
+ * @brief Calculates the stride (row size in bytes) for a bitmap image.
+ * @param width Width of the image.
+ * @param bytes Bytes per pixel.
+ * @return The stride (row size in bytes).
+ */
 int get_stride(int width, int bytes)
 {
     int bytes_per_pixel = bytes;  // number of bytes for 8 bit RGB pixels
@@ -192,6 +234,11 @@ int get_stride(int width, int bytes)
     return stride;
 }
 
+/**
+ * @brief Loads a bitmap image from the specified file path.
+ * @param path Path to the .bmp file.
+ * @return Pointer to the loaded image object.
+ */
 CVpro::image *CVpro::load_bitmap(const char *path)
 {
     FILE *descriptor = fopen(path, "rb");
