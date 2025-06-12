@@ -138,12 +138,11 @@ class Preview
         void triangle_to_pixel_lighting();
         /**
          * @brief Computes lighting at a vertex.
-         * @param pos Vertex position.
          * @param normal Vertex normal.
          * @param light_dir Direction of the light source.
          * @return Computed color at the vertex.
          */
-        Color compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 light_dir);
+        Color compute_vertex_lighting(Vector3 normal, Vector3 light_dir);
         /**
          * @brief Draws the preview background.
          */

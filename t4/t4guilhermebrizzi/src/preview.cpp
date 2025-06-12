@@ -7,6 +7,7 @@
 #include "preview.h"
 #include "canvas_pro.h"
 #include "clamp.h"
+#include <limits>
 
 /**
  * @brief Constructs a Preview object with given points and screen dimensions.
@@ -115,7 +116,7 @@ std::vector<std::vector<Vector3>> Preview::rotate_bezier()
     std::vector<Vector2> cur_R2_points = (*R2_points);
     std::vector<std::vector<Vector3>> tmp;
 
-    for (int i = 0; i < R2_points->size(); i++)
+    for (int i = 0; i < (int)R2_points->size(); i++)
     {
         tmp.push_back(std::vector<Vector3>());
 
@@ -141,10 +142,10 @@ void Preview::set_pixel(int x, int y)
     if (x >= 0 && x < width && y >= 0 && y < height)
     {
         int i = (y * result->width + x) * result->bytes;
-        result->matrix[i + 2] = 241; 
-        result->matrix[i + 1] = 120;   
-        result->matrix[i + 0] = 38;   
-        result->matrix[i + 3] = 255; 
+        result->matrix[i + 2] = 241;
+        result->matrix[i + 1] = 120;
+        result->matrix[i + 0] = 38;
+        result->matrix[i + 3] = 255;
     }
 }
 
@@ -167,7 +168,7 @@ void Preview::line_to_bmp(int x0, int y0, int x1, int y1)
     float x = x0 + width/2;
     float y = y0 + height/2;
 
-    for (int i = 0; i <= steps; i++) 
+    for (int i = 0; i <= steps; i++)
     {
         set_pixel(x, y);
         x += x_inc;
@@ -203,7 +204,7 @@ void Preview::triangularize()
     {
         return;
     }
-    
+
     for (int i = 0; i < (int)vertices.size()-1; i++)
     {
         // -grow_y avoids the joining of non adjacent points
@@ -212,16 +213,16 @@ void Preview::triangularize()
         for (int j = 0; j < slices - (int)grow_y; j++)
         {
             int next_j = (j + 1) % slices;
-            
+
             R3_triangles.push_back(Triangle(
-                vertices[i][j], 
-                vertices[i+1][j], 
+                vertices[i][j],
+                vertices[i+1][j],
                 vertices[i][next_j]
             ));
-            
+
             R3_triangles.push_back(Triangle(
-                vertices[i+1][j], 
-                vertices[i+1][next_j], 
+                vertices[i+1][j],
+                vertices[i+1][next_j],
                 vertices[i][next_j]
             ));
         }
@@ -241,17 +242,16 @@ void Preview::triangle_to_wireframe()
         cur.vc.z += object_pos;
 
         R2_projections.push_back(Triangle(project(cur.va, dist), project(cur.vb, dist), project(cur.vc, dist)));
-    }   
+    }
 }
 
 /**
  * @brief Computes the lighting color at a vertex based on its normal and light direction.
- * @param pos Position of the vertex.
  * @param normal Normal vector at the vertex.
  * @param light_dir Direction to the light source.
  * @return The computed color for the vertex.
  */
-Color Preview::compute_vertex_lighting(Vector3 pos, Vector3 normal, Vector3 light_dir)
+Color Preview::compute_vertex_lighting(Vector3 normal, Vector3 light_dir)
 {
     light_dir.normalize();
     float intensity = std::max(0.0f, normal.dot(light_dir));
@@ -265,7 +265,6 @@ void Preview::triangle_to_pixel_lighting()
 {
     Vector3 light_pos = Vector3(0, 0, -1000);
 
-    // Clear zbuffer
     zbuffer.assign(width * height, std::numeric_limits<float>::infinity());
 
     for (int t = 0; t < (int)R3_triangles.size(); t++)
@@ -281,7 +280,6 @@ void Preview::triangle_to_pixel_lighting()
         Vector3 face_normal = edge1.cross(edge2);
         face_normal.normalize();
 
-        // For demonstration, use face normal as vertex normal (replace with real vertex normals if available)
         Vector3 na = face_normal;
         Vector3 nb = face_normal;
         Vector3 nc = face_normal;
@@ -324,18 +322,17 @@ void Preview::triangle_to_pixel_lighting()
                         Vector3 pos = va * w1 + vb * w2 + vc * w3;
                         Vector3 light_dir = light_pos - pos;
 
-                        // Interpolate normal per pixel (Phong shading)
                         Vector3 normal = na * w1 + nb * w2 + nc * w3;
                         normal.normalize();
 
-                        Color c = compute_vertex_lighting(pos, normal, light_dir);
+                        Color c = compute_vertex_lighting(normal, light_dir);
                         int r = std::max(0, std::min(255, c.r));
                         int g = std::max(0, std::min(255, c.g));
                         int b = std::max(0, std::min(255, c.b));
                         int a = std::max(0, std::min(255, c.a));
 
-                        int i = (y * result->width + x) * result->bytes;                       
-                    
+                        int i = (y * result->width + x) * result->bytes;
+
                         result->matrix[i + 2] = (unsigned char)r;
                         result->matrix[i + 1] = (unsigned char)g;
                         result->matrix[i    ] = (unsigned char)b;
@@ -368,7 +365,7 @@ void Preview::rotate(float roll, float pitch, float yaw)
         R3_triangles[i].vc.rotate_x(roll);
         R3_triangles[i].vc.rotate_y(pitch);
         R3_triangles[i].vc.rotate_z(yaw);
-    }   
+    }
 }
 
 /**
@@ -408,7 +405,7 @@ void Preview::flatten()
         case PIXEL_LIGHTING_MODE:
             triangle_to_pixel_lighting();
             break;
-        
+
         default:
             break;
     }
@@ -417,14 +414,14 @@ void Preview::flatten()
     {
         calculate_normals();
     }
-    
+
 }
 
 /**
  * @brief Recreates the model and redraws the preview from scratch.
  */
 void Preview::recreate()
-{   
+{
     R2_projections.clear();
     R3_triangles.clear();
     result->clear();
@@ -440,7 +437,7 @@ void Preview::recreate()
  * @param yaw Rotation around the Z axis.
  */
 void Preview::recreate(float roll, float pitch, float yaw)
-{   
+{
     R2_projections.clear();
     result->clear();
 
@@ -476,14 +473,14 @@ void Preview::draw_buttons()
         {
             CVpro::color(255, 255, 255);
             CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
-                            button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);    
+                            button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);
         }
 
         if ((i == 4 && grow_y) || (i == 5 && perspective) || (i == 6 && show_normal))
         {
             CVpro::color(241, 120, 38);
             CV::rect(button_anchorX, button_anchorY + 1.33*i*button_size,
-                button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size); 
+                button_anchorX + button_size, button_anchorY + 1.33*i*button_size + button_size);
         }
     }
 }
@@ -513,7 +510,7 @@ int Preview::check_buttons(int button, int state, int x, int y)
             x > button_anchorX && y > button_anchorY + 1.33*i*button_size &&
             x < button_anchorX + button_size && y < button_anchorY + 1.33*i*button_size + button_size)
         {
-            return i;   
+            return i;
         }
     }
 
@@ -530,7 +527,7 @@ int Preview::check_buttons(int button, int state, int x, int y)
  */
 void Preview::handle_model_manipulation(int button, int state, int direction, int x, int y)
 {
-    if (button == 0 && state == 0) 
+    if (button == 0 && state == 0)
     {
         held = true;
         grabX = x;
@@ -538,7 +535,7 @@ void Preview::handle_model_manipulation(int button, int state, int direction, in
         return;
     }
 
-    if (button == 0 && state == 1) 
+    if (button == 0 && state == 1)
     {
         held = false;
         return;
@@ -556,7 +553,7 @@ void Preview::handle_model_manipulation(int button, int state, int direction, in
         recreate(0.0, 0.0, 0.0);
     }
 
-    if (held) 
+    if (held)
     {
         Vector3 rotation_vector = obtain_rotation(x, y);
         recreate(-rotation_vector.x, -rotation_vector.y, rotation_vector.z);
@@ -613,7 +610,7 @@ void Preview::handle_ui_input(int button, int state, int x, int y)
             show_normal = !show_normal;
             recreate(0.0, 0.0, 0.0);
             break;
-    
+
     default:
         break;
     }

@@ -1,0 +1,93 @@
+# depslib dependency file v1.0
+1749736486 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\canvas_pro.cpp
+	<string.h>
+	<stdarg.h>
+	<iostream>
+	<vector>
+	<cstdint>
+	"canvas_pro.h"
+
+1749736700 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\canvas_pro.h
+	"gl_canvas2d.h"
+	<stdarg.h>
+
+1742344541 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\gl_canvas2d.h
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<string.h>
+	<GL/glut.h>
+	<GL/freeglut_ext.h>
+	"Vector2.h"
+
+1742344250 d:\faculdade\2025.1\cg\sync\t4\include\gl\glut.h
+	"freeglut_std.h"
+
+1742344250 d:\faculdade\2025.1\cg\sync\t4\include\gl\freeglut_std.h
+	<windows.h>
+	<EGL/egl.h>
+	<GLES/gl.h>
+	<GLES2/gl2.h>
+	<OpenGL/gl.h>
+	<OpenGL/glu.h>
+	<GL/gl.h>
+	<GL/glu.h>
+	<stdlib.h>
+
+1742344250 d:\faculdade\2025.1\cg\sync\t4\include\gl\freeglut_ext.h
+	<stdarg.h>
+
+1749736789 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\vector2.h
+	<iostream>
+	<cmath>
+
+1749736550 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\clamp.cpp
+	"clamp.h"
+
+1749736499 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\clamp.h
+
+1749674273 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\editor.cpp
+	"editor.h"
+	"gl_canvas2d.h"
+	"canvas_pro.h"
+	"clamp.h"
+
+1749671228 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\editor.h
+	<vector>
+	"Vector2.h"
+	"canvas_pro.h"
+
+1742612655 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\gl_canvas2d.cpp
+	"gl_canvas2d.h"
+	<GL/glut.h>
+
+1749670288 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\main.cpp
+	<GL/glut.h>
+	<GL/freeglut_ext.h>
+	"gl_canvas2d.h"
+	<vector>
+	"Vector2.h"
+	"Vector3.h"
+	"preview.h"
+	"editor.h"
+
+1749736786 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\vector3.h
+	"stdio.h"
+	"math.h"
+
+1749737181 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\preview.h
+	<vector>
+	"Vector2.h"
+	"Vector3.h"
+	"canvas_pro.h"
+	"color.h"
+
+1749736663 d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\color.h
+	<iostream>
+
+1749737197 source:d:\faculdade\2025.1\cg\sync\t4\t4guilhermebrizzi\src\preview.cpp
+	"preview.h"
+	"canvas_pro.h"
+	"clamp.h"
+	<limits>
+
