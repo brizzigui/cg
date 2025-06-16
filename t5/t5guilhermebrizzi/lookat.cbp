@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="lookat" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="../__bin/Debug/lookat" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../" />
+				<Option object_output="../__obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="../__bin/Release/lookat" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../__obj/Release/" />
+				<Option type="1" />
+				<Option working_dir="../" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2 -Wall" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-std=c++11" />
+			<Add directory="../include" />
+		</Compiler>
+		<Linker>
+			<Add library="../lib/libfreeglut32.a" />
+			<Add library="../lib/libopengl32.a"/>
+			<Add library="../lib/libglu32.a"/>
+		</Linker>
+		<Unit filename="src/lookat.cpp" />
+
+	</Project>
+</CodeBlocks_project_file>
