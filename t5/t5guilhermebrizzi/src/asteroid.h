@@ -10,18 +10,20 @@ class Asteroid
         Color color;
 
         float size;
-        Vector3 pos;
-
         Vector3 dir;
         float speed = 0;
+        float repeat_param = 8000.0;
+
+        Vector3 find_real_position(Vector3 camera);
 
     public:
+        Vector3 pos;
+
         Asteroid();
-        Asteroid(Color color, Vector3 pos, float size);
-        Asteroid(Color color, Vector3 pos, float size, Vector3 dir, float speed);
         ~Asteroid();
 
-        void draw();
+        void draw(Vector3 camera);
+        void tick();
 };
 
 #endif

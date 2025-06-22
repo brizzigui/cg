@@ -21,9 +21,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 
 #include "Vector3.h"
 #include "asteroid.h"
+#include "camera.h"
+#include "controller.h"
 
 #define SCREEN_X 1280
 #define SCREEN_Y 720
@@ -75,55 +80,69 @@ void init()
    update_lighting();
 }
 
-Vector3 camera = Vector3(0, 0, -10000);
-Vector3 direction = Vector3(0, 0, 1000);
-float speed;
-
+Controller controller;
 std::vector<Asteroid> asteroids;
+Camera camera;
+float factor = 1.0;
 
-////////////////////////////////////////////////////////////////////////////////////////
-void display(void)
+void clear()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 
+void configure_camera()
+{
    glMatrixMode(GL_PROJECTION);
-   glLoadIdentity( );
+   glLoadIdentity();
 
    gluPerspective(abertura, aspect, znear, zfar);
 
    glMatrixMode(GL_MODELVIEW);
 
-   Vector3 target = camera + direction;
-   glLoadIdentity( );
-   gluLookAt(camera.x, camera.y, camera.z,  //from. Posicao onde a camera esta posicionada
-             target.x, target.y, target.z,  //to. Posicao absoluta onde a camera esta vendo
-             0, 1, 0); //up. Vetor Up.
+   Vector3 target = camera.pos + camera.direction;
+   glLoadIdentity();
+   gluLookAt(camera.pos.x, camera.pos.y, camera.pos.z,   //from. Posicao onde a camera esta posicionada
+             target.x, target.y, target.z,               //to. Posicao absoluta onde a camera esta vendo
+             camera.up.x, camera.up.y, camera.up.z);                                   //up. Vetor Up.
+}
 
-   camera.z += 5;
+////////////////////////////////////////////////////////////////////////////////////////
+void display(void)
+{
+   controller.start();
 
-   for (auto a : asteroids)
+   clear();
+   configure_camera();
+   camera.tick(factor);
+   for (int i = 0; i < (int)asteroids.size(); i++)
    {
-      a.draw();
+      asteroids[i].draw(camera.pos);   
+      asteroids[i].tick();
    }
 
-   glRotatef ((GLfloat) rx, 0.0f, 1.0f, 0.0f);
-   glRotatef ((GLfloat) rz, 1.0f, 0.0f, 0.0f);
-
    glutSwapBuffers();
+
+   factor = controller.end();
 }
 
 void create_asteroids()
 {
-   for (int i = 0; i < 1000; i++)
+   for (int i = 0; i < 5000; i++)
    {
       asteroids.push_back(Asteroid());
    }
 }
 
 //faz a leitura da entrada do usuario
-void keyboard(unsigned char key, int x, int y)
+void keyboard_down(unsigned char key, int x, int y)
 {
+   camera.key_down(key);
+}
 
+//faz a leitura da entrada do usuario
+void keyboard_up(unsigned char key, int x, int y)
+{
+   camera.key_up(key);
 }
 
 void MotionFunc(int x, int y)
@@ -153,18 +172,27 @@ void glut_set_params()
    glutMotionFunc(MotionFunc);
    glutMouseFunc(MouseFunc);
    glutIdleFunc(display);
-   glutKeyboardFunc(keyboard);
+   glutKeyboardFunc(keyboard_down);
+   glutKeyboardUpFunc(keyboard_up);
 }
 
-void glut_start()
+void start_glut()
 {
    glutMainLoop();
 }
 
-int main ()
+void start_music()
+{
+   PlaySound(TEXT("./t5guilhermebrizzi/assets/imperial_march.wav"), NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);
+}
+
+int main()
 { 
+   srand(time(NULL));
    glut_set_params();
+   controller = Controller(60, false);
    create_asteroids();
-   glut_start();
+   start_music();
+   start_glut();
    return 0;
 }
