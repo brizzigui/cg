@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_H
 #include <chrono>
 
+// Class definition for the fps controller
 class Controller
 {
     private:

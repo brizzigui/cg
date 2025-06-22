@@ -3,6 +3,7 @@
 
 #include "Vector3.h"
 
+// Class definition for the camera
 class Camera
 {
     public:

@@ -17,14 +17,41 @@ Camera::~Camera()
 
 void Camera::tick(float factor)
 {
-    direction.rotate_x(PI/256.0 * input.x * factor);
-    direction.rotate_y(PI/256.0 * input.y * factor);
-    direction.rotate_z(PI/256.0 * input.z * factor);
+    // calculates first person rotation
+    // so that rotation looks as expected
+    float yaw = input.y * factor * (PI/128.0f);
+    float pitch = input.x * factor * (PI/128.0f);
 
-    up.rotate_x(PI/256.0 * input.x * factor);
-    up.rotate_y(PI/256.0 * input.y * factor);
-    up.rotate_z(PI/256.0 * input.z * factor);
+    Vector3 right = up.cross(direction);
+    right.normalize();
 
+    if (yaw != 0.0f)
+    {
+        float cosYaw = cos(yaw);
+        float sinYaw = sin(yaw);
+        Vector3 d = direction;
+        direction = (d * cosYaw) + (right * sinYaw);
+        direction.normalize();
+    }
+
+    right = up.cross(direction);
+    right.normalize();
+
+    if (pitch != 0.0f)
+    {
+        float cosPitch = cos(pitch);
+        float sinPitch = sin(pitch);
+        Vector3 d = direction;
+        direction = (d * cosPitch) + (up * sinPitch);
+        direction.normalize();
+    }
+
+    right = up.cross(direction);
+    right.normalize();
+    up = direction.cross(right);
+    up.normalize();
+
+    // moves camera according to direction
     pos = pos + (direction * speed * factor);
 }
 
@@ -41,19 +68,11 @@ void Camera::key_down(unsigned char key)
             break;
 
         case 'W': case 'w':
-            input.x = 1;
-            break;
-
-        case 'S': case 's':
             input.x = -1;
             break;
 
-        case 'Q': case 'q':
-            input.z = 1;
-            break;
-
-        case 'E': case 'e':
-            input.z = -1;
+        case 'S': case 's':
+            input.x = 1;
             break;
 
         default:
@@ -80,14 +99,6 @@ void Camera::key_up(unsigned char key)
 
         case 'S': case 's':
             input.x = 0;
-            break;
-
-        case 'Q': case 'q':
-            input.z = 0;
-            break;
-
-        case 'E': case 'e':
-            input.z = 0;
             break;
 
         default:

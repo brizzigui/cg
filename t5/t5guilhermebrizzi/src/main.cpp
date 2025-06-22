@@ -1,18 +1,10 @@
-/**
-*   Programa para ilustrar:
-*   - Uso da gluLookAt
-*   - Pilha de transformacoes
-*   - Projecao pespectiva
-*   - Interacao com o mouse/teclado
-*   - cullFace, frontFace
+/*
+   Trabalho 5 de Computação Gráfica
+   Guerra nas estrelas OpenGL
+   Guilherme Brizzi
 
-*   Autor: Cesar Tadeu Pozzer
-*   UFSM - 15/06/2007
-*
-*   pozzer@inf.ufsm.br
-*   pozzer3@gmail.com
-*
-**/
+   Ver README.md para mais informações.
+*/
 
 #include <GL/glut.h>
 
@@ -40,6 +32,9 @@ float znear  = 1;
 float zfar   = 100000;
 float aspect = (float)SCREEN_X/(float)SCREEN_Y;
 
+bool wireframe_mode = false;
+
+// Sets the inital OpenGL parameters
 void setup_opengl()
 {
    glMatrixMode(GL_PROJECTION);
@@ -55,6 +50,21 @@ void setup_opengl()
    glEnable(GL_DEPTH_TEST);
 }
 
+// Switches between polygon mode and wireframe mode
+void toggle_polymode()
+{
+   if (wireframe_mode)
+   {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+   }
+
+   else
+   {
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+   }
+}
+
+// Sets lighting parameters
 void update_lighting()
 {
    // Lighting setup
@@ -85,11 +95,13 @@ std::vector<Asteroid> asteroids;
 Camera camera;
 float factor = 1.0;
 
+// Clears buffer
 void clear()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+// Sets camera position and parameters
 void configure_camera()
 {
    glMatrixMode(GL_PROJECTION);
@@ -107,6 +119,7 @@ void configure_camera()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
+// Main display loop function
 void display(void)
 {
    controller.start();
@@ -125,6 +138,7 @@ void display(void)
    factor = controller.end();
 }
 
+// Creates the asteroids and adds them to the global asteroid vector
 void create_asteroids()
 {
    for (int i = 0; i < 5000; i++)
@@ -133,28 +147,36 @@ void create_asteroids()
    }
 }
 
-//faz a leitura da entrada do usuario
+// Callback of keyboard key down
 void keyboard_down(unsigned char key, int x, int y)
 {
    camera.key_down(key);
+   if (key == 'M' || key == 'm')
+   {
+      toggle_polymode();
+      wireframe_mode = !wireframe_mode;
+   }
 }
 
-//faz a leitura da entrada do usuario
+// Callback of keyboard key up
 void keyboard_up(unsigned char key, int x, int y)
 {
    camera.key_up(key);
 }
 
+// Callback of mouse
 void MotionFunc(int x, int y)
 {
 }
 
+// Callback of mouse
 void MouseFunc(int botao, int estado, int x, int y)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+// Sets glut parameters
 void glut_set_params()
 {
    int argc = 0;
@@ -181,6 +203,7 @@ void start_glut()
    glutMainLoop();
 }
 
+// Plays background music (only on windows, remove if on other systems)
 void start_music()
 {
    PlaySound(TEXT("./t5guilhermebrizzi/assets/imperial_march.wav"), NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);

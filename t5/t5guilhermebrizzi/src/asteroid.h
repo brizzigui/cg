@@ -4,6 +4,7 @@
 #include "color.h"
 #include "Vector3.h"
 
+// Class definition for the asteroid
 class Asteroid
 {
     private:
